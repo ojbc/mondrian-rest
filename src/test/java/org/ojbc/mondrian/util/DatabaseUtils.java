@@ -17,9 +17,7 @@
 package org.ojbc.mondrian.util;
 
 import java.net.URL;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -33,23 +31,14 @@ class DatabaseUtils {
 		return INSTANCE;
 	}
 	
-	private java.sql.Connection h2Connection;
 	private java.sql.Connection olap4jConnection;
 	private mondrian.olap.Connection mondrianConnection;
 	
 	private DatabaseUtils() {
 	}
 	
-	public java.sql.Connection getH2Connection(boolean init) throws SQLException {
-		if (h2Connection == null || h2Connection.isClosed()) {
-			h2Connection = java.sql.DriverManager.getConnection(getConnectionString());
-			DatabaseMetaData dbmd = h2Connection.getMetaData();
-			ResultSet rs = dbmd.getTables(null, null, "F1", null);
-			if (init && !rs.next()) {
-				h2Connection.createStatement().execute(getDatabaseInitQuery());
-			}
-		}
-		return h2Connection;
+	public java.sql.Connection getTestDatabaseConnection(boolean init) throws SQLException {
+		return java.sql.DriverManager.getConnection(getConnectionString());
 	}
 	
 	public java.sql.Connection getOlap4jConnection() throws SQLException, ClassNotFoundException {
@@ -59,12 +48,12 @@ class DatabaseUtils {
 			Properties props = new Properties();
 			props.setProperty("Jdbc", getConnectionString());
 			props.setProperty("Catalog", getMondrianSchemaPath());
-			props.setProperty("JdbcDrivers", "org.h2.Driver");
+			props.setProperty("JdbcDrivers", getDriverClassName());
 			olap4jConnection = DriverManager.getConnection(url, props);
 		}
 		return olap4jConnection;
 	}
-	
+
 	public mondrian.olap.Connection getMondrianConnection() {
 		if (mondrianConnection == null) {
 			PropertyList list = new PropertyList();
@@ -76,8 +65,12 @@ class DatabaseUtils {
 		return mondrianConnection;
 	}
 
+	private String getDriverClassName() {
+		return "org.hsqldb.jdbc.JDBCDriver";
+	}
+	
 	private String getConnectionString() {
-		return "jdbc:h2:mem:test";
+		return "jdbc:hsqldb:res:test";
 	}
 
 	private String getMondrianSchemaPath() {
@@ -85,11 +78,4 @@ class DatabaseUtils {
 		return url.getFile();
 	}
 	
-	private String getDatabaseInitQuery() {
-		URL url = DatabaseUtils.class.getResource("/test.sql");
-		String path = url.getFile();
-		String initString = "runscript from '" + path + "'";
-		return initString;
-	}
-
 }

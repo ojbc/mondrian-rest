@@ -40,20 +40,18 @@ public class BasicMondrianQueryTest {
 	private final Log log = LogFactory.getLog(BasicMondrianQueryTest.class);
 	
 	private Connection mondrianOlapConnection;
-	private java.sql.Connection h2Connection;
 	
 	@Before
 	public void setUp() throws Exception {
-		h2Connection = DatabaseUtils.getInstance().getH2Connection(true);
 		mondrianOlapConnection = DatabaseUtils.getInstance().getMondrianConnection();
 	}
 	
 	@After
 	public void tearDown() throws Exception {
-		h2Connection.close();
 		mondrianOlapConnection.close();
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Test
 	public void test() throws Exception {
 		String query = "select {[Measures].[F1_M1]} on columns from Test";

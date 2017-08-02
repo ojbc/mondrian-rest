@@ -40,18 +40,15 @@ public class BasicOlap4jQueryTest {
 	
 	private final Log log = LogFactory.getLog(BasicOlap4jQueryTest.class);
 	
-	private Connection h2Connection;
 	private Connection jdbcConnection;
 	
 	@Before
 	public void setUp() throws Exception {
-		h2Connection = DatabaseUtils.getInstance().getH2Connection(true);
 		jdbcConnection = DatabaseUtils.getInstance().getOlap4jConnection();
 	}
 	
 	@After
 	public void tearDown() throws Exception {
-		h2Connection.close();
 		jdbcConnection.close();
 	}
 	

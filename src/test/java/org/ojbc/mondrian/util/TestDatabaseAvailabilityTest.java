@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -29,17 +30,18 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
-public class H2DatabaseAvailabilityTest {
+public class TestDatabaseAvailabilityTest {
 	
-	private final Log log = LogFactory.getLog(H2DatabaseAvailabilityTest.class);
+	private final Log log = LogFactory.getLog(TestDatabaseAvailabilityTest.class);
 	
 	private Connection connection;
 	
 	@Before
 	public void setUp() throws Exception {
-		connection = DatabaseUtils.getInstance().getH2Connection(true);
+		connection = DatabaseUtils.getInstance().getTestDatabaseConnection(true);
 		//dumpTableList();
 	}
 	
@@ -71,6 +73,13 @@ public class H2DatabaseAvailabilityTest {
 		assertTrue(resultSet.next());
 	}
 
+	@Test
+	@Ignore // because it takes awhile for the database to load up
+	public void testFoodmartAvailable() throws Exception {
+		// verify that we can load up the hsqldb with foodmart in it
+		DriverManager.getConnection("jdbc:hsqldb:res:foodmart");
+	}
+	
 	private void dumpTableList() throws SQLException {
 		DatabaseMetaData dbmd = connection.getMetaData();
 		ResultSet rs = dbmd.getTables(null, null, "%", null);

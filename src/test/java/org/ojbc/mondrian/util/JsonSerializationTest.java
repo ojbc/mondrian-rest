@@ -17,13 +17,11 @@
 package org.ojbc.mondrian.util;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.ojbc.mondrian.CellSetWrapper;
 import org.olap4j.CellSet;
@@ -36,18 +34,15 @@ public class JsonSerializationTest {
 	
 	private final Log log = LogFactory.getLog(JsonSerializationTest.class);
 	
-	private Connection h2Connection;
 	private Connection jdbcConnection;
 	
 	@Before
 	public void setUp() throws Exception {
-		h2Connection = DatabaseUtils.getInstance().getH2Connection(true);
 		jdbcConnection = DatabaseUtils.getInstance().getOlap4jConnection();
 	}
 	
 	@After
 	public void tearDown() throws Exception {
-		h2Connection.close();
 		jdbcConnection.close();
 	}
 	
@@ -65,11 +60,4 @@ public class JsonSerializationTest {
 		
 	}
 	
-	@Test
-	@Ignore
-	public void testHsqldb() throws Exception {
-		// demo to verify that we can load up the hsqldb with foodmart in it
-		Connection connection = DriverManager.getConnection("jdbc:hsqldb:res:foodmart");
-	}
-
 }
