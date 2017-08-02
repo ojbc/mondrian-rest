@@ -1,0 +1,97 @@
+<!--
+
+    Unless explicitly acquired and licensed from Licensor under another license, the contents of
+    this file are subject to the Reciprocal Public License ("RPL") Version 1.5, or subsequent
+    versions as allowed by the RPL, and You may not copy or use this file in either source code
+    or executable form, except in compliance with the terms and conditions of the RPL
+
+    All software distributed under the RPL is provided strictly on an "AS IS" basis, WITHOUT
+    WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, AND LICENSOR HEREBY DISCLAIMS ALL SUCH
+    WARRANTIES, INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+    PARTICULAR PURPOSE, QUIET ENJOYMENT, OR NON-INFRINGEMENT. See the RPL for specific language
+    governing rights and limitations under the RPL.
+
+    http://opensource.org/licenses/RPL-1.5
+
+    Copyright 2012-2017 Open Justice Broker Consortium
+
+-->
+<Schema name='Test' metamodelVersion='4.0'>
+
+	<PhysicalSchema>
+		<Table name="F1"/>
+		<Table name="F2"/>
+		<Table name="F3"/>
+		<Table name="D1"/>
+		<Table name="D2"/>
+	</PhysicalSchema>
+	
+	<Dimension name='D1' table='D1' key='D1_ID'>
+        <Attributes>
+            <Attribute name='D1_ID' keyColumn='D1_ID' hasHierarchy='false'/>
+            <Attribute name='D1_DESCRIPTION' keyColumn='D1_DESCRIPTION' hasHierarchy='false' orderByColumn="D1_ID"/>
+        </Attributes>
+        <Hierarchies>
+            <Hierarchy name='D1' allMemberName='All'>
+                <Level attribute='D1_DESCRIPTION'/>
+            </Hierarchy>
+        </Hierarchies>
+    </Dimension>
+    
+	<Dimension name='D2' table='D2' key='D2_ID'>
+        <Attributes>
+            <Attribute name='D2_ID' keyColumn='D2_ID' hasHierarchy='false'/>
+            <Attribute name='D2_DESCRIPTION' keyColumn='D2_DESCRIPTION' hasHierarchy='false' orderByColumn="D2_ID"/>
+        </Attributes>
+        <Hierarchies>
+            <Hierarchy name='D2' allMemberName='All'>
+                <Level attribute='D2_DESCRIPTION'/>
+            </Hierarchy>
+        </Hierarchies>
+    </Dimension>
+    
+    <Cube name="Test">
+    
+    	<Dimensions>
+    		<Dimension source="D1"/>
+    		<Dimension source="D2"/>
+    	</Dimensions>
+    	
+    	<MeasureGroups>
+    		<MeasureGroup name="F1" table="F1">
+    			<Measures>
+    				<Measure name='F1_M1' column='F1_ID' aggregator='distinct-count'/>
+    			</Measures>
+    			<DimensionLinks>
+                    <ForeignKeyLink dimension='D1' foreignKeyColumn='D1_ID'/>
+                    <NoLink dimension='D2'/>
+                </DimensionLinks>
+    		</MeasureGroup>
+    		<MeasureGroup name="F2" table="F2">
+    			<Measures>
+    				<Measure name='F2_M1' column='F2_ID' aggregator='distinct-count'/>
+    			</Measures>
+    			<DimensionLinks>
+                    <ForeignKeyLink dimension='D2' foreignKeyColumn='D2_ID'/>
+                    <NoLink dimension='D1'/>
+                </DimensionLinks>
+    		</MeasureGroup>
+    		<MeasureGroup name="F3" table="F3">
+    			<Measures>
+    				<Measure name='F3_M1' column='F3_ID' aggregator='distinct-count'/>
+    				<Measure name='F3_M2' column='F3_VALUE' aggregator='avg'/>
+    			</Measures>
+    			<DimensionLinks>
+                    <ForeignKeyLink dimension='D1' foreignKeyColumn='D1_ID'/>
+                    <ForeignKeyLink dimension='D2' foreignKeyColumn='D2_ID'/>
+                </DimensionLinks>
+    		</MeasureGroup>
+    	</MeasureGroups>
+    	
+    	<CalculatedMembers>
+			<CalculatedMember name="F3_M3" dimension="Measures" formula="[Measures].[F3_M2] / 0"/>
+    	</CalculatedMembers>
+    	
+    </Cube>
+
+</Schema>
