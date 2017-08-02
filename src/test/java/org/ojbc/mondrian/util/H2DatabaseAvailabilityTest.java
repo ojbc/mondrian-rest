@@ -31,9 +31,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class FoodMartAvailabilityTest {
+public class H2DatabaseAvailabilityTest {
 	
-	private final Log log = LogFactory.getLog(FoodMartAvailabilityTest.class);
+	private final Log log = LogFactory.getLog(H2DatabaseAvailabilityTest.class);
 	
 	private Connection connection;
 	
