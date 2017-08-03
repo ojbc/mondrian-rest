@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -74,10 +75,44 @@ public class TestDatabaseAvailabilityTest {
 	}
 
 	@Test
-	@Ignore // because it takes awhile for the database to load up
+	// @Ignore // because it takes awhile for the database to load up
 	public void testFoodmartAvailable() throws Exception {
 		// verify that we can load up the hsqldb with foodmart in it
-		DriverManager.getConnection("jdbc:hsqldb:res:foodmart");
+		Connection conn = DriverManager.getConnection("jdbc:hsqldb:res:foodmart;set schema \"foodmart\"", "FOODMART", "FOODMART");
+		
+		Statement s = conn.createStatement();
+		//s.execute("");
+
+		DatabaseMetaData dbmd = conn.getMetaData();
+		ResultSet catalogs = dbmd.getCatalogs();
+		ResultSetMetaData rsmd = catalogs.getMetaData();
+		int columnCount = rsmd.getColumnCount();
+		log.info("catalogs column count=" + columnCount);
+		for (int i=1;i <= columnCount;i++) {
+			log.info(rsmd.getColumnName(i) + ", " + rsmd.getSchemaName(i) + ", " + rsmd.getTableName(i));
+		}
+		while (catalogs.next()) {
+			log.info(catalogs.getString(1));
+		}
+		ResultSet schemas = dbmd.getSchemas();
+		rsmd = schemas.getMetaData();
+		columnCount = rsmd.getColumnCount();
+		log.info("schemas column count=" + columnCount);
+		for (int i=1;i <= columnCount;i++) {
+			log.info(rsmd.getColumnName(i) + ", " + rsmd.getSchemaName(i) + ", " + rsmd.getTableName(i));
+		}
+		while (schemas.next()) {
+			log.info(schemas.getString(1) + ", " + schemas.getString(2) + ", " + schemas.getObject(3));
+		}
+		ResultSet foodmartTables = dbmd.getTables("PUBLIC", "foodmart", null, null);
+		while (foodmartTables.next()) {
+			log.info(foodmartTables.getString(3));
+		}
+		
+		log.info(dbmd.getUserName());
+		
+		ResultSet resultSet = s.executeQuery("select \"employee_id\" from \"employee\"");
+		
 	}
 	
 	private void dumpTableList() throws SQLException {
