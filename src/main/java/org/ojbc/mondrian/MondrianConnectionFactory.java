@@ -27,7 +27,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class MondrianConnectionFactory {
+/**
+ * A factory object that creates olap4j connection objects from json specifications that it finds on the classpath.  Connections are instantiated lazily...that is, no
+ * actual connection is made to the underlying relational database until getOlap4jConnection() is called.
+ *
+ */
+public final class MondrianConnectionFactory {
 	
 	private final Log log = LogFactory.getLog(MondrianConnectionFactory.class);
 	
@@ -43,7 +48,7 @@ public class MondrianConnectionFactory {
 	}
 	
 	@JsonIgnoreProperties(ignoreUnknown = true)
-	static final class MondrianConnection {
+	public static final class MondrianConnection {
 		
 		private final Log log = LogFactory.getLog(MondrianConnection.class);
 		
@@ -89,7 +94,7 @@ public class MondrianConnectionFactory {
 			return jdbcPassword;
 		}
 		
-		public void setRawMondrianSchemaPath(String path) {
+		void setRawMondrianSchemaPath(String path) {
 			if (path != null) {
 				catalogUrl = MondrianConnection.class.getResource(path);
 				if (catalogUrl == null) {
@@ -112,11 +117,20 @@ public class MondrianConnectionFactory {
 			rawMondrianSchemaPath = path;
 		}
 
-		public java.sql.Connection getOlap4jConnection() throws SQLException, ClassNotFoundException {
+		/**
+		 * Get the olap4j connection for the parameters represented by this MondrianConnection
+		 * @return the connection object
+		 * @throws SQLException if something goes wrong with the underlying connection to the relational database
+		 */
+		public java.sql.Connection getOlap4jConnection() throws SQLException {
 
-			Class.forName("mondrian.olap4j.MondrianOlap4jDriver");
-			String url = "jdbc:mondrian:";
-
+			try {
+				Class.forName("mondrian.olap4j.MondrianOlap4jDriver");
+			} catch (ClassNotFoundException e) {
+				log.error("Mondrian olap4j driver class not found.  Mondrian appears to be missing or improperly installed.");
+				throw new RuntimeException(e);
+			}
+			
 			Properties props = new Properties();
 			setPropertyValue(props, "Jdbc", jdbcConnectionString);
 			setPropertyValue(props, "JdbcDrivers", jdbcDrivers);
@@ -124,11 +138,11 @@ public class MondrianConnectionFactory {
 			setPropertyValue(props, "JdbcUser", jdbcUser);
 			setPropertyValue(props, "JdbcPassword", jdbcPassword);
 
-			return DriverManager.getConnection(url, props);
+			return DriverManager.getConnection("jdbc:mondrian:", props);
 
 		}
 		
-		public boolean validate() {
+		boolean validate() {
 			boolean ret = true;
 			if (jdbcConnectionString == null) {
 				log.warn("JDBC Connection String (specified by json property \"Jdbc\") is null");
@@ -161,7 +175,11 @@ public class MondrianConnectionFactory {
 	private List<MondrianConnectionCollection> connectionCollections = new ArrayList<>();
 	private Map<String, MondrianConnection> connections = new HashMap<>();
 	
-	public void init() throws Exception {
+	/**
+	 * Initialize the factory by scanning the classpath for resources matching the pattern *mondrian-connections.json.
+	 * @throws IOException if something goes wrong scanning the classpath or reading resources
+	 */
+	public void init() throws IOException  {
 		
 		ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
 		Resource[] resources = resolver.getResources("classpath*:*mondrian-connections.json");
@@ -213,6 +231,11 @@ public class MondrianConnectionFactory {
 		return Collections.unmodifiableList(connectionCollections);
 	}
 	
+	/**
+	 * Get the collection of available Mondrian Connection objects in this factory.  The key in the map is the name of the connection, as specified in the .json.  The value
+	 * in the map is the connection object.
+	 * @return the map of connections
+	 */
 	public Map<String, MondrianConnection> getConnections() {
 		return Collections.unmodifiableMap(connections);
 	}

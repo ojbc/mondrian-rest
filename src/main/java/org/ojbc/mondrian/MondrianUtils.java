@@ -21,8 +21,17 @@ import java.util.List;
 import org.olap4j.Position;
 import org.olap4j.metadata.Member;
 
+/**
+ * Class of assorted utility methods for dealing with the Mondrian object model.
+ *
+ */
 public class MondrianUtils {
 	
+	/**
+	 * Get a string representation of the members within a position, suitable for debug trace etc.
+	 * @param position the position to print
+	 * @return a string containing the members of the position
+	 */
 	public static final String getMembersString(Position position) {
 		List<Member> members = position.getMembers();
 		StringBuffer sb = new StringBuffer();

@@ -23,6 +23,10 @@ import java.util.List;
 import org.olap4j.Position;
 import org.olap4j.metadata.Member;
 
+/**
+ * A wrapper around Mondrian Position objects, suitable for serialization via json.
+ *
+ */
 public class PositionWrapper {
 	
 	private List<String> memberDimensionNames;

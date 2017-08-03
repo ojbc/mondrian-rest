@@ -25,6 +25,10 @@ import org.olap4j.Position;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * A wrapper around Mondrian Axis objects, suitable for serialization via json.
+ *
+ */
 public class AxisWrapper {
 	
 	private List<PositionWrapper> positionWrappers;
@@ -33,7 +37,6 @@ public class AxisWrapper {
 	private String name;
 	
 	AxisWrapper() {
-		
 	}
 	
 	public AxisWrapper(CellSetAxis axis) {

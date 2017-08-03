@@ -22,6 +22,10 @@ import java.util.List;
 import org.olap4j.Cell;
 import org.olap4j.OlapException;
 
+/**
+ * A wrapper around Mondrian Cell objects, suitable for serialization via json.
+ *
+ */
 public class CellWrapper {
 	
 	private String formattedValue;

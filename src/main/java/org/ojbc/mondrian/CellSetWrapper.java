@@ -26,6 +26,10 @@ import org.olap4j.Position;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * A wrapper around Mondrian CellSet objects, suitable for serialization via json.
+ *
+ */
 public class CellSetWrapper {
 	
 	@JsonProperty("cells")
