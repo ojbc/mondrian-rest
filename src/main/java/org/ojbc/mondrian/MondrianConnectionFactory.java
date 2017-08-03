@@ -22,8 +22,12 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -48,6 +52,7 @@ public final class MondrianConnectionFactory {
 	}
 	
 	@JsonIgnoreProperties(ignoreUnknown = true)
+	@JsonInclude(Include.NON_NULL)
 	public static final class MondrianConnection {
 		
 		private final Log log = LogFactory.getLog(MondrianConnection.class);
@@ -56,19 +61,17 @@ public final class MondrianConnectionFactory {
 		private String jdbcDrivers;
 		@JsonProperty("Jdbc")
 		private String jdbcConnectionString;
-		@JsonProperty("JdbcUser")
 		private String jdbcUser;
-		@JsonProperty("JdbcPassword")
 		private String jdbcPassword;
 		@JsonProperty("Description")
 		private String description;
-		@JsonProperty("Catalog")
-		private String rawMondrianSchemaPath;
+		private String catalog;
 		private String resolvedMondrianSchemaURL;
 		private URL catalogUrl;
 		private String catalogContent;
 		private String sourceResourcePath;
 		
+		@JsonProperty(value="ConnectionDefinitionSource")
 		public String getSourceResourcePath() {
 			return sourceResourcePath;
 		}
@@ -78,23 +81,49 @@ public final class MondrianConnectionFactory {
 		public String getJdbcConnectionString() {
 			return jdbcConnectionString;
 		}
-		public String getRawMondrianSchemaPath() {
-			return rawMondrianSchemaPath;
-		}
+		@JsonIgnore
 		public String getResolvedMondrianSchemaURL() {
 			return resolvedMondrianSchemaURL;
+		}
+		@JsonProperty(value="MondrianSchemaUrl")
+		public String getMondrianSchemaUrl() {
+			return getResolvedMondrianSchemaURL();
+		}
+		@JsonProperty(value="MondrianSchemaUrl")
+		@JsonIgnore
+		void setMondrianSchemaUrl(String value) {
+			resolvedMondrianSchemaURL=value;
 		}
 		public String getDescription() {
 			return description;
 		}
+		@JsonIgnore
 		public String getJdbcUser() {
 			return jdbcUser;
 		}
+		@JsonProperty(value="JdbcUser")
+		void setJdbcUser(String value) {
+			jdbcUser=value;
+		}
+		@JsonIgnore
 		public String getJdbcPassword() {
 			return jdbcPassword;
 		}
+		@JsonProperty(value="JdbcPassword")
+		void setJdbcPassword(String value) {
+			jdbcPassword=value;
+		}
+		@JsonProperty(value="MondrianSchemaContent")
+		public String getMondrianSchemaContent() {
+			return catalogContent;
+		}
+		@JsonIgnore
+		public String getCatalog() {
+			return catalog;
+		}
 		
-		void setRawMondrianSchemaPath(String path) {
+		@JsonProperty(value="Catalog")
+		void setCatalog(String path) {
 			if (path != null) {
 				catalogUrl = MondrianConnection.class.getResource(path);
 				if (catalogUrl == null) {
@@ -114,7 +143,7 @@ public final class MondrianConnectionFactory {
 					}
 				}
 			}
-			rawMondrianSchemaPath = path;
+			catalog = path;
 		}
 
 		/**
@@ -122,6 +151,7 @@ public final class MondrianConnectionFactory {
 		 * @return the connection object
 		 * @throws SQLException if something goes wrong with the underlying connection to the relational database
 		 */
+		@JsonIgnore
 		public java.sql.Connection getOlap4jConnection() throws SQLException {
 
 			try {
@@ -152,7 +182,7 @@ public final class MondrianConnectionFactory {
 				log.warn("JDBC Driver (specified by json property \"JdbcDrivers\") is null");
 				ret = false;
 			}
-			if (rawMondrianSchemaPath == null) {
+			if (catalog == null) {
 				log.warn("Mondrian Schema/Catalog (specified by json property \"Catalog\") is null");
 				ret = false;
 			}

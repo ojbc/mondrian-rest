@@ -18,6 +18,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class MondrianConnectionFactoryTest {
 	
 	private final Log log = LogFactory.getLog(MondrianConnectionFactoryTest.class);
@@ -67,6 +69,15 @@ public class MondrianConnectionFactoryTest {
 		
 		// expect no exception here...
 		testConnection.getOlap4jConnection();
+		
+	}
+	
+	@Test
+	public void testJsonSerialization() throws Exception {
+		
+		Map<String, MondrianConnectionFactory.MondrianConnection> connections = factory.getConnections();
+		String json = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(connections);
+		//log.info(json);
 		
 	}
 	
