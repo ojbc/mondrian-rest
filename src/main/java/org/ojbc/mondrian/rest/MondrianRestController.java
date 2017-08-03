@@ -80,7 +80,7 @@ public class MondrianRestController {
 		
 		MondrianConnectionFactory.MondrianConnection connection = connectionFactory.getConnections().get(connectionName);
 		if (connection == null) {
-			log.warn("Query submitted for connection that does not exist: " + connectionName);
+			log.warn("Attempt to retrieve schema for connection that does not exist: " + connectionName);
 			status = HttpStatus.NOT_FOUND;
 		} else {
 			log.info("Retrieving schema content for connection " + connectionName);
