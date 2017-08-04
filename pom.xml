@@ -24,6 +24,7 @@
 	<artifactId>mondrian-rest</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Mondrian REST API Implementation</name>
+	<packaging>war</packaging>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -153,6 +154,7 @@
 					<packagingExcludes>WEB-INF/lib/geronimo-servlet_2.5_spec-1.1.2.jar</packagingExcludes>
 					<filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
 					<failOnMissingWebXml>false</failOnMissingWebXml>
+					<warName>mondrian-rest</warName>
 				</configuration>
 			</plugin>
 		</plugins>
