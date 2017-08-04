@@ -181,13 +181,62 @@ $:
 
 #### Building from source
 
-If you don't want to run the API from Docker, you can build it with Maven, which will generate a WAR file.  Just drop that WAR file into your favorite J2EE servlet container.
-
-The Maven build is not currently set up to be able to run the application from an executable jar; fixing this is on the to-do list.
-
-To build with Maven, just go into the root directory (where the .pom is) and run:
+To build the application with Maven, just go into the root directory (where the pom.xml is) and run:
 
 `mvn install`
 
-It will produce a `mondrian-rest.war` file in the `target` directory.
+It will produce files `mondrian-rest.war` and `mondrian-rest-executable.war` in the `target` directory.
+
+If you don't want to run the API from Docker, just drop `mondrian-rest.war` into your favorite J2EE servlet container (e.g., Tomcat's `webapps` directory).
+
+You can also run the web application as a Spring Boot standalone application, with embedded Tomcat.  From the root directory (where pom.xml is), run `mondrian-rest-executable.war` like this:
+
+```
+$: java -jar target/mondrian-rest-executable.war
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::        (v1.5.6.RELEASE)
+
+[      main] org.ojbc.mondrian.rest.Application       INFO  Starting Application v0.0.1-SNAPSHOT on Scotts-MacBook-Pro.local with PID 85195 (/Users/scott/git-repos/ojbc/mondrian-rest/target/mondrian-rest-executable.war started by scott in /Users/scott/git-repos/ojbc/mondrian-rest)
+[      main] org.ojbc.mondrian.rest.Application       INFO  No active profile set, falling back to default profiles: default
+[      main] ationConfigEmbeddedWebApplicationContext INFO  Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@5fa7e7ff: startup date [Fri Aug 04 16:55:10 PDT 2017]; root of context hierarchy
+[nd-preinit] ibernate.validator.internal.util.Version INFO  HV000001: Hibernate Validator 5.3.5.Final
+[      main] ed.tomcat.TomcatEmbeddedServletContainer INFO  Tomcat initialized with port(s): 8080 (http)
+[      main] org.apache.catalina.core.StandardService INFO  Starting service [Tomcat]
+[      main] org.apache.catalina.core.StandardEngine  INFO  Starting Servlet Engine: Apache Tomcat/8.5.16
+[tartStop-1] org.apache.jasper.servlet.TldScanner     INFO  At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
+[tartStop-1] e.ContainerBase.[Tomcat].[localhost].[/] INFO  Initializing Spring embedded WebApplicationContext
+[tartStop-1] pringframework.web.context.ContextLoader INFO  Root WebApplicationContext: initialization completed in 2785 ms
+[tartStop-1] boot.web.servlet.ServletRegistrationBean INFO  Mapping servlet: 'dispatcherServlet' to [/]
+[tartStop-1] .boot.web.servlet.FilterRegistrationBean INFO  Mapping filter: 'characterEncodingFilter' to: [/*]
+[tartStop-1] .boot.web.servlet.FilterRegistrationBean INFO  Mapping filter: 'hiddenHttpMethodFilter' to: [/*]
+[tartStop-1] .boot.web.servlet.FilterRegistrationBean INFO  Mapping filter: 'httpPutFormContentFilter' to: [/*]
+[tartStop-1] .boot.web.servlet.FilterRegistrationBean INFO  Mapping filter: 'requestContextFilter' to: [/*]
+[      main] .ojbc.mondrian.MondrianConnectionFactory INFO  Processing connection definition json found at jar:file:/Users/scott/git-repos/ojbc/mondrian-rest/target/mondrian-rest-executable.war!/WEB-INF/classes/mondrian-connections.json
+[      main] .ojbc.mondrian.MondrianConnectionFactory INFO  Adding valid connection test: connection string=jdbc:hsqldb:res:test, Mondrian schema path=jar:file:/Users/scott/git-repos/ojbc/mondrian-rest/target/mondrian-rest-executable.war!/WEB-INF/classes!/test.xml
+[      main] .ojbc.mondrian.MondrianConnectionFactory INFO  Adding valid connection foodmart: connection string=jdbc:hsqldb:res:foodmart;set schema "foodmart", Mondrian schema path=https://raw.githubusercontent.com/pentaho/mondrian/lagunitas/demo/FoodMart.mondrian.xml
+[      main] .annotation.RequestMappingHandlerAdapter INFO  Looking for @ControllerAdvice: org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@5fa7e7ff: startup date [Fri Aug 04 16:55:10 PDT 2017]; root of context hierarchy
+[      main] .annotation.RequestMappingHandlerMapping INFO  Mapped "{[/query],methods=[POST],consumes=[application/json],produces=[application/json]}" onto public org.springframework.http.ResponseEntity<java.lang.String> org.ojbc.mondrian.rest.MondrianRestController.query(org.ojbc.mondrian.rest.QueryRequest) throws java.lang.Exception
+[      main] .annotation.RequestMappingHandlerMapping INFO  Mapped "{[/getConnections],methods=[GET],produces=[application/json]}" onto public java.lang.String org.ojbc.mondrian.rest.MondrianRestController.getConnections() throws java.lang.Exception
+[      main] .annotation.RequestMappingHandlerMapping INFO  Mapped "{[/getSchema],methods=[GET],produces=[application/xml]}" onto public org.springframework.http.ResponseEntity<java.lang.String> org.ojbc.mondrian.rest.MondrianRestController.getSchema(java.lang.String) throws java.lang.Exception
+[      main] .annotation.RequestMappingHandlerMapping INFO  Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
+[      main] .annotation.RequestMappingHandlerMapping INFO  Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
+[      main] .servlet.handler.SimpleUrlHandlerMapping INFO  Mapped URL path [/webjars/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+[      main] .servlet.handler.SimpleUrlHandlerMapping INFO  Mapped URL path [/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+[      main] .servlet.handler.SimpleUrlHandlerMapping INFO  Mapped URL path [/**/favicon.ico] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+[      main] xport.annotation.AnnotationMBeanExporter INFO  Registering beans for JMX exposure on startup
+[      main] g.apache.coyote.http11.Http11NioProtocol INFO  Initializing ProtocolHandler ["http-nio-8080"]
+[      main] g.apache.coyote.http11.Http11NioProtocol INFO  Starting ProtocolHandler ["http-nio-8080"]
+[      main] g.apache.tomcat.util.net.NioSelectorPool INFO  Using a shared selector for servlet write/read
+[      main] ed.tomcat.TomcatEmbeddedServletContainer INFO  Tomcat started on port(s): 8080 (http)
+[      main] org.ojbc.mondrian.rest.Application       INFO  Started Application in 5.02 seconds (JVM running for 5.613)
+```
+
+Then the API will be available at http://localhost:8080/...
+
 

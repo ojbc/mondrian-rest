@@ -218,7 +218,14 @@ public final class MondrianConnectionFactory {
 		TypeReference<Map<String, MondrianConnection>> typeRef = new TypeReference<Map<String, MondrianConnection>>() {};
 		
 		for (Resource resource : resources) {
-			String resourceSourcePath = resource.getFile().getCanonicalPath();
+			String resourceSourcePath = null;
+			String url = resource.getURL().toExternalForm();
+			if (url.contains("/WEB-INF/classes!/")) {
+				resourceSourcePath = url.replace("/WEB-INF/classes!/", "/WEB-INF/classes/");
+				log.info("Working around Spring Boot / Tomcat bug that occurs in standalone mode, to adjust file path found via PathMatchingResourcePatternResolver");
+			} else {
+				resourceSourcePath = resource.getFile().getCanonicalPath();
+			}
 			log.info("Processing connection definition json found at " + resourceSourcePath);
 			Map<String, MondrianConnection> connections = mapper.readValue(resource.getInputStream(), typeRef);
 			Set<String> invalidConnections = new HashSet<>();
@@ -237,7 +244,7 @@ public final class MondrianConnectionFactory {
 			}
 			MondrianConnectionCollection collection = new MondrianConnectionCollection();
 			collection.connections = connections;
-			collection.sourceFilePath = resource.getFile().getCanonicalPath();
+			collection.sourceFilePath = resourceSourcePath;
 			connectionCollections.add(collection);
 		}
 		
