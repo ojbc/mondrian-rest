@@ -24,6 +24,7 @@ public class QueryRequest {
 	
 	private String connectionName;
 	private String query;
+	private boolean tidy;
 	
 	public String getConnectionName() {
 		return connectionName;
@@ -36,6 +37,12 @@ public class QueryRequest {
 	}
 	public void setQuery(String query) {
 		this.query = query;
+	}
+	public boolean isTidy() {
+		return tidy;
+	}
+	public void setTidy(boolean tidy) {
+		this.tidy = tidy;
 	}
 
 }

@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ojbc.mondrian.CellSetWrapper;
 import org.ojbc.mondrian.MondrianConnectionFactory;
+import org.ojbc.mondrian.TidyCellSet;
 import org.olap4j.CellSet;
 import org.olap4j.OlapConnection;
 import org.olap4j.OlapException;
@@ -105,6 +106,7 @@ public class MondrianRestController {
 		HttpStatus status = HttpStatus.OK;
 		
 		String connectionName = queryRequest.getConnectionName();
+		boolean tidy = queryRequest.isTidy();
 		MondrianConnectionFactory.MondrianConnection connection = connectionFactory.getConnections().get(connectionName);
 		
 		if (connection == null) {
@@ -114,12 +116,19 @@ public class MondrianRestController {
 			OlapConnection olapConnection = connection.getOlap4jConnection().unwrap(OlapConnection.class);
 			OlapStatement statement = olapConnection.createStatement();
 			String query = queryRequest.getQuery();
-			log.info("Executing query on connection " + connectionName + ": " + query);
+			log.info("Executing query on connection " + connectionName + " with tidy=" + tidy + ": " + query);
 			ObjectMapper mapper = new ObjectMapper();
 			try {
 				CellSet cellSet = statement.executeOlapQuery(query);
-				CellSetWrapper w = new CellSetWrapper(cellSet);
-				body = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(w);
+				Object output = null;
+				if (tidy) {
+					TidyCellSet tcc = new TidyCellSet();
+					tcc.init(cellSet);
+					output = tcc.getRows();
+				} else {
+					output = new CellSetWrapper(cellSet);
+				}
+				body = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(output);
 			} catch (OlapException oe) {
 				log.warn("OlapException occurred processing query.  Stack trace follows.");
 				oe.printStackTrace();

@@ -16,8 +16,12 @@
  */
 package org.ojbc.mondrian;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.olap4j.Position;
 import org.olap4j.metadata.Member;
 
@@ -26,6 +30,8 @@ import org.olap4j.metadata.Member;
  *
  */
 public class MondrianUtils {
+	
+	private static final Log log = LogFactory.getLog(MondrianUtils.class);
 	
 	/**
 	 * Get a string representation of the members within a position, suitable for debug trace etc.
@@ -42,6 +48,29 @@ public class MondrianUtils {
 		String sbs = sb.toString().substring(0, sb.length()-1);
 		StringBuffer ret = new StringBuffer(sbs).append("*");
 		return ret.toString();
+	}
+	
+	public static final <T> List<List<T>> permuteLists(List<List<T>> lists) {
+		List<List<T>> ret = new ArrayList<>();
+		permuteLists(ret, new ArrayList<T>(), lists);
+		return ret;
+	}
+	
+	private static final <T> void permuteLists(List<List<T>> accum, List<T> current, List<List<T>> lists) {
+
+		List<T> currentInputList = lists.get(current.size());
+
+		for (T element : currentInputList) {
+			List<T> copy = new ArrayList<>();
+			copy.addAll(current);
+			copy.add(element);
+			if (copy.size() < lists.size()) {
+				permuteLists(accum, copy, lists);
+			} else {
+				accum.add(copy);
+			}
+		}
+
 	}
 
 }

@@ -42,9 +42,11 @@
         <Attributes>
             <Attribute name='D2_ID' keyColumn='D2_ID' hasHierarchy='false'/>
             <Attribute name='D2_DESCRIPTION' keyColumn='D2_DESCRIPTION' hasHierarchy='false' orderByColumn="D2_ID"/>
+            <Attribute name='D2_ROLLUP' keyColumn='D2_ROLLUP' hasHierarchy='false' orderByColumn="D2_ID"/>
         </Attributes>
         <Hierarchies>
             <Hierarchy name='D2' allMemberName='All'>
+                <Level attribute='D2_ROLLUP'/>
                 <Level attribute='D2_DESCRIPTION'/>
             </Hierarchy>
         </Hierarchies>

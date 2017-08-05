@@ -27,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.ojbc.mondrian.TidyCellSet;
 import org.olap4j.Axis;
 import org.olap4j.Cell;
 import org.olap4j.CellSet;
@@ -34,7 +35,10 @@ import org.olap4j.CellSetAxis;
 import org.olap4j.OlapConnection;
 import org.olap4j.OlapStatement;
 import org.olap4j.Position;
+import org.olap4j.metadata.Level;
 import org.olap4j.metadata.Member;
+import org.olap4j.metadata.Member.Type;
+import org.olap4j.metadata.NamedList;
 
 public class BasicOlap4jQueryTest {
 	
@@ -92,6 +96,14 @@ public class BasicOlap4jQueryTest {
 		
 		assertEquals(2, nRows);
 		assertEquals(3, nCols);
+		
+		for (Position p : columnPositions) {
+			List<Member> members = p.getMembers();
+			for (Member m : members) {
+				log.info(m.getName());
+				log.info(m.getHierarchy().getUniqueName());
+			}
+		}
 		
 		// no need to repeat all the assertions in the other tests
 		

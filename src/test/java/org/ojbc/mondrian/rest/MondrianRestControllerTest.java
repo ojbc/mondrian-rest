@@ -24,6 +24,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -35,6 +36,7 @@ import javax.xml.xpath.XPathFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
@@ -165,8 +167,35 @@ public class MondrianRestControllerTest {
 		
 	}
 
+	@Test
+	public void testTidy() throws IOException, ClientProtocolException {
+		
+		ObjectMapper mapper = new ObjectMapper();
+		
+		HttpPost postRequest = new HttpPost("http://localhost:8080/query");
+		StringEntity requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test", true);
+		postRequest.setEntity(requestEntity);
+		HttpResponse response = httpClient.execute(postRequest);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		String content = getBodyContent(response);
+		log.info(content);
+		
+		TypeReference<List<Map<String, Object>>> typeRef = new TypeReference<List<Map<String, Object>>>() {};
+		List<Map<String, Object>> rows = mapper.readValue(content, typeRef);
+		assertEquals(1, rows.size());
+		Map<String, Object> row1 = rows.get(0);
+		assertEquals("F1_M1", row1.get("[Measures].[MeasuresLevel]"));
+		assertEquals(3.0, row1.get("CellValue"));
+		
+	}
+	
 	private StringEntity buildQueryRequestEntity(String connectionName, String queryString) {
 		return new StringEntity("{ \"connectionName\" : \"" + connectionName + "\", \"query\" : \"" + queryString + "\"}", ContentType.APPLICATION_JSON);
+	}
+
+	private StringEntity buildQueryRequestEntity(String connectionName, String queryString, boolean tidy) {
+		return new StringEntity("{ \"connectionName\" : \"" + connectionName + "\", \"query\" : \"" + queryString + "\", \"tidy\" : " + tidy + "}", ContentType.APPLICATION_JSON);
 	}
 
 	private String getBodyContent(HttpResponse response) throws IOException {

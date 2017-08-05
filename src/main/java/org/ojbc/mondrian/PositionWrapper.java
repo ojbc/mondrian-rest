@@ -32,6 +32,7 @@ public class PositionWrapper {
 	private List<String> memberDimensionNames;
 	private List<String> memberDimensionCaptions;
 	private List<String> memberDimensionValues;
+	private List<String> memberLevelNames;
 	
 	PositionWrapper() {
 		
@@ -42,11 +43,13 @@ public class PositionWrapper {
 		memberDimensionNames = new ArrayList<>();
 		memberDimensionCaptions = new ArrayList<>();
 		memberDimensionValues = new ArrayList<>();
+		memberLevelNames = new ArrayList<>();
 		
 		for (Member member : position.getMembers()) {
 			memberDimensionNames.add(member.getDimension().getName());
 			memberDimensionCaptions.add(member.getDimension().getCaption());
 			memberDimensionValues.add(member.getName());
+			memberLevelNames.add(member.getLevel().getUniqueName());
 		}
 		
 	}
@@ -63,6 +66,10 @@ public class PositionWrapper {
 		return Collections.unmodifiableList(memberDimensionValues);
 	}
 
+	public List<String> getMemberLevelNames() {
+		return Collections.unmodifiableList(memberLevelNames);
+	}
+
 	void setMemberDimensionNames(List<String> memberDimensionNames) {
 		this.memberDimensionNames = memberDimensionNames;
 	}
@@ -75,6 +82,10 @@ public class PositionWrapper {
 		this.memberDimensionValues = memberDimensionValues;
 	}
 
+	void setMemberLevelNames(List<String> memberLevelNames) {
+		this.memberLevelNames = memberLevelNames;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -82,6 +93,7 @@ public class PositionWrapper {
 		result = prime * result + ((memberDimensionCaptions == null) ? 0 : memberDimensionCaptions.hashCode());
 		result = prime * result + ((memberDimensionNames == null) ? 0 : memberDimensionNames.hashCode());
 		result = prime * result + ((memberDimensionValues == null) ? 0 : memberDimensionValues.hashCode());
+		result = prime * result + ((memberLevelNames == null) ? 0 : memberLevelNames.hashCode());
 		return result;
 	}
 
