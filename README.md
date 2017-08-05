@@ -179,6 +179,37 @@ $: curl -s -X POST -H 'Content-Type: application/json' http://localhost:58080/mo
 $:
 ```
 
+You can also include a boolean property, named `tidy`, in the query request.  This causes the service to return more "tabularized" data, suitable for loading into a data frame or using in a visualization tool like Vega-lite.  Example:
+
+```
+curl -s -X POST -H 'Content-Type: application/json' http://localhost:58080/mondrian-rest/query -d '{"connectionName" : "foodmart", "query" : "select { [Measures].[Units Shipped] } on columns, NON EMPTY [Store].[Store Type].members on rows from Warehouse", "tidy" : true }'
+[ {
+  "CellValue" : 207726.0,
+  "[Measures].[MeasuresLevel]" : "Units Shipped"
+}, {
+  "CellValue" : 64804.0,
+  "[Measures].[MeasuresLevel]" : "Units Shipped",
+  "[Store].[Store Type].[Store Type]" : "Deluxe Supermarket"
+}, {
+  "CellValue" : 10759.0,
+  "[Measures].[MeasuresLevel]" : "Units Shipped",
+  "[Store].[Store Type].[Store Type]" : "Gourmet Supermarket"
+}, {
+  "CellValue" : 10589.0,
+  "[Measures].[MeasuresLevel]" : "Units Shipped",
+  "[Store].[Store Type].[Store Type]" : "Mid-Size Grocery"
+}, {
+  "CellValue" : 5904.0,
+  "[Measures].[MeasuresLevel]" : "Units Shipped",
+  "[Store].[Store Type].[Store Type]" : "Small Grocery"
+}, {
+  "CellValue" : 115670.0,
+  "[Measures].[MeasuresLevel]" : "Units Shipped",
+  "[Store].[Store Type].[Store Type]" : "Supermarket"
+} ]
+$:
+```
+
 #### Building from source
 
 To build the application with Maven, just go into the root directory (where the pom.xml is) and run:
