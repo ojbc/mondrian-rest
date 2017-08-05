@@ -26,6 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.ojbc.mondrian.TidyCellSet;
 import org.olap4j.Axis;
@@ -54,6 +55,30 @@ public class BasicOlap4jQueryTest {
 	@After
 	public void tearDown() throws Exception {
 		jdbcConnection.close();
+	}
+	
+	@Test
+	@Ignore
+	public void testExpt() throws Exception {
+		// convenience test, ignored when doing builds, as a place to play around with MDX queries, do experiments, etc.
+		OlapConnection olapConnection = jdbcConnection.unwrap(OlapConnection.class);
+		OlapStatement statement = olapConnection.createStatement();
+		CellSet cellSet = statement.executeOlapQuery("select {[Measures].[F1_M1]} on columns, " +
+				" {[D1].[D1_DESCRIPTION].members as funk} on rows" +
+				" from Test");
+		List<CellSetAxis> axes = cellSet.getAxes();
+		CellSetAxis axis = axes.get(1);
+		for (Position p : axis.getPositions()) {
+			List<Member> members = p.getMembers();
+			for (Member m : members) {
+				log.info(m.getName());
+				log.info(m.getHierarchy().getUniqueName());
+				Level level = m.getLevel();
+				log.info(level.getName());
+				log.info(level.getUniqueName());
+				log.info(level.getCaption());
+			}
+		}
 	}
 	
 	@Test
@@ -96,14 +121,6 @@ public class BasicOlap4jQueryTest {
 		
 		assertEquals(2, nRows);
 		assertEquals(3, nCols);
-		
-		for (Position p : columnPositions) {
-			List<Member> members = p.getMembers();
-			for (Member m : members) {
-				log.info(m.getName());
-				log.info(m.getHierarchy().getUniqueName());
-			}
-		}
 		
 		// no need to repeat all the assertions in the other tests
 		

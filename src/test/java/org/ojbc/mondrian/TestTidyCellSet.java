@@ -52,7 +52,6 @@ public class TestTidyCellSet {
 		tidyCellSet.init(cellSet);
 		List<Map<String, Object>> rows = tidyCellSet.getRows();
 		assertEquals(6, rows.size());
-		log.info(rows);
 		assertEquals(1.0, rows.get(0).get("CellValue"));
 		assertEquals("M1", rows.get(0).get("[Measures].[MeasuresLevel]"));
 		assertEquals("D1_V1", rows.get(0).get("[D1].[D1].[D1_V1]"));
