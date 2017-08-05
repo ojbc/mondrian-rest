@@ -179,7 +179,6 @@ public class MondrianRestControllerTest {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
 		String content = getBodyContent(response);
-		log.info(content);
 		
 		TypeReference<List<Map<String, Object>>> typeRef = new TypeReference<List<Map<String, Object>>>() {};
 		List<Map<String, Object>> rows = mapper.readValue(content, typeRef);

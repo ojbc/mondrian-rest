@@ -64,7 +64,7 @@ public class BasicOlap4jQueryTest {
 		OlapConnection olapConnection = jdbcConnection.unwrap(OlapConnection.class);
 		OlapStatement statement = olapConnection.createStatement();
 		CellSet cellSet = statement.executeOlapQuery("select {[Measures].[F1_M1]} on columns, " +
-				" {[D1].[D1_DESCRIPTION].members as funk} on rows" +
+				" {[D1].[D1_DESCRIPTION].members as foo} on rows" +
 				" from Test");
 		List<CellSetAxis> axes = cellSet.getAxes();
 		CellSetAxis axis = axes.get(1);
