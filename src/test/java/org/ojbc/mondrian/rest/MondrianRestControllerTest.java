@@ -49,6 +49,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ojbc.mondrian.CellSetWrapper;
 import org.ojbc.mondrian.MondrianConnectionFactory.MondrianConnection;
+import org.ojbc.mondrian.TidyCellSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -180,8 +181,9 @@ public class MondrianRestControllerTest {
 		
 		String content = getBodyContent(response);
 		
-		TypeReference<List<Map<String, Object>>> typeRef = new TypeReference<List<Map<String, Object>>>() {};
-		List<Map<String, Object>> rows = mapper.readValue(content, typeRef);
+		TypeReference<TidyCellSet> typeRef = new TypeReference<TidyCellSet>() {};
+		TidyCellSet tidyCellSet = mapper.readValue(content, typeRef);
+		List<Map<String, Object>> rows = tidyCellSet.getValues();
 		assertEquals(1, rows.size());
 		Map<String, Object> row1 = rows.get(0);
 		assertEquals("F1_M1", row1.get("[Measures].[MeasuresLevel]"));
@@ -198,6 +200,7 @@ public class MondrianRestControllerTest {
 	}
 
 	private String getBodyContent(HttpResponse response) throws IOException {
+		
 		BufferedReader br = new BufferedReader(new InputStreamReader((response.getEntity().getContent())));
 		
 		StringBuffer contentBuffer = new StringBuffer();
@@ -207,8 +210,8 @@ public class MondrianRestControllerTest {
 			contentBuffer.append(output);
 		}
 		
-		String content = contentBuffer.toString();
-		return content;
+		return contentBuffer.toString();
+		
 	}
 	
 }

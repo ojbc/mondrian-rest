@@ -26,7 +26,7 @@ public class TestTidyCellSet {
 	public void testSingleAxisSingleDimension() {
 		CellSet cellSet = TestCellSetFactory.getInstance().getSingleAxisSingleDimensionCellSet();
 		tidyCellSet.init(cellSet);
-		List<Map<String, Object>> rows = tidyCellSet.getRows();
+		List<Map<String, Object>> rows = tidyCellSet.getValues();
 		assertEquals(1, rows.size());
 		assertEquals(1.0, rows.get(0).get("CellValue"));
 		assertEquals("M1", rows.get(0).get("[Measures].[MeasuresLevel]"));
@@ -36,7 +36,7 @@ public class TestTidyCellSet {
 	public void testDualAxisSingleDimensionCellSet() {
 		CellSet cellSet = TestCellSetFactory.getInstance().getDualAxisSingleDimensionCellSet();
 		tidyCellSet.init(cellSet);
-		List<Map<String, Object>> rows = tidyCellSet.getRows();
+		List<Map<String, Object>> rows = tidyCellSet.getValues();
 		assertEquals(2, rows.size());
 		assertEquals(1.0, rows.get(0).get("CellValue"));
 		assertEquals("M1", rows.get(0).get("[Measures].[MeasuresLevel]"));
@@ -50,7 +50,7 @@ public class TestTidyCellSet {
 	public void testDualAxisTwoDimensions() {
 		CellSet cellSet = TestCellSetFactory.getInstance().getDualAxisTwoDimensionCellSet();
 		tidyCellSet.init(cellSet);
-		List<Map<String, Object>> rows = tidyCellSet.getRows();
+		List<Map<String, Object>> rows = tidyCellSet.getValues();
 		assertEquals(6, rows.size());
 		assertEquals(1.0, rows.get(0).get("CellValue"));
 		assertEquals("M1", rows.get(0).get("[Measures].[MeasuresLevel]"));

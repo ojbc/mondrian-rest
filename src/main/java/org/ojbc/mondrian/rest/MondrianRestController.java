@@ -124,7 +124,7 @@ public class MondrianRestController {
 				if (tidy) {
 					TidyCellSet tcc = new TidyCellSet();
 					tcc.init(cellSet);
-					output = tcc.getRows();
+					output = tcc;
 				} else {
 					output = new CellSetWrapper(cellSet);
 				}

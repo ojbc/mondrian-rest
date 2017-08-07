@@ -21,11 +21,11 @@ public class TidyCellSet {
 	
 	private final Log log = LogFactory.getLog(TidyCellSet.class);
 	
-	private List<Map<String, Object>> rows = new ArrayList<>();
+	private List<Map<String, Object>> values = new ArrayList<>();
 	
 	public void init(CellSet cellSet) {
 		
-		rows = new ArrayList<>();
+		values = new ArrayList<>();
 		
 		List<CellSetAxis> axes = cellSet.getAxes();
 		List<List<Position>> positionLists = new ArrayList<>();
@@ -47,7 +47,7 @@ public class TidyCellSet {
 			}
 			
 			map.put(VALUE_LABEL, cell.getValue());
-			rows.add(map);
+			values.add(map);
 			
 		}
 		
@@ -65,8 +65,8 @@ public class TidyCellSet {
 		return ret;
 	}
 	
-	public List<Map<String, Object>> getRows() {
-		return Collections.unmodifiableList(rows);
+	public List<Map<String, Object>> getValues() {
+		return Collections.unmodifiableList(values);
 	}
 
 }
