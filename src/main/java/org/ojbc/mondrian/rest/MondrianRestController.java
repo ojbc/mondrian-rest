@@ -130,8 +130,8 @@ public class MondrianRestController {
 				}
 				body = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(output);
 			} catch (OlapException oe) {
-				log.warn("OlapException occurred processing query.  Stack trace follows.");
-				oe.printStackTrace();
+				log.warn("OlapException occurred processing query.  Stack trace follows (if debug logging).");
+				log.debug("Stack trace: ", oe);
 				Map<String, String> errorBodyMap = new HashMap<>();
 				errorBodyMap.put("reason", oe.getMessage());
 				Throwable rootCause = oe;
@@ -142,6 +142,7 @@ public class MondrianRestController {
 				}
 				errorBodyMap.put("rootCauseReason", rootCause.getMessage());
 				errorBodyMap.put("SQLState", oe.getSQLState());
+				log.warn("Exception root cause: " + rootCause.getMessage());
 				body = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(errorBodyMap);
 				status = HttpStatus.valueOf(500);
 			}
