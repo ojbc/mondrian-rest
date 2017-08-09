@@ -186,8 +186,7 @@ public class MondrianRestControllerTest {
 		List<Map<String, Object>> rows = tidyCellSet.getValues();
 		assertEquals(1, rows.size());
 		Map<String, Object> row1 = rows.get(0);
-		assertEquals("F1_M1", row1.get("[Measures].[MeasuresLevel]"));
-		assertEquals(3.0, row1.get("CellValue"));
+		assertEquals(3.0, row1.get("F1_M1"));
 		
 	}
 	

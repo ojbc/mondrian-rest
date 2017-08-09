@@ -28,8 +28,7 @@ public class TestTidyCellSet {
 		tidyCellSet.init(cellSet);
 		List<Map<String, Object>> rows = tidyCellSet.getValues();
 		assertEquals(1, rows.size());
-		assertEquals(1.0, rows.get(0).get("CellValue"));
-		assertEquals("M1", rows.get(0).get("[Measures].[MeasuresLevel]"));
+		assertEquals(1.0, rows.get(0).get("M1"));
 	}
 	
 	@Test
@@ -38,11 +37,9 @@ public class TestTidyCellSet {
 		tidyCellSet.init(cellSet);
 		List<Map<String, Object>> rows = tidyCellSet.getValues();
 		assertEquals(2, rows.size());
-		assertEquals(1.0, rows.get(0).get("CellValue"));
-		assertEquals("M1", rows.get(0).get("[Measures].[MeasuresLevel]"));
+		assertEquals(1.0, rows.get(0).get("M1"));
 		assertEquals("D1_V1", rows.get(0).get("[D1].[D1].[D1_V1]"));
-		assertEquals(2.0, rows.get(1).get("CellValue"));
-		assertEquals("M1", rows.get(1).get("[Measures].[MeasuresLevel]"));
+		assertEquals(2.0, rows.get(1).get("M1"));
 		assertEquals("D1_V2", rows.get(1).get("[D1].[D1].[D1_V2]"));
 	}
 	
@@ -52,22 +49,28 @@ public class TestTidyCellSet {
 		tidyCellSet.init(cellSet);
 		List<Map<String, Object>> rows = tidyCellSet.getValues();
 		assertEquals(6, rows.size());
-		assertEquals(1.0, rows.get(0).get("CellValue"));
-		assertEquals("M1", rows.get(0).get("[Measures].[MeasuresLevel]"));
+		assertEquals(1.0, rows.get(0).get("M1"));
 		assertEquals("D1_V1", rows.get(0).get("[D1].[D1].[D1_V1]"));
 		assertEquals("D2_V1", rows.get(0).get("[D2].[D2].[D2_V1]"));
-		assertEquals(2.0, rows.get(1).get("CellValue"));
-		assertEquals("M1", rows.get(1).get("[Measures].[MeasuresLevel]"));
+		assertEquals(2.0, rows.get(1).get("M1"));
 		assertEquals("D1_V1", rows.get(1).get("[D1].[D1].[D1_V1]"));
 		assertEquals("D2_V2", rows.get(1).get("[D2].[D2].[D2_V2]"));
-		assertEquals(10.0, rows.get(3).get("CellValue"));
-		assertEquals("M1", rows.get(3).get("[Measures].[MeasuresLevel]"));
+		assertEquals(10.0, rows.get(3).get("M1"));
 		assertEquals("D1_V2", rows.get(3).get("[D1].[D1].[D1_V2]"));
 		assertEquals("D2_V1", rows.get(3).get("[D2].[D2].[D2_V1]"));
-		assertNull(rows.get(5).get("CellValue"));
-		assertEquals("M1", rows.get(5).get("[Measures].[MeasuresLevel]"));
+		assertNull(rows.get(5).get("M1"));
 		assertEquals("D1_V2", rows.get(5).get("[D1].[D1].[D1_V2]"));
 		assertEquals("D2_V3", rows.get(5).get("[D2].[D2].[D2_V3]"));
+	}
+	
+	@Test
+	public void testDualAxisTwoDimensionsTwoMeasures() {
+		CellSet cellSet = TestCellSetFactory.getInstance().getDualAxisTwoDimensionTwoMeasuresCellSet();
+		tidyCellSet.init(cellSet);
+		List<Map<String, Object>> rows = tidyCellSet.getValues();
+		log.info(rows);
+		assertEquals(1.0, rows.get(0).get("M1"));
+		assertEquals(4.0, rows.get(0).get("M2"));
 	}
 	
 }
