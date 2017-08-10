@@ -1,7 +1,9 @@
 package org.ojbc.mondrian;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +21,7 @@ public class TestTidyCellSet {
 	
 	@Before
 	public void setUp() {
+		log.debug("setUp");
 		tidyCellSet = new TidyCellSet();
 	}
 	
@@ -41,6 +44,13 @@ public class TestTidyCellSet {
 		assertEquals("D1_V1", rows.get(0).get("[D1].[D1].[D1_V1]"));
 		assertEquals(2.0, rows.get(1).get("M1"));
 		assertEquals("D1_V2", rows.get(1).get("[D1].[D1].[D1_V2]"));
+		tidyCellSet.init(cellSet, true, null);
+		rows = tidyCellSet.getValues();
+		assertEquals(2, rows.size());
+		assertEquals(1.0, rows.get(0).get("M1"));
+		assertEquals("D1_V1", rows.get(0).get("D1_V1"));
+		assertEquals(2.0, rows.get(1).get("M1"));
+		assertEquals("D1_V2", rows.get(1).get("D1_V2"));
 	}
 	
 	@Test
@@ -68,9 +78,41 @@ public class TestTidyCellSet {
 		CellSet cellSet = TestCellSetFactory.getInstance().getDualAxisTwoDimensionTwoMeasuresCellSet();
 		tidyCellSet.init(cellSet);
 		List<Map<String, Object>> rows = tidyCellSet.getValues();
-		log.info(rows);
+		assertEquals(6, rows.size());
 		assertEquals(1.0, rows.get(0).get("M1"));
 		assertEquals(4.0, rows.get(0).get("M2"));
+		assertEquals(2.0, rows.get(1).get("M1"));
+		assertEquals(5.0, rows.get(1).get("M2"));
+		assertEquals("D1_V1", rows.get(0).get("[D1].[D1].[D1_V1]"));
+		assertEquals("D2_V1", rows.get(0).get("[D2].[D2].[D2_V1]"));
+		assertEquals("D1_V1", rows.get(1).get("[D1].[D1].[D1_V1]"));
+		assertEquals("D2_V2", rows.get(1).get("[D2].[D2].[D2_V2]"));
+		tidyCellSet.init(cellSet, true, null);
+		rows = tidyCellSet.getValues();
+		assertEquals(6, rows.size());
+		assertEquals(1.0, rows.get(0).get("M1"));
+		assertEquals(4.0, rows.get(0).get("M2"));
+		assertEquals(2.0, rows.get(1).get("M1"));
+		assertEquals(5.0, rows.get(1).get("M2"));
+		assertEquals("D1_V1", rows.get(0).get("D1_V1"));
+		assertEquals("D2_V1", rows.get(0).get("D2_V1"));
+		assertEquals("D1_V1", rows.get(1).get("D1_V1"));
+		assertEquals("D2_V2", rows.get(1).get("D2_V2"));
+	}
+	
+	@Test
+	public void testLevelNameTranslation() {
+		CellSet cellSet = TestCellSetFactory.getInstance().getDualAxisTwoDimensionTwoMeasuresCellSet();
+		Map<String, String> levelNameTranslationMap = new HashMap<>();
+		levelNameTranslationMap.put("[D1].[D1].[D1_V1]", "foobar");
+		tidyCellSet.init(cellSet, true, levelNameTranslationMap);
+		List<Map<String, Object>> rows = tidyCellSet.getValues();
+		assertEquals(1.0, rows.get(0).get("M1"));
+		assertEquals(4.0, rows.get(0).get("M2"));
+		assertEquals(2.0, rows.get(1).get("M1"));
+		assertEquals(5.0, rows.get(1).get("M2"));
+		assertEquals("D1_V1", rows.get(0).get("foobar"));
+		assertEquals("D2_V1", rows.get(0).get("D2_V1"));
 	}
 	
 }

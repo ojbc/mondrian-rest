@@ -102,11 +102,21 @@ public class MondrianRestController {
 	@RequestMapping(value="/query", method=RequestMethod.POST, produces="application/json", consumes="application/json")
 	public ResponseEntity<String> query(@RequestBody QueryRequest queryRequest) throws Exception {
 		
+		boolean tidy = false;
+		boolean simplifyNames = false;
 		String body = null;
 		HttpStatus status = HttpStatus.OK;
 		
 		String connectionName = queryRequest.getConnectionName();
-		boolean tidy = queryRequest.isTidy();
+		
+		Map<String, String> levelNameTranslationMap = null;
+		QueryRequest.TidyConfig tidyConfig = queryRequest.getTidy();
+		if (tidyConfig != null) {
+			tidy = tidyConfig.isEnabled();
+			simplifyNames = tidyConfig.isSimplifyNames();
+			levelNameTranslationMap = tidyConfig.getLevelNameTranslationMap();
+		}
+		
 		MondrianConnectionFactory.MondrianConnection connection = connectionFactory.getConnections().get(connectionName);
 		
 		if (connection == null) {
@@ -123,7 +133,7 @@ public class MondrianRestController {
 				Object output = null;
 				if (tidy) {
 					TidyCellSet tcc = new TidyCellSet();
-					tcc.init(cellSet);
+					tcc.init(cellSet, simplifyNames, levelNameTranslationMap);
 					output = tcc;
 				} else {
 					output = new CellSetWrapper(cellSet);

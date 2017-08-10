@@ -16,15 +16,42 @@
  */
 package org.ojbc.mondrian.rest;
 
+import java.util.Collections;
+import java.util.Map;
+
 /**
  * Simple DAO bean representing an MDX query to be submitted to a named connection.
  *
  */
 public class QueryRequest {
 	
+	public class TidyConfig {
+		private boolean enabled;
+		private boolean simplifyNames;
+		private Map<String, String> levelNameTranslationMap;
+		public boolean isSimplifyNames() {
+			return simplifyNames;
+		}
+		public void setSimplifyNames(boolean simplifyNames) {
+			this.simplifyNames = simplifyNames;
+		}
+		public boolean isEnabled() {
+			return enabled;
+		}
+		public void setEnabled(boolean enabled) {
+			this.enabled = enabled;
+		}
+		public Map<String, String> getLevelNameTranslationMap() {
+			return levelNameTranslationMap == null ? null : Collections.unmodifiableMap(levelNameTranslationMap);
+		}
+		public void setLevelNameTranslationMap(Map<String, String> dimensionNames) {
+			this.levelNameTranslationMap = dimensionNames;
+		}
+	}
+	
 	private String connectionName;
 	private String query;
-	private boolean tidy;
+	private TidyConfig tidy;
 	
 	public String getConnectionName() {
 		return connectionName;
@@ -38,10 +65,10 @@ public class QueryRequest {
 	public void setQuery(String query) {
 		this.query = query;
 	}
-	public boolean isTidy() {
+	public TidyConfig getTidy() {
 		return tidy;
 	}
-	public void setTidy(boolean tidy) {
+	public void setTidy(TidyConfig tidy) {
 		this.tidy = tidy;
 	}
 

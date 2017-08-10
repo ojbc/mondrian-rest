@@ -67,7 +67,7 @@ public class TestCellSetFactory {
 		when(m.getDimension()).thenReturn(d);
 		Level level = mock(Level.class);
 		when(level.getUniqueName()).thenReturn("[Measures].[MeasuresLevel]");
-		when(level.getName()).thenReturn("[MeasuresLevel]");
+		when(level.getName()).thenReturn("MeasuresLevel");
 		when(m.getLevel()).thenReturn(level);
 		
 		List<Member> memberList = new ArrayList<>();
@@ -125,6 +125,7 @@ public class TestCellSetFactory {
 		when(m.getDimension()).thenReturn(d);
 		Level level = mock(Level.class);
 		when(level.getUniqueName()).thenReturn("[Measures].[MeasuresLevel]");
+		when(level.getName()).thenReturn("MeasuresLevel");
 		when(m.getLevel()).thenReturn(level);
 		
 		List<Member> memberList = new ArrayList<>();
@@ -154,6 +155,7 @@ public class TestCellSetFactory {
 		when(m.getDimension()).thenReturn(d);
 		level = mock(Level.class);
 		when(level.getUniqueName()).thenReturn("[D1].[D1].[D1_V1]");
+		when(level.getName()).thenReturn("D1_V1");
 		when(m.getLevel()).thenReturn(level);
 		memberList = new ArrayList<>();
 		when(p2.getMembers()).thenReturn(memberList);
@@ -169,6 +171,7 @@ public class TestCellSetFactory {
 		when(m.getDimension()).thenReturn(d);
 		level = mock(Level.class);
 		when(level.getUniqueName()).thenReturn("[D1].[D1].[D1_V2]");
+		when(level.getName()).thenReturn("D1_V2");
 		when(m.getLevel()).thenReturn(level);
 		memberList = new ArrayList<>();
 		when(p3.getMembers()).thenReturn(memberList);
@@ -257,6 +260,7 @@ public class TestCellSetFactory {
 		when(m.getName()).thenReturn("M1");
 		Level level = mock(Level.class);
 		when(level.getUniqueName()).thenReturn("[Measures].[MeasuresLevel]");
+		when(level.getName()).thenReturn("MeasuresLevel");
 		when(m.getLevel()).thenReturn(level);
 		
 		m = mock(Member.class);
@@ -265,6 +269,7 @@ public class TestCellSetFactory {
 		when(m.getName()).thenReturn("D1_V1");
 		level = mock(Level.class);
 		when(level.getUniqueName()).thenReturn("[D1].[D1].[D1_V1]");
+		when(level.getName()).thenReturn("D1_V1");
 		when(m.getLevel()).thenReturn(level);
 		
 		Position c2Position = mock(Position.class);
@@ -279,6 +284,7 @@ public class TestCellSetFactory {
 		when(m.getName()).thenReturn("M1");
 		level = mock(Level.class);
 		when(level.getUniqueName()).thenReturn("[Measures].[MeasuresLevel]");
+		when(level.getName()).thenReturn("MeasuresLevel");
 		when(m.getLevel()).thenReturn(level);
 		
 		m = mock(Member.class);
@@ -287,6 +293,7 @@ public class TestCellSetFactory {
 		when(m.getName()).thenReturn("D1_V2");
 		level = mock(Level.class);
 		when(level.getUniqueName()).thenReturn("[D1].[D1].[D1_V2]");
+		when(level.getName()).thenReturn("D1_V2");
 		when(m.getLevel()).thenReturn(level);
 		
 		when(axis.getPositionCount()).thenReturn(positionList.size());
@@ -311,6 +318,7 @@ public class TestCellSetFactory {
 		when(m.getDimension()).thenReturn(d2Dimension);
 		level = mock(Level.class);
 		when(level.getUniqueName()).thenReturn("[D2].[D2].[D2_V1]");
+		when(level.getName()).thenReturn("D2_V1");
 		when(m.getLevel()).thenReturn(level);
 		memberList = new ArrayList<>();
 		when(r1Position.getMembers()).thenReturn(memberList);
@@ -324,6 +332,7 @@ public class TestCellSetFactory {
 		when(m.getDimension()).thenReturn(d2Dimension);
 		level = mock(Level.class);
 		when(level.getUniqueName()).thenReturn("[D2].[D2].[D2_V2]");
+		when(level.getName()).thenReturn("D2_V2");
 		when(m.getLevel()).thenReturn(level);
 		memberList = new ArrayList<>();
 		when(r2Position.getMembers()).thenReturn(memberList);
@@ -337,6 +346,7 @@ public class TestCellSetFactory {
 		when(m.getDimension()).thenReturn(d2Dimension);
 		level = mock(Level.class);
 		when(level.getUniqueName()).thenReturn("[D2].[D2].[D2_V3]");
+		when(level.getName()).thenReturn("D2_V3");
 		when(m.getLevel()).thenReturn(level);
 		memberList = new ArrayList<>();
 		when(r3Position.getMembers()).thenReturn(memberList);
@@ -456,6 +466,7 @@ public class TestCellSetFactory {
 		when(m.getName()).thenReturn("M2");
 		Level level = mock(Level.class);
 		when(level.getUniqueName()).thenReturn("[Measures].[MeasuresLevel]");
+		when(level.getName()).thenReturn("MeasuresLevel");
 		when(m.getLevel()).thenReturn(level);
 		
 		m = mock(Member.class);
@@ -464,6 +475,7 @@ public class TestCellSetFactory {
 		when(m.getName()).thenReturn("D1_V1");
 		level = mock(Level.class);
 		when(level.getUniqueName()).thenReturn("[D1].[D1].[D1_V1]");
+		when(level.getName()).thenReturn("D1_V1");
 		when(m.getLevel()).thenReturn(level);
 		
 		Position c4Position = mock(Position.class);
@@ -478,6 +490,7 @@ public class TestCellSetFactory {
 		when(m.getName()).thenReturn("M2");
 		level = mock(Level.class);
 		when(level.getUniqueName()).thenReturn("[Measures].[MeasuresLevel]");
+		when(level.getName()).thenReturn("MeasuresLevel");
 		when(m.getLevel()).thenReturn(level);
 		
 		m = mock(Member.class);
@@ -486,6 +499,7 @@ public class TestCellSetFactory {
 		when(m.getName()).thenReturn("D1_V2");
 		level = mock(Level.class);
 		when(level.getUniqueName()).thenReturn("[D1].[D1].[D1_V2]");
+		when(level.getName()).thenReturn("D1_V2");
 		when(m.getLevel()).thenReturn(level);
 		
 		when(columnAxis.getPositionCount()).thenReturn(positionList.size());
@@ -561,7 +575,5 @@ public class TestCellSetFactory {
 		return ret;
 		
 	}
-		
-
 
 }

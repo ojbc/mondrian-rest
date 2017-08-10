@@ -73,6 +73,7 @@ public class MondrianRestControllerTest {
 	
 	@Before
     public void setUp() throws Exception {
+		log.debug("setUp");
     	RequestConfig requestConfig = RequestConfig.custom().build();
     	HttpClientBuilder clientBuilder = HttpClientBuilder.create();
     	clientBuilder.setDefaultRequestConfig(requestConfig);
@@ -195,7 +196,8 @@ public class MondrianRestControllerTest {
 	}
 
 	private StringEntity buildQueryRequestEntity(String connectionName, String queryString, boolean tidy) {
-		return new StringEntity("{ \"connectionName\" : \"" + connectionName + "\", \"query\" : \"" + queryString + "\", \"tidy\" : " + tidy + "}", ContentType.APPLICATION_JSON);
+		return new StringEntity("{ \"connectionName\" : \"" + connectionName + "\", \"query\" : \"" + queryString + "\", \"tidy\" : { \"enabled\": " +
+				tidy + "}}", ContentType.APPLICATION_JSON);
 	}
 
 	private String getBodyContent(HttpResponse response) throws IOException {

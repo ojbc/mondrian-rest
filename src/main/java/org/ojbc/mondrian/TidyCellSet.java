@@ -13,11 +13,13 @@ import org.olap4j.Cell;
 import org.olap4j.CellSet;
 import org.olap4j.CellSetAxis;
 import org.olap4j.Position;
+import org.olap4j.metadata.Level;
 import org.olap4j.metadata.Member;
 import org.olap4j.metadata.Member.Type;
 
 public class TidyCellSet {
 	
+	private static final String MEASURES_LEVEL_UNIQUE_NAME = "[Measures].[MeasuresLevel]";
 	private static final String HASH_KEY = ".H";
 	private static final String ORDER_KEY = ".O";
 	
@@ -25,9 +27,52 @@ public class TidyCellSet {
 	
 	private List<Map<String, Object>> values = new ArrayList<>();
 	
-	public void init(CellSet cellSet) {
+	public void init(CellSet cellSet, boolean simplifyNames, Map<String, String> dimensionNameTranslationMap) {
+		
+		log.debug("Start of init");
+		
 		List<Map<String, Object>> positionIntersectionList = buildPositionIntersectionList(cellSet);
 		values = reducePositionIntersectionList(positionIntersectionList);
+		
+		if (dimensionNameTranslationMap == null) {
+			dimensionNameTranslationMap = new HashMap<>();
+		}
+		
+		if (simplifyNames) {
+			List<Map<String, Object>> newValues = new ArrayList<>();
+			for (Map<String, Object> rowMap : values) {
+				Map<String, Object> translatedMap = new HashMap<>();
+				for (String key : rowMap.keySet()) {
+					String value = dimensionNameTranslationMap.get(key);
+					if (value == null) {
+						value = getLevelNameForUniqueName(cellSet, key);
+					}
+					translatedMap.put(value, rowMap.get(key));
+				}
+				newValues.add(translatedMap);
+			}
+			values = newValues;
+		}
+		
+	}
+
+	private String getLevelNameForUniqueName(CellSet cellSet, String levelUniqueName) {
+		List<CellSetAxis> axes = cellSet.getAxes();
+		for (CellSetAxis axis : axes) {
+			for (Position position : axis.getPositions()) {
+				for (Member member : position.getMembers()) {
+					Level level = member.getLevel();
+					if (level.getUniqueName().equals(levelUniqueName)) {
+						return level.getName();
+					}
+				}
+			}
+		}
+		return levelUniqueName;
+	}
+
+	public void init(CellSet cellSet) {
+		init(cellSet, false, null);
 	}
 
 	private List<Map<String, Object>> reducePositionIntersectionList(List<Map<String, Object>> positionIntersectionList) {
@@ -38,10 +83,10 @@ public class TidyCellSet {
 			Map<String, Object> map = positionIntersectionList.get(i);
 			Object hashKey = map.get(HASH_KEY);
 			if (reducedMap.containsKey(hashKey)) {
-				String measureName = (String) map.get("[Measures].[MeasuresLevel]");
+				String measureName = (String) map.get(MEASURES_LEVEL_UNIQUE_NAME);
 				reducedMap.get(hashKey).put(measureName, map.get(measureName));
 			} else {
-				map.remove("[Measures].[MeasuresLevel]");
+				map.remove(MEASURES_LEVEL_UNIQUE_NAME);
 				reducedMap.put(hashKey, map);
 			}
 		}
@@ -85,10 +130,10 @@ public class TidyCellSet {
 				}
 			}
 			
-			String measureValue = (String) map.get("[Measures].[MeasuresLevel]");
-			map.remove("[Measures].[MeasuresLevel]");
+			String measureValue = (String) map.get(MEASURES_LEVEL_UNIQUE_NAME);
+			map.remove(MEASURES_LEVEL_UNIQUE_NAME);
 			map.put(HASH_KEY, map.hashCode());
-			map.put("[Measures].[MeasuresLevel]", measureValue);
+			map.put(MEASURES_LEVEL_UNIQUE_NAME, measureValue);
 
 			map.put(measureValue, cell.getValue());
 			map.put(ORDER_KEY, valueIndex++);
@@ -117,5 +162,5 @@ public class TidyCellSet {
 	public List<Map<String, Object>> getValues() {
 		return Collections.unmodifiableList(values);
 	}
-
+	
 }
