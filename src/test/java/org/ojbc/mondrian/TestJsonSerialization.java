@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.Before;
 import org.junit.Test;
 import org.olap4j.CellSet;
 
@@ -28,6 +29,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class TestJsonSerialization {
 	
 	private final Log log = LogFactory.getLog(TestJsonSerialization.class);
+	
+	@Before
+	public void setUp() throws Exception {
+		log.debug("setUp");
+	}
 	
 	@Test
 	public void test() throws Exception {

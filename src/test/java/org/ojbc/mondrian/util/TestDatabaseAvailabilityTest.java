@@ -84,7 +84,7 @@ public class TestDatabaseAvailabilityTest {
 		
 	}
 	
-	private void dumpTableList() throws SQLException {
+	void dumpTableList() throws SQLException {
 		DatabaseMetaData dbmd = connection.getMetaData();
 		ResultSet rs = dbmd.getTables(null, null, "%", null);
 		while (rs.next()) {

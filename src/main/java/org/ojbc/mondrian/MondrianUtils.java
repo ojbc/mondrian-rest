@@ -17,7 +17,6 @@
 package org.ojbc.mondrian;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -39,6 +38,7 @@ public class MondrianUtils {
 	 * @return a string containing the members of the position
 	 */
 	public static final String getMembersString(Position position) {
+		log.debug("getMembersString");
 		List<Member> members = position.getMembers();
 		StringBuffer sb = new StringBuffer();
 		sb.append("*");

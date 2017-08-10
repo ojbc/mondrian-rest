@@ -43,6 +43,7 @@ public class BasicMondrianQueryTest {
 	
 	@Before
 	public void setUp() throws Exception {
+		log.debug("setUp");
 		mondrianOlapConnection = DatabaseUtils.getInstance().getMondrianConnection();
 	}
 	

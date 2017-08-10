@@ -16,7 +16,9 @@
  */
 package org.ojbc.mondrian.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.sql.Connection;
 import java.util.Arrays;
@@ -28,7 +30,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.ojbc.mondrian.TidyCellSet;
 import org.olap4j.Axis;
 import org.olap4j.Cell;
 import org.olap4j.CellSet;
@@ -38,8 +39,6 @@ import org.olap4j.OlapStatement;
 import org.olap4j.Position;
 import org.olap4j.metadata.Level;
 import org.olap4j.metadata.Member;
-import org.olap4j.metadata.Member.Type;
-import org.olap4j.metadata.NamedList;
 
 public class BasicOlap4jQueryTest {
 	

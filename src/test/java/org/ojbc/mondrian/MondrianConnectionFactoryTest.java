@@ -12,6 +12,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.ojbc.mondrian.MondrianConnectionFactory.MondrianConnection;
 import org.springframework.core.io.Resource;
@@ -28,6 +29,7 @@ public class MondrianConnectionFactoryTest {
 	
 	@Before
 	public void setUp() throws Exception {
+		log.debug("setUp");
 		factory = new MondrianConnectionFactory();
 		factory.init();
 	}
@@ -73,12 +75,11 @@ public class MondrianConnectionFactoryTest {
 	}
 	
 	@Test
+	@Ignore
 	public void testJsonSerialization() throws Exception {
-		
 		Map<String, MondrianConnectionFactory.MondrianConnection> connections = factory.getConnections();
 		String json = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(connections);
-		//log.info(json);
-		
+		log.info(json);
 	}
 	
 	@Test

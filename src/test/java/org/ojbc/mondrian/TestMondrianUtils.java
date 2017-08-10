@@ -8,11 +8,17 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.Before;
 import org.junit.Test;
 
 public class TestMondrianUtils {
 	
 	private final Log log = LogFactory.getLog(TestMondrianUtils.class);
+	
+	@Before
+	public void setUp() throws Exception {
+		log.debug("setUp");
+	}
 	
 	@Test
 	public void testPermuteLists() {
