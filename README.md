@@ -28,7 +28,7 @@ The API will then be running in Docker, exposed on that port, within Apache Tomc
 
 #### API Usage
 
-There are currently three operations available in the API:
+There are currently three main operations available in the API:
 
 `/getConnections`: Returns information about the olap4j connections currently available to the API
 
@@ -94,12 +94,22 @@ $: curl -s http://localhost:58080/mondrian-rest/getSchema?connectionName=foodmar
 $:
 ```
 
-`/query`: POST operation that takes a two-element map.  Key `connectionName` specifies the connection to query, and key `query` specifies the MDX for the query.
+`/query`: POST operation that takes an object with three properties:
 
-Example:
+* `connectionName` specifies the connection to query
+* `query` specifies the MDX for the query
+* `tidy` is a contained object to request "tidying" of the output, as explained below; the `tidy` object contains three properties:
+	* `enabled` is a boolean to indicate whether to tidy the output
+	* `simplifyNames` is a boolean to indicate whether to return simple names for dimension levels
+	* `levelNameTranslationMap` is a map that associates level unique names with arbitrary simple names
+
+Non-tidy example:
 
 ```
-$: curl -s -X POST -H 'Content-Type: application/json' http://localhost:58080/mondrian-rest/query -d '{"connectionName" : "foodmart", "query" : "select { [Measures].[Units Shipped] } on columns, NON EMPTY [Store].[Store Type].members on rows from Warehouse" }'
+$: curl -s -X POST -H 'Content-Type: application/json' http://localhost:58080/mondrian-rest/query -d '{
+>   "connectionName" : "foodmart",
+>   "query" : "select { [Measures].[Units Shipped] } on columns, NON EMPTY [Store].[Store Type].members on rows from Warehouse"
+> }'
 {
   "cells" : [ {
     "formattedValue" : "207726.0",
@@ -179,36 +189,114 @@ $: curl -s -X POST -H 'Content-Type: application/json' http://localhost:58080/mo
 $:
 ```
 
-You can also include a boolean property, named `tidy`, in the query request.  This causes the service to return more "tabularized" data, suitable for loading into a data frame or using in a visualization tool like Vega-lite.  Example:
+#### Tidying
+
+You can also include a property, named `tidy`, in the query request.  This causes the service to return more "tabularized" data, suitable for loading into a data frame or using in a visualization tool like Vega-lite.  Example:
 
 ```
-curl -s -X POST -H 'Content-Type: application/json' http://localhost:58080/mondrian-rest/query -d '{"connectionName" : "foodmart", "query" : "select { [Measures].[Units Shipped] } on columns, NON EMPTY [Store].[Store Type].members on rows from Warehouse", "tidy" : true }'
-[ {
-  "CellValue" : 207726.0,
-  "[Measures].[MeasuresLevel]" : "Units Shipped"
-}, {
-  "CellValue" : 64804.0,
-  "[Measures].[MeasuresLevel]" : "Units Shipped",
-  "[Store].[Store Type].[Store Type]" : "Deluxe Supermarket"
-}, {
-  "CellValue" : 10759.0,
-  "[Measures].[MeasuresLevel]" : "Units Shipped",
-  "[Store].[Store Type].[Store Type]" : "Gourmet Supermarket"
-}, {
-  "CellValue" : 10589.0,
-  "[Measures].[MeasuresLevel]" : "Units Shipped",
-  "[Store].[Store Type].[Store Type]" : "Mid-Size Grocery"
-}, {
-  "CellValue" : 5904.0,
-  "[Measures].[MeasuresLevel]" : "Units Shipped",
-  "[Store].[Store Type].[Store Type]" : "Small Grocery"
-}, {
-  "CellValue" : 115670.0,
-  "[Measures].[MeasuresLevel]" : "Units Shipped",
-  "[Store].[Store Type].[Store Type]" : "Supermarket"
-} ]
+$: curl -s -X POST -H 'Content-Type: application/json' http://localhost:58080/mondrian-rest/query -d '{
+>   "connectionName" : "foodmart",
+>   "query" : "select { [Measures].[Units Shipped] } on columns, NON EMPTY [Store].[Store Type].children on rows from Warehouse",
+>   "tidy" : {
+>     "enabled" : true
+>   }
+> }'
+{
+  "values" : [ {
+    "[Store].[Store Type].[Store Type]" : "Deluxe Supermarket",
+    "Units Shipped" : 64804.0
+  }, {
+    "[Store].[Store Type].[Store Type]" : "Gourmet Supermarket",
+    "Units Shipped" : 10759.0
+  }, {
+    "[Store].[Store Type].[Store Type]" : "Mid-Size Grocery",
+    "Units Shipped" : 10589.0
+  }, {
+    "[Store].[Store Type].[Store Type]" : "Small Grocery",
+    "Units Shipped" : 5904.0
+  }, {
+    "[Store].[Store Type].[Store Type]" : "Supermarket",
+    "Units Shipped" : 115670.0
+  } ]
+}
 $:
 ```
+
+Setting the `simplifyNames` property on the `tidy` object causes the service to remove the level's ancestors, and the brackets, from the level name:
+
+```
+$: curl -s -X POST -H 'Content-Type: application/json' http://localhost:58080/mondrian-rest/query -d '{
+>    "connectionName" : "foodmart",
+>    "query" : "select { [Measures].[Units Shipped] } on columns, NON EMPTY [Store].[Store Type].children on rows from Warehouse",
+>    "tidy" : {
+>      "enabled" : true,
+>      "simplifyNames" : true
+>    }
+> }'
+{
+  "values" : [ {
+    "Units Shipped" : 64804.0,
+    "Store Type" : "Deluxe Supermarket"
+  }, {
+    "Units Shipped" : 10759.0,
+    "Store Type" : "Gourmet Supermarket"
+  }, {
+    "Units Shipped" : 10589.0,
+    "Store Type" : "Mid-Size Grocery"
+  }, {
+    "Units Shipped" : 5904.0,
+    "Store Type" : "Small Grocery"
+  }, {
+    "Units Shipped" : 115670.0,
+    "Store Type" : "Supermarket"
+  } ]
+}
+$:
+```
+
+And by including a `levelNameTranslationMap` property, mapping level unique names to arbitrary names, it is possible to control the output even more:
+
+```
+$: curl -s -X POST -H 'Content-Type: application/json' http://localhost:58080/mondrian-rest/query -d '{
+>     "connectionName" : "foodmart",
+>     "query" : "select { [Measures].[Units Shipped] } on columns, NON EMPTY [Store].[Store Type].children on rows from Warehouse",
+>     "tidy" : {
+>       "enabled" : true,
+>       "simplifyNames" : true,
+>       "levelNameTranslationMap" : {
+>         "[Store].[Store Type].[Store Type]" : "Kind of establishment"
+>       }
+>     }
+> }'
+{
+  "values" : [ {
+    "Units Shipped" : 64804.0,
+    "Kind of establishment" : "Deluxe Supermarket"
+  }, {
+    "Units Shipped" : 10759.0,
+    "Kind of establishment" : "Gourmet Supermarket"
+  }, {
+    "Units Shipped" : 10589.0,
+    "Kind of establishment" : "Mid-Size Grocery"
+  }, {
+    "Units Shipped" : 5904.0,
+    "Kind of establishment" : "Small Grocery"
+  }, {
+    "Units Shipped" : 115670.0,
+    "Kind of establishment" : "Supermarket"
+  } ]
+}
+$:
+```
+
+When specifying a `levelNameTranslationMap`, any unique names not found in the map are simplified as if no map were provided at all (i.e., by returning the child level's name only).
+
+#### Caching
+
+The service uses [ehCache](http://www.ehcache.org/) to provide on-heap caching of queries.  By default, 500 queries are cached.  To change caching behavior, place a file named
+ehcache-config.xml on the classpath.
+
+The `/flushCache` operation in the API will clear all cached queries from the cache.
 
 #### Building from source
 
@@ -233,27 +321,31 @@ $: java -jar target/mondrian-rest-executable.war
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::        (v1.5.6.RELEASE)
 
-[      main] org.ojbc.mondrian.rest.Application       INFO  Starting Application v0.0.1-SNAPSHOT on Scotts-MacBook-Pro.local with PID 85195 (/Users/scott/git-repos/ojbc/mondrian-rest/target/mondrian-rest-executable.war started by scott in /Users/scott/git-repos/ojbc/mondrian-rest)
+[      main] org.ojbc.mondrian.rest.Application       INFO  Starting Application v0.0.1-SNAPSHOT on Scotts-MacBook-Pro.local with PID 98254 (/Users/scott/git-repos/ojbc/mondrian-rest/target/mondrian-rest-executable.war started by scott in /Users/scott/git-repos/ojbc/mondrian-rest)
 [      main] org.ojbc.mondrian.rest.Application       INFO  No active profile set, falling back to default profiles: default
-[      main] ationConfigEmbeddedWebApplicationContext INFO  Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@5fa7e7ff: startup date [Fri Aug 04 16:55:10 PDT 2017]; root of context hierarchy
+[      main] ationConfigEmbeddedWebApplicationContext INFO  Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@5fa7e7ff: startup date [Fri Aug 11 08:13:30 PDT 2017]; root of context hierarchy
 [nd-preinit] ibernate.validator.internal.util.Version INFO  HV000001: Hibernate Validator 5.3.5.Final
 [      main] ed.tomcat.TomcatEmbeddedServletContainer INFO  Tomcat initialized with port(s): 8080 (http)
 [      main] org.apache.catalina.core.StandardService INFO  Starting service [Tomcat]
 [      main] org.apache.catalina.core.StandardEngine  INFO  Starting Servlet Engine: Apache Tomcat/8.5.16
 [tartStop-1] org.apache.jasper.servlet.TldScanner     INFO  At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
 [tartStop-1] e.ContainerBase.[Tomcat].[localhost].[/] INFO  Initializing Spring embedded WebApplicationContext
-[tartStop-1] pringframework.web.context.ContextLoader INFO  Root WebApplicationContext: initialization completed in 2785 ms
+[tartStop-1] pringframework.web.context.ContextLoader INFO  Root WebApplicationContext: initialization completed in 1937 ms
 [tartStop-1] boot.web.servlet.ServletRegistrationBean INFO  Mapping servlet: 'dispatcherServlet' to [/]
 [tartStop-1] .boot.web.servlet.FilterRegistrationBean INFO  Mapping filter: 'characterEncodingFilter' to: [/*]
 [tartStop-1] .boot.web.servlet.FilterRegistrationBean INFO  Mapping filter: 'hiddenHttpMethodFilter' to: [/*]
 [tartStop-1] .boot.web.servlet.FilterRegistrationBean INFO  Mapping filter: 'httpPutFormContentFilter' to: [/*]
 [tartStop-1] .boot.web.servlet.FilterRegistrationBean INFO  Mapping filter: 'requestContextFilter' to: [/*]
+[      main] .ojbc.mondrian.MondrianConnectionFactory INFO  Working around Spring Boot / Tomcat bug that occurs in standalone mode, to adjust file path found via PathMatchingResourcePatternResolver
 [      main] .ojbc.mondrian.MondrianConnectionFactory INFO  Processing connection definition json found at jar:file:/Users/scott/git-repos/ojbc/mondrian-rest/target/mondrian-rest-executable.war!/WEB-INF/classes/mondrian-connections.json
 [      main] .ojbc.mondrian.MondrianConnectionFactory INFO  Adding valid connection test: connection string=jdbc:hsqldb:res:test, Mondrian schema path=jar:file:/Users/scott/git-repos/ojbc/mondrian-rest/target/mondrian-rest-executable.war!/WEB-INF/classes!/test.xml
 [      main] .ojbc.mondrian.MondrianConnectionFactory INFO  Adding valid connection foodmart: connection string=jdbc:hsqldb:res:foodmart;set schema "foodmart", Mondrian schema path=https://raw.githubusercontent.com/pentaho/mondrian/lagunitas/demo/FoodMart.mondrian.xml
-[      main] .annotation.RequestMappingHandlerAdapter INFO  Looking for @ControllerAdvice: org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@5fa7e7ff: startup date [Fri Aug 04 16:55:10 PDT 2017]; root of context hierarchy
+[      main] org.ehcache.xml.XmlConfiguration         INFO  Loading Ehcache XML configuration from file:/Users/scott/git-repos/ojbc/mondrian-rest/target/mondrian-rest-executable.war!/WEB-INF/classes!/ehcache-config.xml.
+[      main] org.ehcache.core.EhcacheManager          INFO  Cache 'query-cache' created in EhcacheManager.
+[      main] .annotation.RequestMappingHandlerAdapter INFO  Looking for @ControllerAdvice: org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@5fa7e7ff: startup date [Fri Aug 11 08:13:30 PDT 2017]; root of context hierarchy
 [      main] .annotation.RequestMappingHandlerMapping INFO  Mapped "{[/query],methods=[POST],consumes=[application/json],produces=[application/json]}" onto public org.springframework.http.ResponseEntity<java.lang.String> org.ojbc.mondrian.rest.MondrianRestController.query(org.ojbc.mondrian.rest.QueryRequest) throws java.lang.Exception
 [      main] .annotation.RequestMappingHandlerMapping INFO  Mapped "{[/getConnections],methods=[GET],produces=[application/json]}" onto public java.lang.String org.ojbc.mondrian.rest.MondrianRestController.getConnections() throws java.lang.Exception
+[      main] .annotation.RequestMappingHandlerMapping INFO  Mapped "{[/flushCache],methods=[GET]}" onto public org.springframework.http.ResponseEntity<java.lang.Void> org.ojbc.mondrian.rest.MondrianRestController.flushCache()
 [      main] .annotation.RequestMappingHandlerMapping INFO  Mapped "{[/getSchema],methods=[GET],produces=[application/xml]}" onto public org.springframework.http.ResponseEntity<java.lang.String> org.ojbc.mondrian.rest.MondrianRestController.getSchema(java.lang.String) throws java.lang.Exception
 [      main] .annotation.RequestMappingHandlerMapping INFO  Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
 [      main] .annotation.RequestMappingHandlerMapping INFO  Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
@@ -265,7 +357,7 @@ $: java -jar target/mondrian-rest-executable.war
 [      main] g.apache.coyote.http11.Http11NioProtocol INFO  Starting ProtocolHandler ["http-nio-8080"]
 [      main] g.apache.tomcat.util.net.NioSelectorPool INFO  Using a shared selector for servlet write/read
 [      main] ed.tomcat.TomcatEmbeddedServletContainer INFO  Tomcat started on port(s): 8080 (http)
-[      main] org.ojbc.mondrian.rest.Application       INFO  Started Application in 5.02 seconds (JVM running for 5.613)
+[      main] org.ojbc.mondrian.rest.Application       INFO  Started Application in 5.212 seconds (JVM running for 5.739)
 ```
 
 Then the API will be available at http://localhost:8080/...
