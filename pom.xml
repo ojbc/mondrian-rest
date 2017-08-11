@@ -75,7 +75,30 @@
 					<groupId>javax.servlet</groupId>
 					<artifactId>jsp-api</artifactId>
 				</exclusion>
+				<exclusion>
+					<artifactId>xml-apis</artifactId>
+					<groupId>xml-apis</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>xercesImpl</artifactId>
+					<groupId>xerces</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>xalan</artifactId>
+					<groupId>xalan</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>dom4j</artifactId>
+					<groupId>dom4j</groupId>
+				</exclusion>
 			</exclusions>
+		</dependency>
+		
+		<!-- Xalan (or some javax transformer implementation) is required by ehcache -->
+		<dependency>
+    		<groupId>xalan</groupId>
+    		<artifactId>xalan</artifactId>
+    		<version>2.7.2</version>
 		</dependency>
 
 		<dependency>
@@ -86,6 +109,11 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.ehcache</groupId>
+			<artifactId>ehcache</artifactId>
 		</dependency>
 
 		<dependency>

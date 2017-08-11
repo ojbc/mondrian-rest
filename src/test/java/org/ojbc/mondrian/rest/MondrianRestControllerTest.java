@@ -16,9 +16,7 @@
  */
 package org.ojbc.mondrian.rest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -166,6 +164,36 @@ public class MondrianRestControllerTest {
 		errorMap = mapper.readValue(content, typeRef);
 		assertTrue(errorMap.get("reason").matches(".+while parsing.+"));
 		assertTrue(errorMap.get("rootCauseReason").matches(".+MDX.+DimNotExist.+not found in cube.+"));
+		
+	}
+	
+	@Test
+	public void testCachedQueries() throws Exception {
+		
+		HttpGet flushRequest = new HttpGet("http://localhost:8080/flushCache");
+		HttpResponse response = httpClient.execute(flushRequest);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		HttpPost queryRequest = new HttpPost("http://localhost:8080/query");
+		StringEntity requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test", true);
+		queryRequest.setEntity(requestEntity);
+		response = httpClient.execute(queryRequest);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		assertNull(response.getFirstHeader("mondrian-rest-cached-result"));
+		getBodyContent(response);
+		
+		response = httpClient.execute(queryRequest);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		assertEquals("true", response.getFirstHeader("mondrian-rest-cached-result").getValue());
+		getBodyContent(response);
+		
+		flushRequest = new HttpGet("http://localhost:8080/flushCache");
+		response = httpClient.execute(flushRequest);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		response = httpClient.execute(queryRequest);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		assertNull(response.getFirstHeader("mondrian-rest-cached-result"));
 		
 	}
 

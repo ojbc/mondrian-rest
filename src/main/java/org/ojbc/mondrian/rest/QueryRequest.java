@@ -71,5 +71,13 @@ public class QueryRequest {
 	public void setTidy(TidyConfig tidy) {
 		this.tidy = tidy;
 	}
+	
+	public int getCacheKey() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((connectionName == null) ? 0 : connectionName.hashCode());
+		result = prime * result + ((query == null) ? 0 : query.hashCode());
+		return result;
+	}
 
 }

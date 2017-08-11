@@ -22,6 +22,11 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ehcache.Cache;
+import org.ehcache.CacheManager;
+import org.ehcache.config.Configuration;
+import org.ehcache.config.builders.CacheManagerBuilder;
+import org.ehcache.xml.XmlConfiguration;
 import org.ojbc.mondrian.CellSetWrapper;
 import org.ojbc.mondrian.MondrianConnectionFactory;
 import org.ojbc.mondrian.TidyCellSet;
@@ -29,6 +34,7 @@ import org.olap4j.CellSet;
 import org.olap4j.OlapConnection;
 import org.olap4j.OlapException;
 import org.olap4j.OlapStatement;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -49,10 +55,15 @@ public class MondrianRestController {
 	
 	private final Log log = LogFactory.getLog(MondrianRestController.class);
 	private MondrianConnectionFactory connectionFactory;
+	private Cache<Integer, CellSet> queryCache;
 	
 	public MondrianRestController() throws IOException {
 		connectionFactory = new MondrianConnectionFactory();
 		connectionFactory.init();
+		Configuration cacheConfig = new XmlConfiguration(getClass().getResource("/ehcache-config.xml")); 
+		CacheManager cacheManager = CacheManagerBuilder.newCacheManager(cacheConfig);
+		cacheManager.init();
+		queryCache = cacheManager.getCache("query-cache", Integer.class, CellSet.class);
 	}
 	
 	/**
@@ -94,6 +105,16 @@ public class MondrianRestController {
 	}
 	
 	/**
+	 * Flush the query cache
+	 */
+	@RequestMapping(value="/flushCache", method=RequestMethod.GET)
+	public ResponseEntity<Void> flushCache() {
+		queryCache.clear();
+		log.info("Query cache flushed");
+		return new ResponseEntity<Void>(HttpStatus.OK);
+	}
+	
+	/**
 	 * Submit the specified MDX query to the specified Mondrian connection.  Sets HTTP Status of 500 if the specified connection does not exist or if the query syntax is invalid.
 	 * @param queryRequest the query request (specifies the connection, by name, and the MDX query string)
 	 * @return json string containing the resulting CellSet, or null if no results
@@ -106,6 +127,7 @@ public class MondrianRestController {
 		boolean simplifyNames = false;
 		String body = null;
 		HttpStatus status = HttpStatus.OK;
+		HttpHeaders responseHeaders = new HttpHeaders();
 		
 		String connectionName = queryRequest.getConnectionName();
 		
@@ -115,21 +137,60 @@ public class MondrianRestController {
 			tidy = tidyConfig.isEnabled();
 			simplifyNames = tidyConfig.isSimplifyNames();
 			levelNameTranslationMap = tidyConfig.getLevelNameTranslationMap();
+			if (simplifyNames && !tidy) {
+				log.warn("Request for simplification of names, but tidy is false.  No simplification is performed on raw CellSetWrappers.");
+			}
 		}
 		
 		MondrianConnectionFactory.MondrianConnection connection = connectionFactory.getConnections().get(connectionName);
+		ObjectMapper mapper = new ObjectMapper();
 		
 		if (connection == null) {
+			
 			log.warn("Query submitted for connection that does not exist: " + connectionName);
 			status = HttpStatus.NOT_FOUND;
+			
 		} else {
-			OlapConnection olapConnection = connection.getOlap4jConnection().unwrap(OlapConnection.class);
-			OlapStatement statement = olapConnection.createStatement();
+			
 			String query = queryRequest.getQuery();
 			log.info("Executing query on connection " + connectionName + " with tidy=" + tidy + ": " + query);
-			ObjectMapper mapper = new ObjectMapper();
-			try {
-				CellSet cellSet = statement.executeOlapQuery(query);
+
+			CellSet cellSet = null;
+			boolean querySucceeded = false;
+			int cacheKey = queryRequest.getCacheKey();
+			if (queryCache.containsKey(cacheKey)) {
+				cellSet = queryCache.get(cacheKey);
+				responseHeaders.add("mondrian-rest-cached-result", "true");
+				log.info("Retrieved query result from cache");
+				querySucceeded = true;
+			} else {
+				OlapConnection olapConnection = connection.getOlap4jConnection().unwrap(OlapConnection.class);
+				OlapStatement statement = olapConnection.createStatement();
+				try {
+					cellSet = statement.executeOlapQuery(query);
+					queryCache.put(cacheKey, cellSet);
+					log.info("Query succeeded");
+					querySucceeded = true;
+				} catch (OlapException oe) {
+					log.warn("OlapException occurred processing query.  Stack trace follows (if debug logging).");
+					log.debug("Stack trace: ", oe);
+					Map<String, String> errorBodyMap = new HashMap<>();
+					errorBodyMap.put("reason", oe.getMessage());
+					Throwable rootCause = oe;
+					Throwable nextCause = oe.getCause();
+					while (nextCause != null) {
+						rootCause = nextCause;
+						nextCause = rootCause.getCause();
+					}
+					errorBodyMap.put("rootCauseReason", rootCause.getMessage());
+					errorBodyMap.put("SQLState", oe.getSQLState());
+					log.warn("Exception root cause: " + rootCause.getMessage());
+					body = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(errorBodyMap);
+					status = HttpStatus.valueOf(500);
+				}
+			}
+			
+			if (querySucceeded) {
 				Object output = null;
 				if (tidy) {
 					TidyCellSet tcc = new TidyCellSet();
@@ -138,28 +199,13 @@ public class MondrianRestController {
 				} else {
 					output = new CellSetWrapper(cellSet);
 				}
+
 				body = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(output);
-			} catch (OlapException oe) {
-				log.warn("OlapException occurred processing query.  Stack trace follows (if debug logging).");
-				log.debug("Stack trace: ", oe);
-				Map<String, String> errorBodyMap = new HashMap<>();
-				errorBodyMap.put("reason", oe.getMessage());
-				Throwable rootCause = oe;
-				Throwable nextCause = oe.getCause();
-				while (nextCause != null) {
-					rootCause = nextCause;
-					nextCause = rootCause.getCause();
-				}
-				errorBodyMap.put("rootCauseReason", rootCause.getMessage());
-				errorBodyMap.put("SQLState", oe.getSQLState());
-				log.warn("Exception root cause: " + rootCause.getMessage());
-				body = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(errorBodyMap);
-				status = HttpStatus.valueOf(500);
 			}
 			
 		}
 		
-		return new ResponseEntity<String>(body, status);
+		return new ResponseEntity<String>(body, responseHeaders, status);
 		
 	}
 	
