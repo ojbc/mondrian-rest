@@ -61,9 +61,15 @@ public class TidyCellSet {
 		for (CellSetAxis axis : axes) {
 			for (Position position : axis.getPositions()) {
 				for (Member member : position.getMembers()) {
-					Level level = member.getLevel();
-					if (level.getUniqueName().equals(levelUniqueName)) {
-						return level.getName();
+					Member m = member;
+					while (m != null) {
+						if (m.getMemberType() != Type.ALL) {
+							Level level = m.getLevel();
+							if (level.getUniqueName().equals(levelUniqueName)) {
+								return level.getName();
+							}
+						}
+						m = m.getParentMember();
 					}
 				}
 			}
@@ -100,6 +106,11 @@ public class TidyCellSet {
 				return ((Comparable<Integer>) o1.get(ORDER_KEY)).compareTo((Integer) o2.get(ORDER_KEY));
 			}
 		});
+		
+		for (Map<String, Object> row : ret) {
+			row.remove(HASH_KEY);
+			row.remove(ORDER_KEY);
+		}
 		
 		return ret;
 		
