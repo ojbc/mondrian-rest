@@ -166,7 +166,7 @@
 	<repositories>
 		<repository>
 			<id>pentaho-releases</id>
-			<url>http://repository.pentaho.org/artifactory/repo/</url>
+			<url>http://nexus.pentaho.org/content/groups/omni</url>
 		</repository>
 	</repositories>
 
