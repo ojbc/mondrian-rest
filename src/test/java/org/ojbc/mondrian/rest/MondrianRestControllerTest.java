@@ -49,6 +49,7 @@ import org.ojbc.mondrian.CellSetWrapper;
 import org.ojbc.mondrian.MondrianConnectionFactory.MondrianConnection;
 import org.ojbc.mondrian.TidyCellSet;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.w3c.dom.Document;
@@ -59,10 +60,13 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class MondrianRestControllerTest {
 	
 	private final Log log = LogFactory.getLog(MondrianRestControllerTest.class);
+	
+	@LocalServerPort
+	private String port;
 	
 	@Autowired
 	private MondrianRestController controller;
@@ -78,12 +82,13 @@ public class MondrianRestControllerTest {
     	httpClient = clientBuilder.build();
     	assertNotNull(httpClient);
     	assertNotNull(controller);
+    	log.info("Randomly-assigned port is " + port);
     }
 	
 	@Test
 	public void testGetConnections() throws Exception {
 		
-		HttpGet getRequest = new HttpGet("http://localhost:8080/getConnections");
+		HttpGet getRequest = new HttpGet("http://localhost:" + port + "/getConnections");
 		getRequest.addHeader("accept", "application/json");
 		HttpResponse response = httpClient.execute(getRequest);
 		assertEquals(200, response.getStatusLine().getStatusCode());
@@ -103,17 +108,17 @@ public class MondrianRestControllerTest {
 	@Test
 	public void testGetSchema() throws Exception {
 		
-		HttpGet getRequest = new HttpGet("http://localhost:8080/getSchema");
+		HttpGet getRequest = new HttpGet("http://localhost:" + port + "/getSchema");
 		getRequest.addHeader("accept", "application/xml");
 		HttpResponse response = httpClient.execute(getRequest);
 		assertEquals(404, response.getStatusLine().getStatusCode());
 		
-		getRequest = new HttpGet("http://localhost:8080/getSchema?connectionName=foobar");
+		getRequest = new HttpGet("http://localhost:" + port + "/getSchema?connectionName=foobar");
 		getRequest.addHeader("accept", "application/xml");
 		response = httpClient.execute(getRequest);
 		assertEquals(404, response.getStatusLine().getStatusCode());
 		
-		getRequest = new HttpGet("http://localhost:8080/getSchema?connectionName=test");
+		getRequest = new HttpGet("http://localhost:" + port + "/getSchema?connectionName=test");
 		getRequest.addHeader("accept", "application/xml");
 		response = httpClient.execute(getRequest);
 		assertEquals(200, response.getStatusLine().getStatusCode());
@@ -133,7 +138,7 @@ public class MondrianRestControllerTest {
 		
 		ObjectMapper mapper = new ObjectMapper();
 
-		HttpPost postRequest = new HttpPost("http://localhost:8080/query");
+		HttpPost postRequest = new HttpPost("http://localhost:" + port + "/query");
 		StringEntity requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test");
 		postRequest.setEntity(requestEntity);
 		HttpResponse response = httpClient.execute(postRequest);
@@ -170,11 +175,11 @@ public class MondrianRestControllerTest {
 	@Test
 	public void testCachedQueries() throws Exception {
 		
-		HttpGet flushRequest = new HttpGet("http://localhost:8080/flushCache");
+		HttpGet flushRequest = new HttpGet("http://localhost:" + port + "/flushCache");
 		HttpResponse response = httpClient.execute(flushRequest);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
-		HttpPost queryRequest = new HttpPost("http://localhost:8080/query");
+		HttpPost queryRequest = new HttpPost("http://localhost:" + port + "/query");
 		StringEntity requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test", true);
 		queryRequest.setEntity(requestEntity);
 		response = httpClient.execute(queryRequest);
@@ -187,7 +192,7 @@ public class MondrianRestControllerTest {
 		assertEquals("true", response.getFirstHeader("mondrian-rest-cached-result").getValue());
 		getBodyContent(response);
 		
-		flushRequest = new HttpGet("http://localhost:8080/flushCache");
+		flushRequest = new HttpGet("http://localhost:" + port + "/flushCache");
 		response = httpClient.execute(flushRequest);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
@@ -202,7 +207,7 @@ public class MondrianRestControllerTest {
 		
 		ObjectMapper mapper = new ObjectMapper();
 		
-		HttpPost postRequest = new HttpPost("http://localhost:8080/query");
+		HttpPost postRequest = new HttpPost("http://localhost:" + port + "/query");
 		StringEntity requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test", true);
 		postRequest.setEntity(requestEntity);
 		HttpResponse response = httpClient.execute(postRequest);
