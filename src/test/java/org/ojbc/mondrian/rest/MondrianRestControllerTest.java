@@ -47,7 +47,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ojbc.mondrian.CellSetWrapper;
 import org.ojbc.mondrian.MondrianConnectionFactory.MondrianConnection;
-import org.ojbc.mondrian.TidyCellSet;
+import org.ojbc.mondrian.TidyCellSetWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -215,8 +215,8 @@ public class MondrianRestControllerTest {
 		
 		String content = getBodyContent(response);
 		
-		TypeReference<TidyCellSet> typeRef = new TypeReference<TidyCellSet>() {};
-		TidyCellSet tidyCellSet = mapper.readValue(content, typeRef);
+		TypeReference<TidyCellSetWrapper> typeRef = new TypeReference<TidyCellSetWrapper>() {};
+		TidyCellSetWrapper tidyCellSet = mapper.readValue(content, typeRef);
 		List<Map<String, Object>> rows = tidyCellSet.getValues();
 		assertEquals(1, rows.size());
 		Map<String, Object> row1 = rows.get(0);

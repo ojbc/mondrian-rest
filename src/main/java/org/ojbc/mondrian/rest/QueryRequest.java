@@ -25,7 +25,20 @@ import java.util.Map;
  */
 public class QueryRequest {
 	
-	public class TidyConfig {
+	public static final class TidyConfig {
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + (enabled ? 1231 : 1237);
+			result = prime * result + ((levelNameTranslationMap == null) ? 0 : levelNameTranslationMap.hashCode());
+			result = prime * result + (simplifyNames ? 1231 : 1237);
+			return result;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			return obj != null && obj instanceof TidyConfig && obj.hashCode() == hashCode();
+		}
 		private boolean enabled;
 		private boolean simplifyNames;
 		private Map<String, String> levelNameTranslationMap;
@@ -77,6 +90,7 @@ public class QueryRequest {
 		int result = 1;
 		result = prime * result + ((connectionName == null) ? 0 : connectionName.hashCode());
 		result = prime * result + ((query == null) ? 0 : query.hashCode());
+		result = prime * result + ((tidy == null) ? 0 : tidy.hashCode());
 		return result;
 	}
 

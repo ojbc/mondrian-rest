@@ -19,6 +19,7 @@ package org.ojbc.mondrian.rest;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,8 +29,9 @@ import org.ehcache.config.Configuration;
 import org.ehcache.config.builders.CacheManagerBuilder;
 import org.ehcache.xml.XmlConfiguration;
 import org.ojbc.mondrian.CellSetWrapper;
+import org.ojbc.mondrian.CellSetWrapperType;
 import org.ojbc.mondrian.MondrianConnectionFactory;
-import org.ojbc.mondrian.TidyCellSet;
+import org.ojbc.mondrian.TidyCellSetWrapper;
 import org.olap4j.CellSet;
 import org.olap4j.OlapConnection;
 import org.olap4j.OlapException;
@@ -37,6 +39,7 @@ import org.olap4j.OlapStatement;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -55,7 +58,7 @@ public class MondrianRestController {
 	
 	private final Log log = LogFactory.getLog(MondrianRestController.class);
 	private MondrianConnectionFactory connectionFactory;
-	private Cache<Integer, CellSet> queryCache;
+	private Cache<Integer, CellSetWrapperType> queryCache;
 	
 	public MondrianRestController() throws IOException {
 		connectionFactory = new MondrianConnectionFactory();
@@ -63,7 +66,7 @@ public class MondrianRestController {
 		Configuration cacheConfig = new XmlConfiguration(getClass().getResource("/ehcache-config.xml")); 
 		CacheManager cacheManager = CacheManagerBuilder.newCacheManager(cacheConfig);
 		cacheManager.init();
-		queryCache = cacheManager.getCache("query-cache", Integer.class, CellSet.class);
+		queryCache = cacheManager.getCache("query-cache", Integer.class, CellSetWrapperType.class);
 	}
 	
 	/**
@@ -121,7 +124,7 @@ public class MondrianRestController {
 	 * @throws Exception
 	 */
 	@RequestMapping(value="/query", method=RequestMethod.POST, produces="application/json", consumes="application/json")
-	public ResponseEntity<String> query(@RequestBody QueryRequest queryRequest) throws Exception {
+	public ResponseEntity<String> query(@RequestBody QueryRequest queryRequest, @RequestAttribute(name=Application.ROLE_REQUEST_ATTRIBUTE_NAME) Optional<String> mondrianRole) throws Exception {
 		
 		boolean tidy = false;
 		boolean simplifyNames = false;
@@ -155,52 +158,60 @@ public class MondrianRestController {
 			String query = queryRequest.getQuery();
 			log.info("Executing query on connection " + connectionName + " with tidy=" + tidy + ": " + query);
 
-			CellSet cellSet = null;
+			CellSetWrapperType outputObject = null;
 			boolean querySucceeded = false;
 			int cacheKey = queryRequest.getCacheKey();
 			if (queryCache.containsKey(cacheKey)) {
-				cellSet = queryCache.get(cacheKey);
+				outputObject = queryCache.get(cacheKey);
 				responseHeaders.add("mondrian-rest-cached-result", "true");
-				log.info("Retrieved query result from cache");
+				log.debug("Retrieved query result from cache");
 				querySucceeded = true;
 			} else {
 				OlapConnection olapConnection = connection.getOlap4jConnection().unwrap(OlapConnection.class);
-				OlapStatement statement = olapConnection.createStatement();
 				try {
-					cellSet = statement.executeOlapQuery(query);
-					queryCache.put(cacheKey, cellSet);
-					log.info("Query succeeded");
-					querySucceeded = true;
-				} catch (OlapException oe) {
-					log.warn("OlapException occurred processing query.  Stack trace follows (if debug logging).");
-					log.debug("Stack trace: ", oe);
-					Map<String, String> errorBodyMap = new HashMap<>();
-					errorBodyMap.put("reason", oe.getMessage());
-					Throwable rootCause = oe;
-					Throwable nextCause = oe.getCause();
-					while (nextCause != null) {
-						rootCause = nextCause;
-						nextCause = rootCause.getCause();
+					if (mondrianRole.isPresent()) {
+						String mondrianRoleName = mondrianRole.toString();
+						olapConnection.setRoleName(mondrianRoleName);
 					}
-					errorBodyMap.put("rootCauseReason", rootCause.getMessage());
-					errorBodyMap.put("SQLState", oe.getSQLState());
-					log.warn("Exception root cause: " + rootCause.getMessage());
-					body = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(errorBodyMap);
-					status = HttpStatus.valueOf(500);
+					OlapStatement statement = olapConnection.createStatement();
+					try {
+						CellSet cellSet = statement.executeOlapQuery(query);
+						log.debug("Query succeeded");
+						if (tidy) {
+							TidyCellSetWrapper tcc = new TidyCellSetWrapper();
+							tcc.init(cellSet, simplifyNames, levelNameTranslationMap);
+							outputObject = tcc;
+						} else {
+							outputObject = new CellSetWrapper(cellSet);
+						}
+						queryCache.put(cacheKey, outputObject);
+						querySucceeded = true;
+					} catch (OlapException oe) {
+						log.warn("OlapException occurred processing query.  Stack trace follows (if debug logging).");
+						log.debug("Stack trace: ", oe);
+						Map<String, String> errorBodyMap = new HashMap<>();
+						errorBodyMap.put("reason", oe.getMessage());
+						Throwable rootCause = oe;
+						Throwable nextCause = oe.getCause();
+						while (nextCause != null) {
+							rootCause = nextCause;
+							nextCause = rootCause.getCause();
+						}
+						errorBodyMap.put("rootCauseReason", rootCause.getMessage());
+						errorBodyMap.put("SQLState", oe.getSQLState());
+						log.warn("Exception root cause: " + rootCause.getMessage());
+						body = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(errorBodyMap);
+						status = HttpStatus.valueOf(500);
+					} finally {
+						statement.close();
+					}
+				} finally {
+					olapConnection.close();
 				}
 			}
 			
 			if (querySucceeded) {
-				Object output = null;
-				if (tidy) {
-					TidyCellSet tcc = new TidyCellSet();
-					tcc.init(cellSet, simplifyNames, levelNameTranslationMap);
-					output = tcc;
-				} else {
-					output = new CellSetWrapper(cellSet);
-				}
-
-				body = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(output);
+				body = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(outputObject);
 			}
 			
 		}

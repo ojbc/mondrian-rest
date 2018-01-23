@@ -22,7 +22,7 @@
 
 	<cache alias="query-cache">
 		<key-type>java.lang.Integer</key-type>
-		<value-type>org.olap4j.CellSet</value-type>
+		<value-type>org.ojbc.mondrian.CellSetWrapperType</value-type>
 		<resources>
 			<heap unit="entries">500</heap>
 		</resources>

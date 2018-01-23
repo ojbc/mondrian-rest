@@ -30,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * A wrapper around Mondrian CellSet objects, suitable for serialization via json.
  *
  */
-public class CellSetWrapper {
+public class CellSetWrapper implements CellSetWrapperType {
 	
 	@JsonProperty("cells")
 	private List<CellWrapper> cellWrappers;

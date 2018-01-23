@@ -17,12 +17,12 @@ public class TestTidyCellSet {
 	
 	private final Log log = LogFactory.getLog(TestTidyCellSet.class);
 	
-	private TidyCellSet tidyCellSet;
+	private TidyCellSetWrapper tidyCellSet;
 	
 	@Before
 	public void setUp() {
 		log.debug("setUp");
-		tidyCellSet = new TidyCellSet();
+		tidyCellSet = new TidyCellSetWrapper();
 	}
 	
 	@Test

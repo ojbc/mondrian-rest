@@ -1,3 +1,19 @@
+/*
+ * Unless explicitly acquired and licensed from Licensor under another license, the contents of
+ * this file are subject to the Reciprocal Public License ("RPL") Version 1.5, or subsequent
+ * versions as allowed by the RPL, and You may not copy or use this file in either source code
+ * or executable form, except in compliance with the terms and conditions of the RPL
+ *
+ * All software distributed under the RPL is provided strictly on an "AS IS" basis, WITHOUT
+ * WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, AND LICENSOR HEREBY DISCLAIMS ALL SUCH
+ * WARRANTIES, INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE, QUIET ENJOYMENT, OR NON-INFRINGEMENT. See the RPL for specific language
+ * governing rights and limitations under the RPL.
+ *
+ * http://opensource.org/licenses/RPL-1.5
+ *
+ * Copyright 2012-2017 Open Justice Broker Consortium
+ */
 package org.ojbc.mondrian;
 
 import java.util.ArrayList;
@@ -17,16 +33,26 @@ import org.olap4j.metadata.Level;
 import org.olap4j.metadata.Member;
 import org.olap4j.metadata.Member.Type;
 
-public class TidyCellSet {
+/**
+ * Wrapper object for tidied cell sets.
+ *
+ */
+public class TidyCellSetWrapper implements CellSetWrapperType {
 	
 	private static final String MEASURES_LEVEL_UNIQUE_NAME = "[Measures].[MeasuresLevel]";
 	private static final String HASH_KEY = ".H";
 	private static final String ORDER_KEY = ".O";
 	
-	private final Log log = LogFactory.getLog(TidyCellSet.class);
+	private final Log log = LogFactory.getLog(TidyCellSetWrapper.class);
 	
 	private List<Map<String, Object>> values = new ArrayList<>();
 	
+	/**
+	 * Initialize this wrapper
+	 * @param cellSet the olap4j cell set to wrap
+	 * @param simplifyNames whether to simplify names or not (i.e., remove higher dimension qualifiers)
+	 * @param dimensionNameTranslationMap a map to use in creating custom names from the original names in the cell set
+	 */
 	public void init(CellSet cellSet, boolean simplifyNames, Map<String, String> dimensionNameTranslationMap) {
 		
 		log.debug("Start of init");
