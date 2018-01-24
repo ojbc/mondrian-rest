@@ -18,9 +18,7 @@ package org.ojbc.mondrian.rest;
 
 import static org.junit.Assert.*;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +37,6 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.Before;
@@ -61,7 +58,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class MondrianRestControllerTest {
+public class MondrianRestControllerTest extends AbstractMondrianRestControllerTest {
 	
 	private final Log log = LogFactory.getLog(MondrianRestControllerTest.class);
 	
@@ -221,30 +218,6 @@ public class MondrianRestControllerTest {
 		assertEquals(1, rows.size());
 		Map<String, Object> row1 = rows.get(0);
 		assertEquals(3.0, row1.get("F1_M1"));
-		
-	}
-	
-	private StringEntity buildQueryRequestEntity(String connectionName, String queryString) {
-		return new StringEntity("{ \"connectionName\" : \"" + connectionName + "\", \"query\" : \"" + queryString + "\"}", ContentType.APPLICATION_JSON);
-	}
-
-	private StringEntity buildQueryRequestEntity(String connectionName, String queryString, boolean tidy) {
-		return new StringEntity("{ \"connectionName\" : \"" + connectionName + "\", \"query\" : \"" + queryString + "\", \"tidy\" : { \"enabled\": " +
-				tidy + "}}", ContentType.APPLICATION_JSON);
-	}
-
-	private String getBodyContent(HttpResponse response) throws IOException {
-		
-		BufferedReader br = new BufferedReader(new InputStreamReader((response.getEntity().getContent())));
-		
-		StringBuffer contentBuffer = new StringBuffer();
-		String output = null;
-		
-		while ((output = br.readLine()) != null) {
-			contentBuffer.append(output);
-		}
-		
-		return contentBuffer.toString();
 		
 	}
 	

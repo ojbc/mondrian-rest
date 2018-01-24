@@ -1,3 +1,19 @@
+/*
+ * Unless explicitly acquired and licensed from Licensor under another license, the contents of
+ * this file are subject to the Reciprocal Public License ("RPL") Version 1.5, or subsequent
+ * versions as allowed by the RPL, and You may not copy or use this file in either source code
+ * or executable form, except in compliance with the terms and conditions of the RPL
+ *
+ * All software distributed under the RPL is provided strictly on an "AS IS" basis, WITHOUT
+ * WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, AND LICENSOR HEREBY DISCLAIMS ALL SUCH
+ * WARRANTIES, INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE, QUIET ENJOYMENT, OR NON-INFRINGEMENT. See the RPL for specific language
+ * governing rights and limitations under the RPL.
+ *
+ * http://opensource.org/licenses/RPL-1.5
+ *
+ * Copyright 2012-2017 Open Justice Broker Consortium
+ */
 package org.ojbc.mondrian;
 
 import java.io.IOException;
@@ -69,7 +85,15 @@ public final class MondrianConnectionFactory {
 		private URL catalogUrl;
 		private String catalogContent;
 		private String sourceResourcePath;
+		private boolean isDemo = false;
 		
+		public boolean getIsDemo() {
+			return isDemo;
+		}
+		@JsonProperty(value="IsDemo")
+		void setIsDemo(boolean value) {
+			isDemo=value;
+		}
 		@JsonProperty(value="ConnectionDefinitionSource")
 		public String getSourceResourcePath() {
 			return sourceResourcePath;
@@ -203,12 +227,22 @@ public final class MondrianConnectionFactory {
 	
 	private List<MondrianConnectionCollection> connectionCollections = new ArrayList<>();
 	private Map<String, MondrianConnection> connections = new HashMap<>();
+	private boolean removeDemoConnections;
 	
 	/**
 	 * Initialize the factory by scanning the classpath for resources matching the pattern *mondrian-connections.json.
 	 * @throws IOException if something goes wrong scanning the classpath or reading resources
 	 */
 	public void init() throws IOException  {
+		init(false);
+	}
+	
+	/**
+	 * Initialize the factory by scanning the classpath for resources matching the pattern *mondrian-connections.json.
+	 * @param removeDemoConnections whether to strip out connections where IsDemo=true
+	 * @throws IOException if something goes wrong scanning the classpath or reading resources
+	 */
+	public void init(boolean removeDemoConnections) throws IOException  {
 		
 		ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
 		Resource[] resources = resolver.getResources("classpath*:*mondrian-connections.json");
@@ -249,6 +283,8 @@ public final class MondrianConnectionFactory {
 		
 		Collections.reverse(connectionCollections);
 		
+		log.info((removeDemoConnections ? "Removing" : "Not removing") + " demo connections");
+		
 		for (MondrianConnectionCollection mcc : connectionCollections) {
 			Map<String, MondrianConnection> c = mcc.getConnections();
 			for (String name : c.keySet()) {
@@ -257,7 +293,10 @@ public final class MondrianConnectionFactory {
 					log.warn("Overriding connection " + name + " defined at " + conn.getSourceResourcePath() +
 							" with connection defined \"higher\" on the classpath, at " + c.get(name).getSourceResourcePath());
 				}
-				connections.put(name, c.get(name));
+				MondrianConnection mc = c.get(name);
+				if (!removeDemoConnections || !mc.getIsDemo()) {
+					connections.put(name, mc);
+				}
 			}
 		}
 		

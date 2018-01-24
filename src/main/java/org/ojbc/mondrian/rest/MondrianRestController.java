@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ehcache.Cache;
@@ -36,6 +38,7 @@ import org.olap4j.CellSet;
 import org.olap4j.OlapConnection;
 import org.olap4j.OlapException;
 import org.olap4j.OlapStatement;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,9 +63,13 @@ public class MondrianRestController {
 	private MondrianConnectionFactory connectionFactory;
 	private Cache<Integer, CellSetWrapperType> queryCache;
 	
-	public MondrianRestController() throws IOException {
+	@Value("${removeDemoConnections}")
+	private boolean removeDemoConnections;
+	
+	@PostConstruct
+	public void init() throws IOException {
 		connectionFactory = new MondrianConnectionFactory();
-		connectionFactory.init();
+		connectionFactory.init(removeDemoConnections);
 		Configuration cacheConfig = new XmlConfiguration(getClass().getResource("/ehcache-config.xml")); 
 		CacheManager cacheManager = CacheManagerBuilder.newCacheManager(cacheConfig);
 		cacheManager.init();
@@ -234,6 +241,10 @@ public class MondrianRestController {
 		public String getMondrianSchemaContent() {
 			return null;
 		}
+	}
+
+	public void setRemoveDemoConnections(boolean removeDemoConnections) {
+		this.removeDemoConnections = removeDemoConnections;
 	}
 
 }

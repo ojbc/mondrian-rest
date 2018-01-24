@@ -77,6 +77,7 @@ public class MondrianConnectionFactoryTest {
 	@Test
 	@Ignore
 	public void testJsonSerialization() throws Exception {
+		// This test isn't really a test, just a convenient way to dump out some json when needed
 		Map<String, MondrianConnectionFactory.MondrianConnection> connections = factory.getConnections();
 		String json = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(connections);
 		log.info(json);

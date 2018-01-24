@@ -4,7 +4,8 @@
 		"Jdbc" : "jdbc:hsqldb:res:test",
 		"Catalog" : "/test.xml",
 		"Description" : "Main version of test connection",
-		"UnrecognizedProperty" : "foobar"
+		"UnrecognizedProperty" : "foobar",
+		"IsDemo" : true
 	},
 	"foodmart" : {
 		"JdbcDrivers" : "org.hsqldb.jdbc.JDBCDriver",
@@ -12,6 +13,7 @@
 		"JdbcUser" : "FOODMART",
 		"JdbcPassword" : "FOODMART",
 		"Catalog" : "https://raw.githubusercontent.com/pentaho/mondrian/lagunitas/demo/FoodMart.mondrian.xml",
-		"Description" : "Pentaho/Hyde FoodMart Database"
+		"Description" : "Pentaho/Hyde FoodMart Database",
+		"IsDemo" : true
 	}
 }

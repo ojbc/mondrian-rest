@@ -4,6 +4,7 @@
 		"Jdbc" : "jdbc:hsqldb:res:test",
 		"Catalog" : "/test.xml",
 		"Description" : "Test version of test connection",
-		"UnrecognizedProperty" : "foobar"
+		"UnrecognizedProperty" : "foobar",
+		"IsDemo" : true
 	}
 }
