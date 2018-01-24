@@ -283,8 +283,6 @@ public final class MondrianConnectionFactory {
 		
 		Collections.reverse(connectionCollections);
 		
-		log.info((removeDemoConnections ? "Removing" : "Not removing") + " demo connections");
-		
 		for (MondrianConnectionCollection mcc : connectionCollections) {
 			Map<String, MondrianConnection> c = mcc.getConnections();
 			for (String name : c.keySet()) {
@@ -294,8 +292,13 @@ public final class MondrianConnectionFactory {
 							" with connection defined \"higher\" on the classpath, at " + c.get(name).getSourceResourcePath());
 				}
 				MondrianConnection mc = c.get(name);
-				if (!removeDemoConnections || !mc.getIsDemo()) {
+				if (mc != null && (!removeDemoConnections || !mc.getIsDemo())) {
 					connections.put(name, mc);
+				} else if (mc != null) {
+					log.info("Removing demo connection " + name + " with description '" + mc.getDescription() + "' defined at " + mc.getSourceResourcePath());
+				} else {
+					// this should never happen, but just in case...
+					log.warn("Connection defined with name " + name + " but no available definition on classpath");
 				}
 			}
 		}
