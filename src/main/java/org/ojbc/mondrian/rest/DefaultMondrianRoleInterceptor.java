@@ -28,9 +28,9 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  * Interceptor that performs no authentication on requests, and places every request in no role.
  */
 @Component
-public class DefaultAdminMondrianRoleInterceptor extends HandlerInterceptorAdapter {
+public class DefaultMondrianRoleInterceptor extends HandlerInterceptorAdapter {
 	
-	private final Log log = LogFactory.getLog(DefaultAdminMondrianRoleInterceptor.class);
+	private final Log log = LogFactory.getLog(DefaultMondrianRoleInterceptor.class);
 	
 	@Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
