@@ -62,13 +62,13 @@ public class SamlAssertionMondrianRoleInterceptor extends HandlerInterceptorAdap
 	private static final String SHIB_ASSERTION_KEY = "Shib-Assertion-01";
 	private final Log log = LogFactory.getLog(SamlAssertionMondrianRoleInterceptor.class);
 	
-	private Map<String, List<String>> federationIdRoleMappings;
+	private Map<String, String> federationIdRoleMappings;
 	
-	public Map<String, List<String>> getFederationIdRoleMappings() {
+	public Map<String, String> getFederationIdRoleMappings() {
 		return federationIdRoleMappings;
 	}
 
-	public void setFederationIdRoleMappings(Map<String, List<String>> tokenRoleMappings) {
+	public void setFederationIdRoleMappings(Map<String, String> tokenRoleMappings) {
 		this.federationIdRoleMappings = tokenRoleMappings;
 	}
 
@@ -91,9 +91,9 @@ public class SamlAssertionMondrianRoleInterceptor extends HandlerInterceptorAdap
 			URLConnection con = url.openConnection();
 			InputStream is = con.getInputStream();
 			Document assertion = parseAssertion(is);
-			List<String> roles = getRolesForAssertion(assertion);
-			if (roles != null) {
-				request.setAttribute(Application.ROLE_REQUEST_ATTRIBUTE_NAME, roles);
+			String role = getRoleForAssertion(assertion);
+			if (role != null) {
+				request.setAttribute(Application.ROLE_REQUEST_ATTRIBUTE_NAME, role);
 				ret = true;
 			} else {
 				log.debug("Authentication failed for SAML assertion with federation ID " + getFederationID(assertion));
@@ -110,7 +110,7 @@ public class SamlAssertionMondrianRoleInterceptor extends HandlerInterceptorAdap
 
 	}
 	
-	List<String> getRolesForAssertion(Document assertion) {
+	String getRoleForAssertion(Document assertion) {
 		
 		String federationID = getFederationID(assertion);
 		

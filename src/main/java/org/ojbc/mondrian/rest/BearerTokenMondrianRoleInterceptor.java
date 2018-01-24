@@ -16,7 +16,6 @@
  */
 package org.ojbc.mondrian.rest;
 
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -40,13 +39,13 @@ public class BearerTokenMondrianRoleInterceptor extends HandlerInterceptorAdapte
 	
 	private final Log log = LogFactory.getLog(BearerTokenMondrianRoleInterceptor.class);
 	
-	private Map<String, List<String>> tokenRoleMappings;
+	private Map<String, String> tokenRoleMappings;
 	
-	public Map<String, List<String>> getTokenRoleMappings() {
+	public Map<String, String> getTokenRoleMappings() {
 		return tokenRoleMappings;
 	}
 
-	public void setTokenRoleMappings(Map<String, List<String>> tokenRoleMappings) {
+	public void setTokenRoleMappings(Map<String, String> tokenRoleMappings) {
 		this.tokenRoleMappings = tokenRoleMappings;
 	}
 
@@ -62,10 +61,10 @@ public class BearerTokenMondrianRoleInterceptor extends HandlerInterceptorAdapte
 		String authHeader = request.getHeader("Authorization");
 		if (authHeader != null && authHeader.matches("^Bearer .+")) {
 			String token = authHeader.replaceFirst("^Bearer (.+)", "$1");
-			List<String> roles = tokenRoleMappings.get(token);
-			if (roles != null) {
-				request.setAttribute(Application.ROLE_REQUEST_ATTRIBUTE_NAME, roles);
-				log.debug("Successfully authenticated via bearer token " + token + ", roles=" + roles);
+			String role = tokenRoleMappings.get(token);
+			if (role != null) {
+				request.setAttribute(Application.ROLE_REQUEST_ATTRIBUTE_NAME, role);
+				log.debug("Successfully authenticated via bearer token " + token + ", role=" + role);
 				ret = true;
 			} else {
 				log.debug("Authentication failed.  Token " + token + " not found in config.");
