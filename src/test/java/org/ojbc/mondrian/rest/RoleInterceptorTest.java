@@ -1,0 +1,175 @@
+package org.ojbc.mondrian.rest;
+
+import static org.junit.Assert.*;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.ojbc.mondrian.CellSetWrapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.embedded.LocalServerPort;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.MapType;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@TestPropertySource(properties = { "mondrianRoleInterceptorBeanName=roleInterceptorTestInterceptor" })
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public class RoleInterceptorTest {
+	
+	private final Log log = LogFactory.getLog(RoleInterceptorTest.class);
+	
+	@Autowired
+	private MondrianRestController controller;
+
+	@LocalServerPort
+	private String port;
+	
+	private HttpClient httpClient;
+
+	@Before
+    public void setUp() throws Exception {
+    	RequestConfig requestConfig = RequestConfig.custom().build();
+    	HttpClientBuilder clientBuilder = HttpClientBuilder.create();
+    	clientBuilder.setDefaultRequestConfig(requestConfig);
+    	httpClient = clientBuilder.build();
+    	assertNotNull(httpClient);
+    	assertNotNull(controller);
+    	log.info("Randomly-assigned port is " + port);
+    }
+	
+	@Test
+	public void testUnauthenticatedAccess() throws Exception {
+		HttpPost postRequest = new HttpPost("http://localhost:" + port + "/query");
+		StringEntity requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test");
+		postRequest.setEntity(requestEntity);
+		// note: no user header...
+		HttpResponse response = httpClient.execute(postRequest);
+		assertEquals(403, response.getStatusLine().getStatusCode());
+	}
+	
+	@Test
+	public void testUnlimitedAccess() throws Exception {
+		ObjectMapper mapper = new ObjectMapper();
+		HttpPost postRequest = new HttpPost("http://localhost:" + port + "/query");
+		StringEntity requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test");
+		postRequest.setEntity(requestEntity);
+		postRequest.setHeader(TestMondrianRoleInterceptor.TEST_INTERCEPTOR_USER_HEADER_NAME, TestMondrianRoleInterceptor.UNLIMITED_USER_HEADER_VALUE);
+		HttpResponse response = httpClient.execute(postRequest);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		String content = getBodyContent(response);
+		CellSetWrapper csw = mapper.readValue(content, CellSetWrapper.class);
+		assertEquals(1, csw.getCellWrappers().size());
+		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_Secure");
+		postRequest.setEntity(requestEntity);
+		postRequest.setHeader(TestMondrianRoleInterceptor.TEST_INTERCEPTOR_USER_HEADER_NAME, TestMondrianRoleInterceptor.UNLIMITED_USER_HEADER_VALUE);
+		response = httpClient.execute(postRequest);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		content = getBodyContent(response);
+		csw = mapper.readValue(content, CellSetWrapper.class);
+		assertEquals(1, csw.getCellWrappers().size());
+		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test");
+		postRequest.setEntity(requestEntity);
+		postRequest.setHeader(TestMondrianRoleInterceptor.TEST_INTERCEPTOR_USER_HEADER_NAME, TestMondrianRoleInterceptor.UNLIMITED_USER_HEADER_VALUE);
+		response = httpClient.execute(postRequest);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		content = getBodyContent(response);
+		csw = mapper.readValue(content, CellSetWrapper.class);
+		assertEquals(1, csw.getCellWrappers().size());
+		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test_Secure");
+		postRequest.setEntity(requestEntity);
+		postRequest.setHeader(TestMondrianRoleInterceptor.TEST_INTERCEPTOR_USER_HEADER_NAME, TestMondrianRoleInterceptor.UNLIMITED_USER_HEADER_VALUE);
+		response = httpClient.execute(postRequest);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		content = getBodyContent(response);
+		csw = mapper.readValue(content, CellSetWrapper.class);
+		assertEquals(1, csw.getCellWrappers().size());
+	}
+	
+	@Test
+	public void testRestrictedAccess() throws Exception {
+		ObjectMapper mapper = new ObjectMapper();
+		HttpPost postRequest = new HttpPost("http://localhost:" + port + "/query");
+		StringEntity requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test");
+		postRequest.setEntity(requestEntity);
+		postRequest.setHeader(TestMondrianRoleInterceptor.TEST_INTERCEPTOR_USER_HEADER_NAME, TestMondrianRoleInterceptor.RESTRICTED_USER_HEADER_VALUE);
+		HttpResponse response = httpClient.execute(postRequest);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		String content = getBodyContent(response);
+		CellSetWrapper csw = mapper.readValue(content, CellSetWrapper.class);
+		assertEquals(1, csw.getCellWrappers().size());
+		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test_Secure");
+		postRequest.setEntity(requestEntity);
+		postRequest.setHeader(TestMondrianRoleInterceptor.TEST_INTERCEPTOR_USER_HEADER_NAME, TestMondrianRoleInterceptor.RESTRICTED_USER_HEADER_VALUE);
+		response = httpClient.execute(postRequest);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		content = getBodyContent(response);
+		csw = mapper.readValue(content, CellSetWrapper.class);
+		assertEquals(1, csw.getCellWrappers().size());
+		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test");
+		postRequest.setEntity(requestEntity);
+		postRequest.setHeader(TestMondrianRoleInterceptor.TEST_INTERCEPTOR_USER_HEADER_NAME, TestMondrianRoleInterceptor.RESTRICTED_USER_HEADER_VALUE);
+		response = httpClient.execute(postRequest);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		content = getBodyContent(response);
+		csw = mapper.readValue(content, CellSetWrapper.class);
+		assertEquals(1, csw.getCellWrappers().size());
+		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_Secure");
+		postRequest.setEntity(requestEntity);
+		postRequest.setHeader(TestMondrianRoleInterceptor.TEST_INTERCEPTOR_USER_HEADER_NAME, TestMondrianRoleInterceptor.RESTRICTED_USER_HEADER_VALUE);
+		response = httpClient.execute(postRequest);
+		assertEquals(500, response.getStatusLine().getStatusCode());
+		content = getBodyContent(response);
+		Map<String, String> errorResponse = getContentAsMap(content);
+		String rootCauseReason = errorResponse.get("rootCauseReason");
+		assertTrue(rootCauseReason.matches(".+F2_M1.+not found in cube.+Test_Secure.+"));
+	}
+	
+	private static final Map<String, String> getContentAsMap(String jsonContent) throws Exception {
+		ObjectMapper mapper = new ObjectMapper();
+		TypeFactory factory = TypeFactory.defaultInstance();
+		MapType type = factory.constructMapType(HashMap.class, String.class, String.class);
+		return mapper.readValue(jsonContent, type);
+	}
+	
+	private StringEntity buildQueryRequestEntity(String connectionName, String queryString) {
+		return new StringEntity("{ \"connectionName\" : \"" + connectionName + "\", \"query\" : \"" + queryString + "\"}", ContentType.APPLICATION_JSON);
+	}
+
+	private String getBodyContent(HttpResponse response) throws IOException {
+		
+		BufferedReader br = new BufferedReader(new InputStreamReader((response.getEntity().getContent())));
+		
+		StringBuffer contentBuffer = new StringBuffer();
+		String output = null;
+		
+		while ((output = br.readLine()) != null) {
+			contentBuffer.append(output);
+		}
+		
+		return contentBuffer.toString();
+		
+	}
+	
+}

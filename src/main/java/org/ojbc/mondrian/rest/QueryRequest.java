@@ -65,7 +65,14 @@ public class QueryRequest {
 	private String connectionName;
 	private String query;
 	private TidyConfig tidy;
+	private String mondrianRole;
 	
+	public String getMondrianRole() {
+		return mondrianRole;
+	}
+	public void setMondrianRole(String mondrianRole) {
+		this.mondrianRole = mondrianRole;
+	}
 	public String getConnectionName() {
 		return connectionName;
 	}
@@ -91,6 +98,7 @@ public class QueryRequest {
 		result = prime * result + ((connectionName == null) ? 0 : connectionName.hashCode());
 		result = prime * result + ((query == null) ? 0 : query.hashCode());
 		result = prime * result + ((tidy == null) ? 0 : tidy.hashCode());
+		result = prime * result + ((mondrianRole == null) ? 0 : mondrianRole.hashCode());
 		return result;
 	}
 

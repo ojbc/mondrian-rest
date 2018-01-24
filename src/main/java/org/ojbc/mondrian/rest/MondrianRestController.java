@@ -160,17 +160,24 @@ public class MondrianRestController {
 
 			CellSetWrapperType outputObject = null;
 			boolean querySucceeded = false;
+			
+			String mondrianRoleName = mondrianRole.isPresent() ? mondrianRole.get() : null;
+			queryRequest.setMondrianRole(mondrianRoleName);
+			
 			int cacheKey = queryRequest.getCacheKey();
+			
 			if (queryCache.containsKey(cacheKey)) {
+				
 				outputObject = queryCache.get(cacheKey);
 				responseHeaders.add("mondrian-rest-cached-result", "true");
-				log.debug("Retrieved query result from cache");
+				log.info("Retrieved query result from cache");
 				querySucceeded = true;
+				
 			} else {
+				
 				OlapConnection olapConnection = connection.getOlap4jConnection().unwrap(OlapConnection.class);
 				try {
-					if (mondrianRole.isPresent()) {
-						String mondrianRoleName = mondrianRole.toString();
+					if (mondrianRoleName != null) {
 						olapConnection.setRoleName(mondrianRoleName);
 					}
 					OlapStatement statement = olapConnection.createStatement();
@@ -208,6 +215,7 @@ public class MondrianRestController {
 				} finally {
 					olapConnection.close();
 				}
+				
 			}
 			
 			if (querySucceeded) {
