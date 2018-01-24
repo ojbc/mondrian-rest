@@ -1,6 +1,6 @@
 {
 	"test" : {
-		"JdbcDrivers" : "org.hsqldb.jdbc.JDBCDriver",
+		"JdbcDriver" : "org.hsqldb.jdbc.JDBCDriver",
 		"Jdbc" : "jdbc:hsqldb:res:test",
 		"Catalog" : "/test.xml",
 		"Description" : "Main version of test connection",
@@ -8,7 +8,7 @@
 		"IsDemo" : true
 	},
 	"foodmart" : {
-		"JdbcDrivers" : "org.hsqldb.jdbc.JDBCDriver",
+		"JdbcDriver" : "org.hsqldb.jdbc.JDBCDriver",
 		"Jdbc" : "jdbc:hsqldb:res:foodmart;set schema \"foodmart\"",
 		"JdbcUser" : "FOODMART",
 		"JdbcPassword" : "FOODMART",

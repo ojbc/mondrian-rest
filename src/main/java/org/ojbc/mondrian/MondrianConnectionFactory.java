@@ -72,8 +72,8 @@ public final class MondrianConnectionFactory {
 		
 		private final Log log = LogFactory.getLog(MondrianConnection.class);
 		
-		@JsonProperty("JdbcDrivers")
-		private String jdbcDrivers;
+		@JsonProperty("JdbcDriver")
+		private String jdbcDriver;
 		@JsonProperty("Jdbc")
 		private String jdbcConnectionString;
 		private String jdbcUser;
@@ -86,7 +86,15 @@ public final class MondrianConnectionFactory {
 		private String catalogContent;
 		private String sourceResourcePath;
 		private boolean isDemo = false;
+		private boolean jdbcDriverClass;
 		
+		public boolean isJdbcDriverClass() {
+			return jdbcDriverClass;
+		}
+		@JsonProperty(value="JdbcDriverClass")
+		public void setJdbcDriverClass(boolean jdbcDriverClass) {
+			this.jdbcDriverClass = jdbcDriverClass;
+		}
 		public boolean getIsDemo() {
 			return isDemo;
 		}
@@ -98,8 +106,8 @@ public final class MondrianConnectionFactory {
 		public String getSourceResourcePath() {
 			return sourceResourcePath;
 		}
-		public String getJdbcDrivers() {
-			return jdbcDrivers;
+		public String getJdbcDriver() {
+			return jdbcDriver;
 		}
 		public String getJdbcConnectionString() {
 			return jdbcConnectionString;
@@ -176,7 +184,7 @@ public final class MondrianConnectionFactory {
 		 */
 		@JsonIgnore
 		public java.sql.Connection getOlap4jConnection() throws SQLException {
-
+			
 			try {
 				Class.forName("mondrian.olap4j.MondrianOlap4jDriver");
 			} catch (ClassNotFoundException e) {
@@ -186,7 +194,7 @@ public final class MondrianConnectionFactory {
 			
 			Properties props = new Properties();
 			setPropertyValue(props, "Jdbc", jdbcConnectionString);
-			setPropertyValue(props, "JdbcDrivers", jdbcDrivers);
+			setPropertyValue(props, "JdbcDrivers", jdbcDriver);
 			setPropertyValue(props, "CatalogContent", catalogContent);
 			setPropertyValue(props, "JdbcUser", jdbcUser);
 			setPropertyValue(props, "JdbcPassword", jdbcPassword);
@@ -201,8 +209,8 @@ public final class MondrianConnectionFactory {
 				log.warn("JDBC Connection String (specified by json property \"Jdbc\") is null");
 				ret = false;
 			}
-			if (jdbcDrivers == null) {
-				log.warn("JDBC Driver (specified by json property \"JdbcDrivers\") is null");
+			if (jdbcDriver == null) {
+				log.warn("JDBC Driver (specified by json property \"JdbcDriver\") is null");
 				ret = false;
 			}
 			if (catalog == null) {
@@ -227,7 +235,6 @@ public final class MondrianConnectionFactory {
 	
 	private List<MondrianConnectionCollection> connectionCollections = new ArrayList<>();
 	private Map<String, MondrianConnection> connections = new HashMap<>();
-	private boolean removeDemoConnections;
 	
 	/**
 	 * Initialize the factory by scanning the classpath for resources matching the pattern *mondrian-connections.json.
@@ -243,6 +250,15 @@ public final class MondrianConnectionFactory {
 	 * @throws IOException if something goes wrong scanning the classpath or reading resources
 	 */
 	public void init(boolean removeDemoConnections) throws IOException  {
+		
+		try {
+			//Class<?> c = Class.forName("org.mariadb.jdbc.Driver");
+			//log.info("Found class " + c.getCanonicalName());
+			//new DriverManagerDataSource("jdbc:mysql://analytics-db:3306/ojbc_booking_dimensional_demo");
+			//java.sql.Connection conn = java.sql.DriverManager.getConnection("jdbc:mysql://analytics-db:3306/ojbc_booking_dimensional_demo");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 		ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
 		Resource[] resources = resolver.getResources("classpath*:*mondrian-connections.json");

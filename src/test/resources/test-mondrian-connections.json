@@ -1,6 +1,6 @@
 {
 	"test" : {
-		"JdbcDrivers" : "org.hsqldb.jdbc.JDBCDriver",
+		"JdbcDriver" : "org.hsqldb.jdbc.JDBCDriver",
 		"Jdbc" : "jdbc:hsqldb:res:test",
 		"Catalog" : "/test.xml",
 		"Description" : "Test version of test connection",
