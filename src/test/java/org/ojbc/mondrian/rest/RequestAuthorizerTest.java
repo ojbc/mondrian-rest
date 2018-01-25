@@ -43,11 +43,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@TestPropertySource(properties = { "mondrianRoleInterceptorBeanName=roleInterceptorTestInterceptor" })
+@TestPropertySource(properties = { "requestAuthorizerBeanName=requestAuthorizerTestAuthorizer" })
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class RoleInterceptorTest extends AbstractMondrianRestControllerTest {
+public class RequestAuthorizerTest extends AbstractMondrianRestControllerTest {
 	
-	private final Log log = LogFactory.getLog(RoleInterceptorTest.class);
+	private final Log log = LogFactory.getLog(RequestAuthorizerTest.class);
 	
 	@Autowired
 	private MondrianRestController controller;
@@ -84,7 +84,7 @@ public class RoleInterceptorTest extends AbstractMondrianRestControllerTest {
 		HttpPost postRequest = new HttpPost("http://localhost:" + port + "/query");
 		StringEntity requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test");
 		postRequest.setEntity(requestEntity);
-		postRequest.setHeader(TestMondrianRoleInterceptor.TEST_INTERCEPTOR_USER_HEADER_NAME, TestMondrianRoleInterceptor.UNLIMITED_USER_HEADER_VALUE);
+		postRequest.setHeader(TestRequestAuthorizer.TEST_REQUEST_AUTHORIZER_USER_HEADER_NAME, TestRequestAuthorizer.UNLIMITED_USER_HEADER_VALUE);
 		HttpResponse response = httpClient.execute(postRequest);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		String content = getBodyContent(response);
@@ -92,7 +92,7 @@ public class RoleInterceptorTest extends AbstractMondrianRestControllerTest {
 		assertEquals(1, csw.getCellWrappers().size());
 		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_Secure");
 		postRequest.setEntity(requestEntity);
-		postRequest.setHeader(TestMondrianRoleInterceptor.TEST_INTERCEPTOR_USER_HEADER_NAME, TestMondrianRoleInterceptor.UNLIMITED_USER_HEADER_VALUE);
+		postRequest.setHeader(TestRequestAuthorizer.TEST_REQUEST_AUTHORIZER_USER_HEADER_NAME, TestRequestAuthorizer.UNLIMITED_USER_HEADER_VALUE);
 		response = httpClient.execute(postRequest);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		content = getBodyContent(response);
@@ -100,7 +100,7 @@ public class RoleInterceptorTest extends AbstractMondrianRestControllerTest {
 		assertEquals(1, csw.getCellWrappers().size());
 		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test");
 		postRequest.setEntity(requestEntity);
-		postRequest.setHeader(TestMondrianRoleInterceptor.TEST_INTERCEPTOR_USER_HEADER_NAME, TestMondrianRoleInterceptor.UNLIMITED_USER_HEADER_VALUE);
+		postRequest.setHeader(TestRequestAuthorizer.TEST_REQUEST_AUTHORIZER_USER_HEADER_NAME, TestRequestAuthorizer.UNLIMITED_USER_HEADER_VALUE);
 		response = httpClient.execute(postRequest);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		content = getBodyContent(response);
@@ -108,7 +108,7 @@ public class RoleInterceptorTest extends AbstractMondrianRestControllerTest {
 		assertEquals(1, csw.getCellWrappers().size());
 		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test_Secure");
 		postRequest.setEntity(requestEntity);
-		postRequest.setHeader(TestMondrianRoleInterceptor.TEST_INTERCEPTOR_USER_HEADER_NAME, TestMondrianRoleInterceptor.UNLIMITED_USER_HEADER_VALUE);
+		postRequest.setHeader(TestRequestAuthorizer.TEST_REQUEST_AUTHORIZER_USER_HEADER_NAME, TestRequestAuthorizer.UNLIMITED_USER_HEADER_VALUE);
 		response = httpClient.execute(postRequest);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		content = getBodyContent(response);
@@ -122,7 +122,7 @@ public class RoleInterceptorTest extends AbstractMondrianRestControllerTest {
 		HttpPost postRequest = new HttpPost("http://localhost:" + port + "/query");
 		StringEntity requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test");
 		postRequest.setEntity(requestEntity);
-		postRequest.setHeader(TestMondrianRoleInterceptor.TEST_INTERCEPTOR_USER_HEADER_NAME, TestMondrianRoleInterceptor.RESTRICTED_USER_HEADER_VALUE);
+		postRequest.setHeader(TestRequestAuthorizer.TEST_REQUEST_AUTHORIZER_USER_HEADER_NAME, TestRequestAuthorizer.RESTRICTED_USER_HEADER_VALUE);
 		HttpResponse response = httpClient.execute(postRequest);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		String content = getBodyContent(response);
@@ -130,7 +130,7 @@ public class RoleInterceptorTest extends AbstractMondrianRestControllerTest {
 		assertEquals(1, csw.getCellWrappers().size());
 		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test_Secure");
 		postRequest.setEntity(requestEntity);
-		postRequest.setHeader(TestMondrianRoleInterceptor.TEST_INTERCEPTOR_USER_HEADER_NAME, TestMondrianRoleInterceptor.RESTRICTED_USER_HEADER_VALUE);
+		postRequest.setHeader(TestRequestAuthorizer.TEST_REQUEST_AUTHORIZER_USER_HEADER_NAME, TestRequestAuthorizer.RESTRICTED_USER_HEADER_VALUE);
 		response = httpClient.execute(postRequest);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		content = getBodyContent(response);
@@ -138,7 +138,7 @@ public class RoleInterceptorTest extends AbstractMondrianRestControllerTest {
 		assertEquals(1, csw.getCellWrappers().size());
 		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test");
 		postRequest.setEntity(requestEntity);
-		postRequest.setHeader(TestMondrianRoleInterceptor.TEST_INTERCEPTOR_USER_HEADER_NAME, TestMondrianRoleInterceptor.RESTRICTED_USER_HEADER_VALUE);
+		postRequest.setHeader(TestRequestAuthorizer.TEST_REQUEST_AUTHORIZER_USER_HEADER_NAME, TestRequestAuthorizer.RESTRICTED_USER_HEADER_VALUE);
 		response = httpClient.execute(postRequest);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		content = getBodyContent(response);
@@ -146,7 +146,7 @@ public class RoleInterceptorTest extends AbstractMondrianRestControllerTest {
 		assertEquals(1, csw.getCellWrappers().size());
 		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_Secure");
 		postRequest.setEntity(requestEntity);
-		postRequest.setHeader(TestMondrianRoleInterceptor.TEST_INTERCEPTOR_USER_HEADER_NAME, TestMondrianRoleInterceptor.RESTRICTED_USER_HEADER_VALUE);
+		postRequest.setHeader(TestRequestAuthorizer.TEST_REQUEST_AUTHORIZER_USER_HEADER_NAME, TestRequestAuthorizer.RESTRICTED_USER_HEADER_VALUE);
 		response = httpClient.execute(postRequest);
 		assertEquals(500, response.getStatusLine().getStatusCode());
 		content = getBodyContent(response);

@@ -17,24 +17,19 @@
 package org.ojbc.mondrian.rest;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 /**
- * Interceptor that performs no authentication on requests, and places every request in no role.
+ * Interface for objects that can authorize query requests incoming to the API.
+ *
  */
-@Component
-public class DefaultMondrianRoleInterceptor extends HandlerInterceptorAdapter {
+public interface RequestAuthorizer {
 	
-	private final Log log = LogFactory.getLog(DefaultMondrianRoleInterceptor.class);
+	static final class RequestAuthorizationStatus {
+		public boolean authorized;
+		public String message;
+		public String mondrianRole;
+	}
 	
-	@Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        return true;
-    }
+	public RequestAuthorizationStatus authorizeRequest(HttpServletRequest request, QueryRequest queryRequest) throws Exception;
 
 }

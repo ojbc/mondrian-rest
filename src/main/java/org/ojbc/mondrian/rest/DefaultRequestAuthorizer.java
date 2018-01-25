@@ -16,25 +16,21 @@
  */
 package org.ojbc.mondrian.rest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.web.support.SpringBootServletInitializer;
+import javax.servlet.http.HttpServletRequest;
 
-@SpringBootApplication
-public class Application extends SpringBootServletInitializer {
-	
-	private final Log log = LogFactory.getLog(Application.class);
+import org.springframework.stereotype.Component;
+
+/**
+ * RequestAuthorizer that authorizes all requests and assigns all requests a null role.
+ */
+@Component
+public class DefaultRequestAuthorizer implements RequestAuthorizer {
 	
 	@Override
-	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-        return application.sources(Application.class);
-    }
+	public RequestAuthorizationStatus authorizeRequest(HttpServletRequest request, QueryRequest queryRequest) throws Exception {
+		RequestAuthorizationStatus ret = new RequestAuthorizationStatus();
+		ret.authorized = true;
+		return ret;
+	}
 
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
-    }
-    
 }

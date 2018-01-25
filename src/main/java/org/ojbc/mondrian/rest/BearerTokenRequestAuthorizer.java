@@ -19,25 +19,22 @@ package org.ojbc.mondrian.rest;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 /**
- * Interceptor that performs bearer token authentication on each request, and determines that user's roles and
- * sets the appropriate property on the passed-along http request.
+ * RequestAuthorizer that uses bearer token authentication on each request and determines that user's role for the connection in the query request.
  */
 @Component
-@PropertySource("classpath:bearer-token-mondrian-role-interceptor.properties")
+@PropertySource("classpath:bearer-token-request-authorizer.properties")
 @ConfigurationProperties
-public class BearerTokenMondrianRoleInterceptor extends HandlerInterceptorAdapter {
+public class BearerTokenRequestAuthorizer implements RequestAuthorizer {
 	
-	private final Log log = LogFactory.getLog(BearerTokenMondrianRoleInterceptor.class);
+	private final Log log = LogFactory.getLog(BearerTokenRequestAuthorizer.class);
 	
 	private Map<String, String> tokenRoleMappings;
 	
@@ -50,31 +47,27 @@ public class BearerTokenMondrianRoleInterceptor extends HandlerInterceptorAdapte
 	}
 
 	@Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-		return authenticateRequest(request, response);
-    }
-
-	boolean authenticateRequest(HttpServletRequest request, HttpServletResponse response) {
+	public RequestAuthorizationStatus authorizeRequest(HttpServletRequest request, QueryRequest queryRequest) {
 		
-		boolean ret = false;
+		RequestAuthorizationStatus ret = new RequestAuthorizationStatus();
 		
 		String authHeader = request.getHeader("Authorization");
 		if (authHeader != null && authHeader.matches("^Bearer .+")) {
 			String token = authHeader.replaceFirst("^Bearer (.+)", "$1");
+			// todo: need to lookup role by connection name
 			String role = tokenRoleMappings.get(token);
 			if (role != null) {
-				request.setAttribute(Application.ROLE_REQUEST_ATTRIBUTE_NAME, role);
 				log.debug("Successfully authenticated via bearer token " + token + ", role=" + role);
-				ret = true;
+				ret.authorized = true;
+				ret.message = null;
+				ret.mondrianRole = role;
 			} else {
-				log.debug("Authentication failed.  Token " + token + " not found in config.");
+				ret.authorized = false;
+				ret.message = "Authentication failed.  Token " + token + " not found in config.";
 			}
 		} else {
-			log.debug("Authentication failed, no bearer authentication header present in request.");
-		}
-		
-		if (!ret) {
-			response.setStatus(403);
+			ret.authorized = false;
+			ret.message = "Authentication failed, no bearer authentication header present in request.";
 		}
 		
         return ret;

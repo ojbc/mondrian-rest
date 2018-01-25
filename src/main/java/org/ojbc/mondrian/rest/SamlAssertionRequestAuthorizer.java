@@ -17,14 +17,12 @@
 package org.ojbc.mondrian.rest;
 
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.GeneralSecurityException;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import javax.net.ssl.HostnameVerifier;
@@ -34,7 +32,6 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
@@ -47,20 +44,18 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import org.w3c.dom.Document;
 
 /**
- * Interceptor that authenticates requests only if they have a valid SAML assertion.  Roles are assigned
- * based on a lookup of the FederationID attribute in the assertion.
+ * RequestAuthorizer that uses information in a SAML assertion to authorize each request and determine that user's role for the connection in the query request.
  */
 @Component
-@PropertySource("classpath:saml-assertion-mondrian-role-interceptor.properties")
+@PropertySource("classpath:saml-assertion-request-authorizer.properties")
 @ConfigurationProperties
-public class SamlAssertionMondrianRoleInterceptor extends HandlerInterceptorAdapter {
+public class SamlAssertionRequestAuthorizer implements RequestAuthorizer {
 	
 	private static final String SHIB_ASSERTION_KEY = "Shib-Assertion-01";
-	private final Log log = LogFactory.getLog(SamlAssertionMondrianRoleInterceptor.class);
+	private final Log log = LogFactory.getLog(SamlAssertionRequestAuthorizer.class);
 	
 	private Map<String, String> federationIdRoleMappings;
 	
@@ -73,14 +68,10 @@ public class SamlAssertionMondrianRoleInterceptor extends HandlerInterceptorAdap
 	}
 
 	@Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-		return authenticateRequest(request, response);
-    }
-
-	boolean authenticateRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
-
-		boolean ret = false;
-
+	public RequestAuthorizationStatus authorizeRequest(HttpServletRequest request, QueryRequest queryRequest) throws Exception {
+		
+		RequestAuthorizationStatus ret = new RequestAuthorizationStatus();
+		
 		fixCertificatePathError();
 
 		// Hard coded to pick up a single assertion...could loop through assertion headers if there will be more than one
@@ -93,23 +84,22 @@ public class SamlAssertionMondrianRoleInterceptor extends HandlerInterceptorAdap
 			Document assertion = parseAssertion(is);
 			String role = getRoleForAssertion(assertion);
 			if (role != null) {
-				request.setAttribute(Application.ROLE_REQUEST_ATTRIBUTE_NAME, role);
-				ret = true;
+				ret.authorized = true;
+				ret.message = null;
+				ret.mondrianRole = role;
 			} else {
-				log.debug("Authentication failed for SAML assertion with federation ID " + getFederationID(assertion));
+				ret.authorized = false;
+				ret.message = "Authentication failed for SAML assertion with federation ID " + getFederationID(assertion);
 			}
 		} else {
-			log.warn("No assertion found in request");
+			ret.authorized = false;
+			ret.message = "No assertion found in request";
 		}
 		
-		if (!ret) {
-			response.setStatus(403);
-		}
-
-		return ret;
-
+        return ret;
+        
 	}
-	
+
 	String getRoleForAssertion(Document assertion) {
 		
 		String federationID = getFederationID(assertion);
@@ -127,7 +117,7 @@ public class SamlAssertionMondrianRoleInterceptor extends HandlerInterceptorAdap
 		XPath xPath = XPathFactory.newInstance().newXPath();
 		xPath.setNamespaceContext(new NamespaceContext() {
 			@Override
-			public Iterator getPrefixes(String uri) {
+			public Iterator<String> getPrefixes(String uri) {
 				return "urn:oasis:names:tc:SAML:2.0:assertion".equals(uri) ? Collections.singletonList("saml2").iterator() : null;
 			}
 			@Override
