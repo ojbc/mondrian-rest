@@ -168,8 +168,10 @@ public class MondrianRestController {
 
 			if (connection == null) {
 
-				log.warn("Query submitted for connection that does not exist: " + connectionName);
+				String missingConnectionErrorMessage = "Query submitted for connection that does not exist: " + connectionName;
+				log.warn(missingConnectionErrorMessage);
 				status = HttpStatus.NOT_FOUND;
+				body = "{\"message\" : \"" + missingConnectionErrorMessage + "\"}";
 
 			} else {
 
@@ -212,8 +214,7 @@ public class MondrianRestController {
 							queryCache.put(cacheKey, outputObject);
 							querySucceeded = true;
 						} catch (OlapException oe) {
-							log.warn(
-									"OlapException occurred processing query.  Stack trace follows (if debug logging).");
+							log.warn("OlapException occurred processing query.  Stack trace follows (if debug logging).");
 							log.debug("Stack trace: ", oe);
 							Map<String, String> errorBodyMap = new HashMap<>();
 							errorBodyMap.put("reason", oe.getMessage());
@@ -247,6 +248,7 @@ public class MondrianRestController {
 
 		} else {
 			
+			log.warn(authorizationStatus.message);
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 			
 		}

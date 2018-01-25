@@ -1,0 +1,8 @@
+{
+	"STATE:AGENCY:IDP:user1" : {
+		"test": "ROLE_ADMIN"
+	},
+	"STATE:AGENCY:IDP:user2" : {
+		"test": "ROLE_USER"
+	}
+}

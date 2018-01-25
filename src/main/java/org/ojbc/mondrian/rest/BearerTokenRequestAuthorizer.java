@@ -18,55 +18,75 @@ package org.ojbc.mondrian.rest;
 
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
  * RequestAuthorizer that uses bearer token authentication on each request and determines that user's role for the connection in the query request.
  */
 @Component
-@PropertySource("classpath:bearer-token-request-authorizer.properties")
-@ConfigurationProperties
 public class BearerTokenRequestAuthorizer implements RequestAuthorizer {
 	
 	private final Log log = LogFactory.getLog(BearerTokenRequestAuthorizer.class);
 	
-	private Map<String, String> tokenRoleMappings;
+	private Map<String, Map<String, String>> tokenRoleMappings;
 	
-	public Map<String, String> getTokenRoleMappings() {
+	@Value("${bearerTokenRequestAuthorizerConfigFileName:bearer-token-request-authorizer.json}")
+	private String bearerTokenRequestAuthorizerConfigFileName;
+	
+	@PostConstruct
+	public void init() throws Exception {
+		tokenRoleMappings = RequestAuthorizer.AuthorizerUtil.convertRoleConnectionJsonToMaps(bearerTokenRequestAuthorizerConfigFileName);
+	}
+	
+	public void setBearerTokenRequestAuthorizerConfigFileName(String bearerTokenRequestAuthorizerConfigFileName) {
+		this.bearerTokenRequestAuthorizerConfigFileName = bearerTokenRequestAuthorizerConfigFileName;
+	}
+
+	public Map<String, Map<String, String>> getTokenRoleMappings() {
 		return tokenRoleMappings;
 	}
-
-	public void setTokenRoleMappings(Map<String, String> tokenRoleMappings) {
+	
+	void setTokenRoleMappings(Map<String, Map<String, String>> tokenRoleMappings) {
 		this.tokenRoleMappings = tokenRoleMappings;
 	}
-
+	
 	@Override
 	public RequestAuthorizationStatus authorizeRequest(HttpServletRequest request, QueryRequest queryRequest) {
 		
 		RequestAuthorizationStatus ret = new RequestAuthorizationStatus();
+		ret.authorized = false;
 		
 		String authHeader = request.getHeader("Authorization");
 		if (authHeader != null && authHeader.matches("^Bearer .+")) {
 			String token = authHeader.replaceFirst("^Bearer (.+)", "$1");
-			// todo: need to lookup role by connection name
-			String role = tokenRoleMappings.get(token);
-			if (role != null) {
-				log.debug("Successfully authenticated via bearer token " + token + ", role=" + role);
-				ret.authorized = true;
-				ret.message = null;
-				ret.mondrianRole = role;
+			Map<String, String> connectionMappings = tokenRoleMappings.get(token);
+			if (connectionMappings != null) {
+				String connectionName = queryRequest.getConnectionName();
+				if (connectionName != null) {
+					String role = connectionMappings.get(connectionName);
+					if (role != null) {
+						ret.authorized = true;
+						ret.mondrianRole = role;
+						if (role.equals(ALL_ACCESS_ROLE_NAME)) {
+							ret.mondrianRole = null;
+						}
+					} else {
+						ret.message = "Authentication failed.  Token " + token + " found in config but not mapped to any connections.";
+					}
+				} else {
+					ret.message = "Authentication failed.  Query request did not specify a connection.";
+				}
+				
 			} else {
-				ret.authorized = false;
 				ret.message = "Authentication failed.  Token " + token + " not found in config.";
 			}
 		} else {
-			ret.authorized = false;
 			ret.message = "Authentication failed, no bearer authentication header present in request.";
 		}
 		

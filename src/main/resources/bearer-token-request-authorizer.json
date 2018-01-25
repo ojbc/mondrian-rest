@@ -1,0 +1,10 @@
+{
+	"TOKEN1" : {
+		"test": "org.ojbc.mondrian.rest.RequestAuthorizer-All-Access",
+		"foodmart": "org.ojbc.mondrian.rest.RequestAuthorizer-All-Access"
+	},
+	"TOKEN2" : {
+		"test": "Restricted_User",
+		"foodmart": "org.ojbc.mondrian.rest.RequestAuthorizer-All-Access"
+	}
+}

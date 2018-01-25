@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -41,8 +42,7 @@ import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 
@@ -50,66 +50,84 @@ import org.w3c.dom.Document;
  * RequestAuthorizer that uses information in a SAML assertion to authorize each request and determine that user's role for the connection in the query request.
  */
 @Component
-@PropertySource("classpath:saml-assertion-request-authorizer.properties")
-@ConfigurationProperties
 public class SamlAssertionRequestAuthorizer implements RequestAuthorizer {
 	
 	private static final String SHIB_ASSERTION_KEY = "Shib-Assertion-01";
 	private final Log log = LogFactory.getLog(SamlAssertionRequestAuthorizer.class);
 	
-	private Map<String, String> federationIdRoleMappings;
+	private Map<String, Map<String, String>> federationIdRoleMappings;
 	
-	public Map<String, String> getFederationIdRoleMappings() {
+	@Value("${samlAssertionRequestAuthorizerConfigFileName:saml-assertion-request-authorizer.json}")
+	private String samlAssertionRequestAuthorizerConfigFileName;
+	
+	@PostConstruct
+	public void init() throws Exception {
+		federationIdRoleMappings = RequestAuthorizer.AuthorizerUtil.convertRoleConnectionJsonToMaps(samlAssertionRequestAuthorizerConfigFileName);
+	}
+	
+	public void setSamlAssertionRequestAuthorizerConfigFileName(String samlAssertionRequestAuthorizerConfigFileName) {
+		this.samlAssertionRequestAuthorizerConfigFileName = samlAssertionRequestAuthorizerConfigFileName;
+	}
+
+	public Map<String, Map<String, String>> getFederationIdRoleMappings() {
 		return federationIdRoleMappings;
 	}
 
-	public void setFederationIdRoleMappings(Map<String, String> tokenRoleMappings) {
-		this.federationIdRoleMappings = tokenRoleMappings;
+	void setFederationIdRoleMappings(Map<String, Map<String, String>> federationIdRoleMappings) {
+		this.federationIdRoleMappings = federationIdRoleMappings;
 	}
 
 	@Override
 	public RequestAuthorizationStatus authorizeRequest(HttpServletRequest request, QueryRequest queryRequest) throws Exception {
 		
 		RequestAuthorizationStatus ret = new RequestAuthorizationStatus();
+		ret.authorized = false;
 		
 		fixCertificatePathError();
 
 		// Hard coded to pick up a single assertion...could loop through assertion headers if there will be more than one
 		String assertionRetrievalURL = request.getHeader(SHIB_ASSERTION_KEY);
-
+		
 		if (assertionRetrievalURL != null) {
 			URL url = new URL(assertionRetrievalURL);
 			URLConnection con = url.openConnection();
 			InputStream is = con.getInputStream();
 			Document assertion = parseAssertion(is);
-			String role = getRoleForAssertion(assertion);
-			if (role != null) {
-				ret.authorized = true;
-				ret.message = null;
-				ret.mondrianRole = role;
+			Map<String, String> connectionMappings = getConnectionMappingsForAssertion(assertion);
+			if (connectionMappings != null) {
+				String connectionName = queryRequest.getConnectionName();
+				if (connectionName != null) {
+					String role = connectionMappings.get(connectionName);
+					if (role != null) {
+						ret.authorized = true;
+						ret.mondrianRole = role;
+						if (role.equals(ALL_ACCESS_ROLE_NAME)) {
+							ret.mondrianRole = null;
+						}
+					} else {
+						ret.message = "Authentication failed for SAML assertion with federation ID " + getFederationID(assertion) + " for connection " + connectionName;
+					}
+				} else {
+					ret.message = "Authentication failed.  Query request did not specify a connection.";
+				}
+				
 			} else {
-				ret.authorized = false;
-				ret.message = "Authentication failed for SAML assertion with federation ID " + getFederationID(assertion);
+				ret.message = "Authentication failed.  No connection-role mappings found for assertion with federation ID " + getFederationID(assertion);
 			}
 		} else {
-			ret.authorized = false;
-			ret.message = "No assertion found in request";
+			ret.message = "Authentication failed.  No assertion found in request.";
 		}
-		
+
         return ret;
         
 	}
 
-	String getRoleForAssertion(Document assertion) {
-		
+	Map<String, String> getConnectionMappingsForAssertion(Document assertion) {
 		String federationID = getFederationID(assertion);
-		
 		if (federationID != null) {
 			return federationIdRoleMappings.get(federationID);
 		}
-		
 		return null;
-		
 	}
 	
 	String getFederationID(Document assertion) {

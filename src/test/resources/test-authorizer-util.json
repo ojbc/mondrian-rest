@@ -1,0 +1,10 @@
+{
+	"outerKey1" : {
+		"innerKey1.1" : "1.1",
+		"innerKey1.2" : "1.2"
+	},
+	"outerKey2" : {
+		"innerKey2.1" : "2.1",
+		"innerKey2.2" : "2.2"
+	}
+}
