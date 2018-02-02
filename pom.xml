@@ -165,9 +165,9 @@
 
 	<repositories>
 		<repository>
-			<id>pentaho-releases</id>
-			<url>http://nexus.pentaho.org/content/groups/omni</url>
-		</repository>
+    		<id>pentaho-releases</id>
+    		<url>https://public.nexus.pentaho.org/content/groups/omni/</url>
+    	</repository>
 	</repositories>
 
 	<distributionManagement>
