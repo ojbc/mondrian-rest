@@ -6,5 +6,13 @@
 	"TOKEN2" : {
 		"test": "Restricted_User",
 		"foodmart": "org.ojbc.mondrian.rest.RequestAuthorizer-All-Access"
+	},
+	"CA_MANAGER_TOKEN" : {
+		"test": "org.ojbc.mondrian.rest.RequestAuthorizer-All-Access",
+		"foodmart": "California manager"
+	},
+	"NO_HR_CUBE_TOKEN" : {
+		"test": "org.ojbc.mondrian.rest.RequestAuthorizer-All-Access",
+		"foodmart": "No HR Cube"
 	}
 }
