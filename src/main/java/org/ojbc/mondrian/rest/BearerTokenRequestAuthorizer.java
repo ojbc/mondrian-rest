@@ -65,6 +65,7 @@ public class BearerTokenRequestAuthorizer implements RequestAuthorizer {
 		String authHeader = request.getHeader("Authorization");
 		if (authHeader != null && authHeader.matches("^Bearer .+")) {
 			String token = authHeader.replaceFirst("^Bearer (.+)", "$1");
+			ret.token = token;
 			Map<String, String> connectionMappings = tokenRoleMappings.get(token);
 			if (connectionMappings != null) {
 				String connectionName = queryRequest.getConnectionName();

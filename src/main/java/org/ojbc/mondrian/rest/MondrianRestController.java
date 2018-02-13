@@ -176,13 +176,14 @@ public class MondrianRestController {
 			} else {
 
 				String query = queryRequest.getQuery();
-				log.info("Executing query on connection " + connectionName + " with tidy=" + tidy + ": " + query);
+				String mondrianRoleName = authorizationStatus.mondrianRole;
+				queryRequest.setMondrianRole(mondrianRoleName);
+
+				log.info("Token " + authorizationStatus.token + " with role " + mondrianRoleName +
+						" executing query on connection " + connectionName + " with tidy=" + tidy + ": " + query);
 
 				CellSetWrapperType outputObject = null;
 				boolean querySucceeded = false;
-
-				String mondrianRoleName = authorizationStatus.mondrianRole;
-				queryRequest.setMondrianRole(mondrianRoleName);
 
 				int cacheKey = queryRequest.getCacheKey();
 

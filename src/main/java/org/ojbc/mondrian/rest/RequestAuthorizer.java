@@ -39,6 +39,7 @@ public interface RequestAuthorizer {
 		public boolean authorized;
 		public String message;
 		public String mondrianRole;
+		public String token;
 	}
 	
 	static final class AuthorizerUtil {

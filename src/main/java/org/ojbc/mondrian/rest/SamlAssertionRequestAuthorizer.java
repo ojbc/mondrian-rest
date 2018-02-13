@@ -101,6 +101,7 @@ public class SamlAssertionRequestAuthorizer implements RequestAuthorizer {
 					if (role != null) {
 						ret.authorized = true;
 						ret.mondrianRole = role;
+						ret.token = getFederationID(assertion);
 						if (role.equals(ALL_ACCESS_ROLE_NAME)) {
 							ret.mondrianRole = null;
 						}

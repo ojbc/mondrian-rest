@@ -30,6 +30,7 @@ public class DefaultRequestAuthorizer implements RequestAuthorizer {
 	public RequestAuthorizationStatus authorizeRequest(HttpServletRequest request, QueryRequest queryRequest) throws Exception {
 		RequestAuthorizationStatus ret = new RequestAuthorizationStatus();
 		ret.authorized = true;
+		ret.token = "[None]";
 		return ret;
 	}
 
