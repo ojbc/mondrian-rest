@@ -1,4 +1,4 @@
-# 
+#
 # Unless explicitly acquired and licensed from Licensor under another license, the contents of
 # this file are subject to the Reciprocal Public License ("RPL") Version 1.5, or subsequent
 # versions as allowed by the RPL, and You may not copy or use this file in either source code
@@ -13,8 +13,11 @@
 # http://opensource.org/licenses/RPL-1.5
 #
 # Copyright 2012-2017 Open Justice Broker Consortium
-# 
+#
 
 FROM ojbc/java8-tomcat8
 
 COPY files/mondrian-rest.war /opt/tomcat/webapps/
+
+RUN mkdir -p /opt/tomcat/shared/config
+COPY files/catalina.properties /opt/tomcat/conf/
