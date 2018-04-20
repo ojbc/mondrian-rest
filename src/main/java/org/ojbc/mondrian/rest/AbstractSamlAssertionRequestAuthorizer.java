@@ -22,6 +22,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.w3c.dom.Document;
 
 /**
@@ -47,6 +48,7 @@ public abstract class AbstractSamlAssertionRequestAuthorizer implements RequestA
 		}
 	};
 
+	@Value("${samlAssertionTokenAttributeName:null}")
 	protected String tokenAttributeName;
 
 	@Override
@@ -89,10 +91,14 @@ public abstract class AbstractSamlAssertionRequestAuthorizer implements RequestA
 	}
 
 	protected String getToken(Document assertion) {
+		return getAssertionAttributeValue(assertion, tokenAttributeName);
+	}
+	
+	protected String getAssertionAttributeValue(Document assertion, String attributeName) {
 		XPath xPath = XPathFactory.newInstance().newXPath();
 		xPath.setNamespaceContext(SAML_NAMESPACE_CONTEXT);
 		try {
-			String expression = "/saml2:Assertion/saml2:AttributeStatement/saml2:Attribute[@Name='" + tokenAttributeName + "']/saml2:AttributeValue";
+			String expression = "/saml2:Assertion/saml2:AttributeStatement/saml2:Attribute[@Name='" + attributeName + "']/saml2:AttributeValue";
 			return (String) xPath.evaluate(expression, assertion, XPathConstants.STRING);
 		} catch (XPathExpressionException e) {
 			throw new RuntimeException(e);
