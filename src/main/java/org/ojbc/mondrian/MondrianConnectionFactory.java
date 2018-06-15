@@ -251,15 +251,6 @@ public final class MondrianConnectionFactory {
 	 */
 	public void init(boolean removeDemoConnections) throws IOException  {
 		
-		try {
-			//Class<?> c = Class.forName("org.mariadb.jdbc.Driver");
-			//log.info("Found class " + c.getCanonicalName());
-			//new DriverManagerDataSource("jdbc:mysql://analytics-db:3306/ojbc_booking_dimensional_demo");
-			//java.sql.Connection conn = java.sql.DriverManager.getConnection("jdbc:mysql://analytics-db:3306/ojbc_booking_dimensional_demo");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
 		ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
 		Resource[] resources = resolver.getResources("classpath*:*mondrian-connections.json");
 		
