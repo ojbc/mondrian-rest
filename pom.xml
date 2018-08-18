@@ -19,6 +19,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
+	<!--
+
+	Note: building Mondrian REST requires a specific version of Mondrian that does not appear to be available
+	in any public maven repo.  Thus you must build it from source.  See BUILD.md in this directory for details.
+
+	-->
+
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.ojbc</groupId>
 	<artifactId>mondrian-rest</artifactId>
@@ -33,7 +40,7 @@
 	</parent>
 
 	<properties>
-		<pentaho-version>4.4-SNAPSHOT</pentaho-version>
+		<pentaho-version>4.7.0.15-157</pentaho-version>
 		<foodmart-hsqldb-version>0.4</foodmart-hsqldb-version>
 		<mockito-version>1.10.19</mockito-version>
 	</properties>
@@ -162,13 +169,6 @@
 		</dependency>
 
 	</dependencies>
-
-	<repositories>
-		<repository>
-    		<id>pentaho-releases</id>
-    		<url>https://public.nexus.pentaho.org/content/groups/omni/</url>
-    	</repository>
-	</repositories>
 
 	<distributionManagement>
 		<snapshotRepository>
