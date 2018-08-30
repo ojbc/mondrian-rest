@@ -18,8 +18,8 @@
 FROM tomcat:8.5
 
 RUN cd /tmp && \
-  curl -O http://central.maven.org/maven2/org/ojbc/mondrian-rest/1.3.0/mondrian-rest-1.3.0.war && \
-  mv mondrian-rest-1.3.0.war /usr/local/tomcat/webapps/mondrian-rest.war && \
+  curl -O http://central.maven.org/maven2/org/ojbc/mondrian-rest/1.3.1/mondrian-rest-1.3.1.war && \
+  mv mondrian-rest-1.3.1.war /usr/local/tomcat/webapps/mondrian-rest.war && \
   cd /usr/local/tomcat
 
 RUN sed -i s/8080/80/g /usr/local/tomcat/conf/server.xml
