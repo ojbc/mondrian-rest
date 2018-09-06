@@ -34,11 +34,13 @@ import org.ehcache.xml.XmlConfiguration;
 import org.ojbc.mondrian.CellSetWrapper;
 import org.ojbc.mondrian.CellSetWrapperType;
 import org.ojbc.mondrian.MondrianConnectionFactory;
+import org.ojbc.mondrian.SchemaWrapper;
 import org.ojbc.mondrian.TidyCellSetWrapper;
 import org.olap4j.CellSet;
 import org.olap4j.OlapConnection;
 import org.olap4j.OlapException;
 import org.olap4j.OlapStatement;
+import org.olap4j.metadata.Schema;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -127,6 +129,48 @@ public class MondrianRestController {
 		queryCache.clear();
 		log.info("Query cache flushed");
 		return new ResponseEntity<Void>(HttpStatus.OK);
+	}
+	
+	@RequestMapping(value="/getMetadata", method=RequestMethod.GET, produces="application/json")
+	public ResponseEntity<String> getMetadata(String connectionName) throws Exception {
+		
+		String body = null;
+		HttpStatus status = HttpStatus.OK;
+		
+		MondrianConnectionFactory.MondrianConnection connection = connectionFactory.getConnections().get(connectionName);
+		
+		if (connection == null) {
+			log.warn("Attempt to retrieve metadata for connection that does not exist: " + connectionName);
+			status = HttpStatus.NOT_FOUND;
+		} else {
+			ObjectMapper mapper = new ObjectMapper();
+			try {
+				
+				OlapConnection olapConnection = connection.getOlap4jConnection().unwrap(OlapConnection.class);
+				Schema schema = olapConnection.getOlapSchema();
+				SchemaWrapper schemaWrapper = new SchemaWrapper(schema);
+				body = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(schemaWrapper);
+			} catch (OlapException oe) {
+				log.warn("OlapException occurred retrieving metadata.  Stack trace follows (if debug logging).");
+				log.debug("Stack trace: ", oe);
+				Map<String, String> errorBodyMap = new HashMap<>();
+				errorBodyMap.put("reason", oe.getMessage());
+				Throwable rootCause = oe;
+				Throwable nextCause = oe.getCause();
+				while (nextCause != null) {
+					rootCause = nextCause;
+					nextCause = rootCause.getCause();
+				}
+				errorBodyMap.put("rootCauseReason", rootCause.getMessage());
+				errorBodyMap.put("SQLState", oe.getSQLState());
+				log.warn("Exception root cause: " + rootCause.getMessage());
+				body = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(errorBodyMap);
+				status = HttpStatus.valueOf(500);
+			}
+		}
+		
+		return new ResponseEntity<String>(body, status);
+		
 	}
 	
 	/**

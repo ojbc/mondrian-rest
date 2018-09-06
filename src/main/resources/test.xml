@@ -29,7 +29,7 @@
 	<Dimension name='D1' table='D1' key='D1_ID'>
         <Attributes>
             <Attribute name='D1_ID' keyColumn='D1_ID' hasHierarchy='false'/>
-            <Attribute name='D1_DESCRIPTION' keyColumn='D1_DESCRIPTION' hasHierarchy='false' orderByColumn="D1_ID"/>
+            <Attribute name='D1_DESCRIPTION' keyColumn='D1_DESCRIPTION' hasHierarchy='false' orderByColumn="D1_ID" approxRowCount="5"/>
         </Attributes>
         <Hierarchies>
             <Hierarchy name='D1' allMemberName='All'>

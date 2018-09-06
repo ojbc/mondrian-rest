@@ -12,7 +12,7 @@
  *
  * http://opensource.org/licenses/RPL-1.5
  *
- * Copyright 2012-2017 Open Justice Broker Consortium
+ * Copyright 2012-2018 Open Justice Broker Consortium and Cascadia Analytics LLC
  */
 package org.ojbc.mondrian.rest;
 
@@ -43,7 +43,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ojbc.mondrian.CellSetWrapper;
+import org.ojbc.mondrian.HierarchyWrapper;
 import org.ojbc.mondrian.MondrianConnectionFactory.MondrianConnection;
+import org.ojbc.mondrian.SchemaWrapper;
 import org.ojbc.mondrian.TidyCellSetWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
@@ -128,6 +130,57 @@ public class MondrianRestControllerTest extends AbstractMondrianRestControllerTe
 		Element e = (Element) xPath.evaluate("/Schema[@name='Test']/PhysicalSchema/Table[@name='F1']", schemaXml.getDocumentElement(), XPathConstants.NODE);
 		assertNotNull(e);
 		
+	}
+	
+	@Test
+	public void testGetMetadata() throws Exception {
+		
+		HttpGet getRequest = new HttpGet("http://localhost:" + port + "/getMetadata");
+		getRequest.addHeader("accept", "application/json");
+		HttpResponse response = httpClient.execute(getRequest);
+		assertEquals(404, response.getStatusLine().getStatusCode());
+		
+		getRequest = new HttpGet("http://localhost:" + port + "/getMetadata?connectionName=foobar");
+		getRequest.addHeader("accept", "application/json");
+		response = httpClient.execute(getRequest);
+		assertEquals(404, response.getStatusLine().getStatusCode());
+		
+		getRequest = new HttpGet("http://localhost:" + port + "/getMetadata?connectionName=test");
+		getRequest.addHeader("accept", "application/json");
+		response = httpClient.execute(getRequest);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		ObjectMapper mapper = new ObjectMapper();
+
+		String content = getBodyContent(response);
+		//log.info(content);
+		TypeReference<SchemaWrapper> typeRef = new TypeReference<SchemaWrapper>() {};
+		
+		SchemaWrapper schemaWrapper = mapper.readValue(content, typeRef);
+		assertEquals("Test", schemaWrapper.getName());
+		assertEquals(2, schemaWrapper.getCubes().size());
+		assertEquals("Test", schemaWrapper.getCubes().get(0).getName());
+		assertEquals("Test", schemaWrapper.getCubes().get(0).getCaption());
+		
+		assertEquals(5, schemaWrapper.getCubes().get(0).getMeasures().size());
+		assertEquals("F1_M1", schemaWrapper.getCubes().get(0).getMeasures().get(0).getName());
+		assertEquals("F1_M1", schemaWrapper.getCubes().get(0).getMeasures().get(0).getCaption());
+		assertTrue(schemaWrapper.getCubes().get(0).getMeasures().get(0).isVisible());
+		assertTrue(!schemaWrapper.getCubes().get(0).getMeasures().get(0).isCalculated());
+		assertEquals(3, schemaWrapper.getCubes().get(0).getDimensions().size());
+		
+		assertEquals("Measures", schemaWrapper.getCubes().get(0).getDimensions().get(0).getName());
+		assertEquals("D1", schemaWrapper.getCubes().get(0).getDimensions().get(1).getName());
+		assertEquals("D2", schemaWrapper.getCubes().get(0).getDimensions().get(2).getName());
+
+		assertEquals(1, schemaWrapper.getCubes().get(0).getDimensions().get(1).getHierarchies().size());
+		HierarchyWrapper hw = schemaWrapper.getCubes().get(0).getDimensions().get(1).getHierarchies().get(0);
+		assertEquals("D1", hw.getName());
+		assertEquals(2, hw.getLevels().size());
+		
+		assertEquals("D1_DESCRIPTION", hw.getLevels().get(1).getName());
+		assertEquals(5, hw.getLevels().get(1).getCardinality());
+
 	}
 	
 	@Test
