@@ -128,7 +128,7 @@ directory to the Spring Boot classpath.  Then place the `*mondrian-connections.j
 
 #### API Usage
 
-There are currently three main operations available in the API:
+There are currently four main operations available in the API:
 
 `/getConnections`: Returns information about the olap4j connections currently available to the API
 
@@ -191,6 +191,69 @@ $: curl -s http://localhost:58080/mondrian-rest/getSchema?connectionName=foodmar
             <Key>
                 <Column name='employee_id'/>
             </Key>
+$:
+```
+
+`/getMetadata?connectionName=[name]`: Retrieves the olap4j metadata structure for the specified connection
+
+This contains much the same information as the `/getSchema` method.  However, `/getMetadata` actually retrieves the metadata
+from a working connection, which enhances the returned information with data pulled from the underlying database source.  Importantly, this
+includes the Members within each Level in each Dimension's Hierarchy.
+
+Example:
+
+```
+$ curl -s http://localhost:8080/getMetadata?connectionName=foodmart | head -50
+{
+  "name" : "FoodMart",
+  "cubes" : [ {
+    "name" : "Sales 2",
+    "caption" : "Sales 2",
+    "measures" : [ {
+      "name" : "Sales Count",
+      "caption" : "Sales Count",
+      "visible" : true,
+      "calculated" : false
+    }, {
+      "name" : "Unit Sales",
+      "caption" : "Unit Sales",
+      "visible" : true,
+      "calculated" : false
+    }, {
+      "name" : "Store Sales",
+      "caption" : "Store Sales",
+      "visible" : true,
+      "calculated" : false
+    }, {
+      "name" : "Store Cost",
+      "caption" : "Store Cost",
+      "visible" : true,
+      "calculated" : false
+    }, {
+      "name" : "Customer Count",
+      "caption" : "Customer Count",
+      "visible" : true,
+      "calculated" : false
+    }, {
+      "name" : "Profit",
+      "caption" : "Profit",
+      "visible" : true,
+      "calculated" : true
+    }, {
+      "name" : "Profit last Period",
+      "caption" : "Profit last Period",
+      "visible" : false,
+      "calculated" : true
+    } ],
+    "dimensions" : [ {
+      "name" : "Measures",
+      "caption" : "Measures",
+      "type" : "",
+      "hierarchies" : [ {
+        "name" : "Measures",
+        "caption" : "Measures",
+        "levels" : [ {
+          "name" : "MeasuresLevel",
 $:
 ```
 
