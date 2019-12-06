@@ -33,6 +33,7 @@ public class PositionWrapper {
 	private List<String> memberDimensionCaptions;
 	private List<String> memberDimensionValues;
 	private List<String> memberLevelNames;
+	private List<String> memberLevelCaptions;
 	
 	PositionWrapper() {
 		
@@ -44,16 +45,26 @@ public class PositionWrapper {
 		memberDimensionCaptions = new ArrayList<>();
 		memberDimensionValues = new ArrayList<>();
 		memberLevelNames = new ArrayList<>();
+		memberLevelCaptions = new ArrayList<>();
 		
 		for (Member member : position.getMembers()) {
 			memberDimensionNames.add(member.getDimension().getName());
 			memberDimensionCaptions.add(member.getDimension().getCaption());
 			memberDimensionValues.add(member.getName());
 			memberLevelNames.add(member.getLevel().getUniqueName());
+			memberLevelCaptions.add(member.getLevel().getCaption());
 		}
 		
 	}
 	
+	public List<String> getMemberLevelCaptions() {
+		return Collections.unmodifiableList(memberLevelCaptions);
+	}
+
+	public void setMemberLevelCaptions(List<String> memberLevelCaptions) {
+		this.memberLevelCaptions = memberLevelCaptions;
+	}
+
 	public List<String> getMemberDimensionNames() {
 		return Collections.unmodifiableList(memberDimensionNames);
 	}
@@ -94,6 +105,7 @@ public class PositionWrapper {
 		result = prime * result + ((memberDimensionNames == null) ? 0 : memberDimensionNames.hashCode());
 		result = prime * result + ((memberDimensionValues == null) ? 0 : memberDimensionValues.hashCode());
 		result = prime * result + ((memberLevelNames == null) ? 0 : memberLevelNames.hashCode());
+		result = prime * result + ((memberLevelCaptions == null) ? 0 : memberLevelCaptions.hashCode());
 		return result;
 	}
 
