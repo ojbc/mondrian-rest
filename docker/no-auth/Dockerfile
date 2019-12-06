@@ -18,11 +18,14 @@
 FROM tomcat:8.5
 
 RUN cd /tmp && \
-  curl -O http://central.maven.org/maven2/org/ojbc/mondrian-rest/1.3.1/mondrian-rest-1.3.1.war && \
-  mv mondrian-rest-1.3.1.war /usr/local/tomcat/webapps/mondrian-rest.war && \
-  cd /usr/local/tomcat
+  curl -O http://central.maven.org/maven2/org/ojbc/mondrian-rest/1.3.3/mondrian-rest-1.3.3.war && \
+  mv mondrian-rest-1.3.3.war /usr/local/tomcat/webapps/mondrian-rest.war
+
+# COPY files/mondrian-rest-1.3.3.war /usr/local/tomcat/webapps/mondrian-rest.war
 
 RUN sed -i s/8080/80/g /usr/local/tomcat/conf/server.xml
 
 RUN mkdir -p /usr/local/tomcat/shared/config
 COPY files/catalina.properties /usr/local/tomcat/conf/
+
+WORKDIR /usr/local/tomcat
