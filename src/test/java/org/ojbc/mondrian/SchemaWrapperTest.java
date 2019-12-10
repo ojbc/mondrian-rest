@@ -29,8 +29,9 @@ public class SchemaWrapperTest {
 	@Test
 	public void test() throws Exception {
 		Schema schema = TestSchemaFactory.getInstance().getSchema();
-		SchemaWrapper schemaWrapper = new SchemaWrapper(schema);
+		SchemaWrapper schemaWrapper = new SchemaWrapper(schema, "foo");
 		assertEquals(schema.getName(), schemaWrapper.getName());
+		assertEquals("foo", schemaWrapper.getConnectionName());
 		List<Cube> cubes = schema.getCubes();
 		List<CubeWrapper> cubeWrappers = schemaWrapper.getCubes();
 		assertEquals(cubes.size(), cubeWrappers.size());

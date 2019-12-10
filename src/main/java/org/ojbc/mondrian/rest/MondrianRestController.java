@@ -148,7 +148,7 @@ public class MondrianRestController {
 				
 				OlapConnection olapConnection = connection.getOlap4jConnection().unwrap(OlapConnection.class);
 				Schema schema = olapConnection.getOlapSchema();
-				SchemaWrapper schemaWrapper = new SchemaWrapper(schema);
+				SchemaWrapper schemaWrapper = new SchemaWrapper(schema, connectionName);
 				body = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(schemaWrapper);
 			} catch (OlapException oe) {
 				log.warn("OlapException occurred retrieving metadata.  Stack trace follows (if debug logging).");

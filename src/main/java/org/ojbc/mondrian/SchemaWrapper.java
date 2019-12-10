@@ -31,13 +31,15 @@ import org.olap4j.metadata.Schema;
 public class SchemaWrapper {
 	
 	private String name;
+	private String connectionName;
 	private List<CubeWrapper> cubes;
 	
 	SchemaWrapper() {
 	}
 	
-	public SchemaWrapper(Schema schema) throws OlapException {
+	public SchemaWrapper(Schema schema, String connectionName) throws OlapException {
 		this.name = schema.getName();
+		this.connectionName = connectionName;
 		cubes = new ArrayList<>();
 		for (Cube cube : schema.getCubes()) {
 			cubes.add(new CubeWrapper(cube));
@@ -58,6 +60,14 @@ public class SchemaWrapper {
 
 	void setCubes(List<CubeWrapper> cubes) {
 		this.cubes = cubes;
+	}
+
+	public String getConnectionName() {
+		return connectionName;
+	}
+
+	public void setConnectionName(String connectionName) {
+		this.connectionName = connectionName;
 	}
 
 }
