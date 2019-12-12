@@ -31,9 +31,7 @@ public class PositionWrapper {
 	
 	private List<String> memberDimensionNames;
 	private List<String> memberDimensionCaptions;
-	private List<String> memberDimensionValues;
-	private List<String> memberLevelNames;
-	private List<String> memberLevelCaptions;
+	private List<PositionMemberWrapper> memberWrappers;
 	
 	PositionWrapper() {
 		
@@ -43,26 +41,18 @@ public class PositionWrapper {
 		
 		memberDimensionNames = new ArrayList<>();
 		memberDimensionCaptions = new ArrayList<>();
-		memberDimensionValues = new ArrayList<>();
-		memberLevelNames = new ArrayList<>();
-		memberLevelCaptions = new ArrayList<>();
+		memberWrappers = new ArrayList<>();
 		
 		for (Member member : position.getMembers()) {
 			memberDimensionNames.add(member.getDimension().getName());
 			memberDimensionCaptions.add(member.getDimension().getCaption());
-			memberDimensionValues.add(member.getName());
-			memberLevelNames.add(member.getLevel().getUniqueName());
-			memberLevelCaptions.add(member.getLevel().getCaption());
+			memberWrappers.add(new PositionMemberWrapper(member));
 		}
 		
 	}
 	
-	public List<String> getMemberLevelCaptions() {
-		return Collections.unmodifiableList(memberLevelCaptions);
-	}
-
-	public void setMemberLevelCaptions(List<String> memberLevelCaptions) {
-		this.memberLevelCaptions = memberLevelCaptions;
+	public List<PositionMemberWrapper> getPositionMembers() {
+		return Collections.unmodifiableList(memberWrappers);
 	}
 
 	public List<String> getMemberDimensionNames() {
@@ -73,14 +63,6 @@ public class PositionWrapper {
 		return Collections.unmodifiableList(memberDimensionCaptions);
 	}
 
-	public List<String> getMemberDimensionValues() {
-		return Collections.unmodifiableList(memberDimensionValues);
-	}
-
-	public List<String> getMemberLevelNames() {
-		return Collections.unmodifiableList(memberLevelNames);
-	}
-
 	void setMemberDimensionNames(List<String> memberDimensionNames) {
 		this.memberDimensionNames = memberDimensionNames;
 	}
@@ -89,12 +71,8 @@ public class PositionWrapper {
 		this.memberDimensionCaptions = memberDimensionCaptions;
 	}
 
-	void setMemberDimensionValues(List<String> memberDimensionValues) {
-		this.memberDimensionValues = memberDimensionValues;
-	}
-
-	void setMemberLevelNames(List<String> memberLevelNames) {
-		this.memberLevelNames = memberLevelNames;
+	void setPositionMembers(List<PositionMemberWrapper> memberWrappers) {
+		this.memberWrappers = memberWrappers;
 	}
 
 	@Override
@@ -103,9 +81,7 @@ public class PositionWrapper {
 		int result = 1;
 		result = prime * result + ((memberDimensionCaptions == null) ? 0 : memberDimensionCaptions.hashCode());
 		result = prime * result + ((memberDimensionNames == null) ? 0 : memberDimensionNames.hashCode());
-		result = prime * result + ((memberDimensionValues == null) ? 0 : memberDimensionValues.hashCode());
-		result = prime * result + ((memberLevelNames == null) ? 0 : memberLevelNames.hashCode());
-		result = prime * result + ((memberLevelCaptions == null) ? 0 : memberLevelCaptions.hashCode());
+		result = prime * result + ((memberWrappers == null) ? 0 : memberWrappers.hashCode());
 		return result;
 	}
 

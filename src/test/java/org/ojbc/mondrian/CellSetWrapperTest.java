@@ -47,7 +47,8 @@ public class CellSetWrapperTest {
 		PositionWrapper positionWrapper = positions.get(0);
 		assertEquals(Collections.singletonList("Measures"), positionWrapper.getMemberDimensionNames());
 		assertEquals(Collections.singletonList("Measures"), positionWrapper.getMemberDimensionCaptions());
-		assertEquals(Collections.singletonList("M1"), positionWrapper.getMemberDimensionValues());
+		assertEquals(positionWrapper.getPositionMembers().size(), 1);
+		assertEquals("M1", positionWrapper.getPositionMembers().get(0).getMemberValue());
 		
 		List<CellWrapper> cells = w.getCellWrappers();
 		assertEquals(1, cells.size());
@@ -79,7 +80,8 @@ public class CellSetWrapperTest {
 		PositionWrapper positionWrapper = columnPositions.get(0);
 		assertEquals(Collections.singletonList("Measures"), positionWrapper.getMemberDimensionNames());
 		assertEquals(Collections.singletonList("Measures"), positionWrapper.getMemberDimensionCaptions());
-		assertEquals(Collections.singletonList("M1"), positionWrapper.getMemberDimensionValues());
+		assertEquals(positionWrapper.getPositionMembers().size(), 1);
+		assertEquals("M1", positionWrapper.getPositionMembers().get(0).getMemberValue());
 		
 		axisWrapper = axes.get(1);
 		assertEquals("ROWS", axisWrapper.getName());
@@ -91,12 +93,15 @@ public class CellSetWrapperTest {
 		positionWrapper = rowPositions.get(0);
 		assertEquals(Collections.singletonList("D1"), positionWrapper.getMemberDimensionNames());
 		assertEquals(Collections.singletonList("D1"), positionWrapper.getMemberDimensionCaptions());
-		assertEquals(Collections.singletonList("D1_V1"), positionWrapper.getMemberDimensionValues());
+		assertEquals(positionWrapper.getPositionMembers().size(), 1);
+		assertEquals("D1_V1", positionWrapper.getPositionMembers().get(0).getMemberValue());
+
 		
 		positionWrapper = rowPositions.get(1);
 		assertEquals(Collections.singletonList("D1"), positionWrapper.getMemberDimensionNames());
 		assertEquals(Collections.singletonList("D1"), positionWrapper.getMemberDimensionCaptions());
-		assertEquals(Collections.singletonList("D1_V2"), positionWrapper.getMemberDimensionValues());
+		assertEquals(positionWrapper.getPositionMembers().size(), 1);
+		assertEquals("D1_V2", positionWrapper.getPositionMembers().get(0).getMemberValue());
 		
 		List<CellWrapper> cells = w.getCellWrappers();
 		assertEquals(2, cells.size());
@@ -108,9 +113,9 @@ public class CellSetWrapperTest {
 		List<Integer> coordinates = cellWrapper.getCoordinates();
 		assertEquals(Arrays.asList(new Integer[]{0, 0}), coordinates);
 		assertEquals(Collections.singletonList("Measures"), columnPositions.get(coordinates.get(0)).getMemberDimensionNames());
-		assertEquals(Collections.singletonList("M1"), columnPositions.get(coordinates.get(0)).getMemberDimensionValues());
+		assertEquals("M1", columnPositions.get(coordinates.get(0)).getPositionMembers().get(0).getMemberValue());
 		assertEquals(Collections.singletonList("D1"), rowPositions.get(coordinates.get(1)).getMemberDimensionNames());
-		assertEquals(Collections.singletonList("D1_V1"), rowPositions.get(coordinates.get(1)).getMemberDimensionValues());
+		assertEquals("D1_V1", rowPositions.get(coordinates.get(0)).getPositionMembers().get(0).getMemberValue());
 		
 		cellWrapper = cells.get(1);
 		assertEquals(2.0, cellWrapper.getValue());
@@ -119,9 +124,9 @@ public class CellSetWrapperTest {
 		coordinates = cellWrapper.getCoordinates();
 		assertEquals(Arrays.asList(new Integer[]{0, 1}), coordinates);
 		assertEquals(Collections.singletonList("Measures"), columnPositions.get(coordinates.get(0)).getMemberDimensionNames());
-		assertEquals(Collections.singletonList("M1"), columnPositions.get(coordinates.get(0)).getMemberDimensionValues());
+		assertEquals("M1", columnPositions.get(coordinates.get(0)).getPositionMembers().get(0).getMemberValue());
 		assertEquals(Collections.singletonList("D1"), rowPositions.get(coordinates.get(1)).getMemberDimensionNames());
-		assertEquals(Collections.singletonList("D1_V2"), rowPositions.get(coordinates.get(1)).getMemberDimensionValues());
+		assertEquals("D1_V2", rowPositions.get(coordinates.get(1)).getPositionMembers().get(0).getMemberValue());
 		
 	}
 	
@@ -146,7 +151,9 @@ public class CellSetWrapperTest {
 		for (PositionWrapper positionWrapper : columnPositions) {
 			assertEquals(Arrays.asList(new String[] {"Measures", "D1"}), positionWrapper.getMemberDimensionNames());
 			assertEquals(Arrays.asList(new String[] {"Measures", "D1"}), positionWrapper.getMemberDimensionCaptions());
-			assertEquals(Arrays.asList(new String[] {"M1", "D1_V" + valIndex++}), positionWrapper.getMemberDimensionValues());
+			assertEquals(positionWrapper.getPositionMembers().size(), 2);
+			assertEquals(positionWrapper.getPositionMembers().get(0).getMemberValue(), "M1");
+			assertEquals(positionWrapper.getPositionMembers().get(1).getMemberValue(), "D1_V" + valIndex++);
 		}
 		
 		AxisWrapper rowsAxis = axes.get(1);
@@ -161,7 +168,8 @@ public class CellSetWrapperTest {
 		for (PositionWrapper positionWrapper : columnPositions) {
 			assertEquals(Collections.singletonList("D2"), positionWrapper.getMemberDimensionNames());
 			assertEquals(Collections.singletonList("D2"), positionWrapper.getMemberDimensionCaptions());
-			assertEquals(Collections.singletonList("D2_V" + valIndex++), positionWrapper.getMemberDimensionValues());
+			assertEquals(positionWrapper.getPositionMembers().size(), 1);
+			assertEquals(positionWrapper.getPositionMembers().get(0).getMemberValue(), "D2_V" + valIndex++);
 		}
 		
 		Double[] expectedValues = new Double[] {1.0, 10.0, 2.0, 11.0, 3.0, null};
