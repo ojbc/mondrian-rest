@@ -29,7 +29,7 @@ import org.olap4j.metadata.Member;
  */
 public class LevelWrapper {
 	
-	static final int CARDINALITY_LIMIT = 100;
+	static final int CARDINALITY_LIMIT = Integer.MAX_VALUE;
 	
 	private String name;
 	private String caption;

@@ -17,11 +17,11 @@
 
 FROM tomcat:8.5
 
-RUN cd /tmp && \
-  curl -O http://central.maven.org/maven2/org/ojbc/mondrian-rest/1.3.4/mondrian-rest-1.3.4.war && \
-  mv mondrian-rest-1.3.4.war /usr/local/tomcat/webapps/mondrian-rest.war
+# RUN cd /tmp && \
+#   curl -O http://central.maven.org/maven2/org/ojbc/mondrian-rest/1.3.5/mondrian-rest-1.3.5.war && \
+#   mv mondrian-rest-1.3.5.war /usr/local/tomcat/webapps/mondrian-rest.war
 
-# COPY files/mondrian-rest-1.3.4.war /usr/local/tomcat/webapps/mondrian-rest.war
+COPY files/mondrian-rest.war /usr/local/tomcat/webapps/mondrian-rest.war
 
 RUN sed -i s/8080/80/g /usr/local/tomcat/conf/server.xml
 

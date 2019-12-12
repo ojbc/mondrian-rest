@@ -18,7 +18,9 @@ package org.ojbc.mondrian;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olap4j.OlapException;
 import org.olap4j.metadata.Member;
@@ -45,16 +47,18 @@ public class MemberWrapper {
 		this.name = member.getName();
 		this.caption = member.getCaption();
 		this.isAll = member.isAll();
-		this.childMemberCount = member.getChildMemberCount();
 		childMembers = new ArrayList<>();
-		if (childMemberCount <= LevelWrapper.CARDINALITY_LIMIT) {
-			childMembersPopulated = true;
-			for(Member child : member.getChildMembers()) {
+		childMembersPopulated = true;
+		// this appears necessary because Mondrian seems to include some dup members...
+		Map<String, Integer> handledMemberLookup = new HashMap<>();
+		for(Member child : member.getChildMembers()) {
+			String childName = child.getName();
+			if (!handledMemberLookup.keySet().contains(childName) || handledMemberLookup.get(childName) == 0) {
 				childMembers.add(new MemberWrapper(child));
+				handledMemberLookup.put(childName, child.getChildMembers().size());
 			}
-		} else {
-			childMembersPopulated = false;
 		}
+		this.childMemberCount = childMembers.size();
 	}
 
 	public String getName() {

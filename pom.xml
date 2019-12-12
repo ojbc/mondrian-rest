@@ -29,7 +29,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.ojbc</groupId>
 	<artifactId>mondrian-rest</artifactId>
-	<version>1.3.4</version>
+	<version>1.3.5</version>
 	<name>Mondrian REST API Implementation</name>
 	<packaging>war</packaging>
 
