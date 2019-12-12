@@ -12,7 +12,7 @@ public class PositionMemberWrapper {
 	PositionMemberWrapper() {}
 	
 	PositionMemberWrapper(Member member) {
-		this.memberLevelName = member.getLevel().getName();
+		this.memberLevelName = member.getLevel().getUniqueName();
 		this.memberLevelCaption = member.getLevel().getCaption();
 		this.memberValue = member.getName();
 		Member parentMember = member.getParentMember();
