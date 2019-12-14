@@ -44,6 +44,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ojbc.mondrian.CellSetWrapper;
 import org.ojbc.mondrian.HierarchyWrapper;
+import org.ojbc.mondrian.MeasureGroupWrapper;
 import org.ojbc.mondrian.MondrianConnectionFactory.MondrianConnection;
 import org.ojbc.mondrian.SchemaWrapper;
 import org.ojbc.mondrian.TidyCellSetWrapper;
@@ -180,6 +181,26 @@ public class MondrianRestControllerTest extends AbstractMondrianRestControllerTe
 		
 		assertEquals("D1_DESCRIPTION", hw.getLevels().get(1).getName());
 		assertEquals(5, hw.getLevels().get(1).getCardinality());
+		
+		List<MeasureGroupWrapper> measureGroupList = schemaWrapper.getCubes().get(0).getMeasureGroups();
+		assertEquals(3, measureGroupList.size());
+
+		assertEquals(1, measureGroupList.get(0).getMeasureReferences().size());
+		assertEquals("F1_M1", measureGroupList.get(0).getMeasureReferences().get(0));
+		assertEquals(1, measureGroupList.get(0).getDimensionReferences().size());
+		assertEquals("D1", measureGroupList.get(0).getDimensionReferences().get(0));
+		
+		assertEquals(1, measureGroupList.get(1).getMeasureReferences().size());
+		assertEquals("F2_M1", measureGroupList.get(1).getMeasureReferences().get(0));
+		assertEquals(1, measureGroupList.get(1).getDimensionReferences().size());
+		assertEquals("D2", measureGroupList.get(1).getDimensionReferences().get(0));
+		
+		assertEquals(2, measureGroupList.get(2).getMeasureReferences().size());
+		assertEquals("F3_M1", measureGroupList.get(2).getMeasureReferences().get(0));
+		assertEquals("F3_M2", measureGroupList.get(2).getMeasureReferences().get(1));
+		assertEquals(2, measureGroupList.get(2).getDimensionReferences().size());
+		assertEquals("D1", measureGroupList.get(2).getDimensionReferences().get(0));
+		assertEquals("D2", measureGroupList.get(2).getDimensionReferences().get(1));
 
 	}
 	

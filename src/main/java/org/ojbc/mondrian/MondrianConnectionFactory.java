@@ -18,6 +18,7 @@ package org.ojbc.mondrian;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.DriverManager;
@@ -31,12 +32,18 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -151,6 +158,10 @@ public final class MondrianConnectionFactory {
 		@JsonIgnore
 		public String getCatalog() {
 			return catalog;
+		}
+		@JsonIgnore
+		public Document getMondrianSchemaContentDocument() throws SAXException, IOException, ParserConfigurationException {
+			return DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new InputSource(new StringReader(catalogContent)));
 		}
 		
 		@JsonProperty(value="Catalog")

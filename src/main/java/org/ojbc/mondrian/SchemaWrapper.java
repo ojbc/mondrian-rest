@@ -23,6 +23,7 @@ import java.util.List;
 import org.olap4j.OlapException;
 import org.olap4j.metadata.Cube;
 import org.olap4j.metadata.Schema;
+import org.w3c.dom.Document;
 
 /**
  * A wrapper around olap4j Schema objects, suitable for serialization via json.
@@ -37,12 +38,12 @@ public class SchemaWrapper {
 	SchemaWrapper() {
 	}
 	
-	public SchemaWrapper(Schema schema, String connectionName) throws OlapException {
+	public SchemaWrapper(Schema schema, String connectionName, Document xmlSchema) throws OlapException {
 		this.name = schema.getName();
 		this.connectionName = connectionName;
 		cubes = new ArrayList<>();
 		for (Cube cube : schema.getCubes()) {
-			cubes.add(new CubeWrapper(cube));
+			cubes.add(new CubeWrapper(cube, xmlSchema));
 		}
 	}
 

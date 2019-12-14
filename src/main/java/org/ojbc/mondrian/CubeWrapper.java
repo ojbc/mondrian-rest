@@ -20,10 +20,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathException;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
+
 import org.olap4j.OlapException;
 import org.olap4j.metadata.Cube;
 import org.olap4j.metadata.Dimension;
 import org.olap4j.metadata.Measure;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  * A wrapper around olap4j Cube objects, suitable for serialization via json.
@@ -35,11 +44,12 @@ public class CubeWrapper {
 	private String caption;
 	private List<MeasureWrapper> measures;
 	private List<DimensionWrapper> dimensions;
+	private List<MeasureGroupWrapper> measureGroups;
 	
 	CubeWrapper() {
 	}
 
-	public CubeWrapper(Cube cube) throws OlapException {
+	public CubeWrapper(Cube cube, Document xmlSchema) throws OlapException {
 		this.name = cube.getName();
 		this.caption = cube.getCaption();
 		measures = new ArrayList<>();
@@ -49,6 +59,38 @@ public class CubeWrapper {
 		dimensions = new ArrayList<>();
 		for (Dimension d : cube.getDimensions()) {
 			dimensions.add(new DimensionWrapper(d));
+		}
+		XPath xp = XPathFactory.newInstance().newXPath();
+		try {
+		XPathExpression xpe = xp.compile("//Cube[@name='" + this.name + "']//MeasureGroup");
+		NodeList measureGroupNodeList = (NodeList) xpe.evaluate(xmlSchema, XPathConstants.NODESET);
+		measureGroups = new ArrayList<>();
+		for (int i=0;i < measureGroupNodeList.getLength();i++) {
+			Element measureGroupNode = (Element) measureGroupNodeList.item(i);
+			MeasureGroupWrapper mgw = new MeasureGroupWrapper();
+			measureGroups.add(mgw);
+			mgw.setName(measureGroupNode.getAttribute("name"));
+			xpe = xp.compile("./Measures/*");
+			NodeList measureList = (NodeList) xpe.evaluate(measureGroupNode, XPathConstants.NODESET);
+			List<String> measureNameList = new ArrayList<>();
+			for (int j=0; j < measureList.getLength(); j++) {
+				Element measureElement = (Element) measureList.item(j);
+				measureNameList.add(measureElement.getAttribute("name"));
+			}
+			mgw.setMeasureReferences(measureNameList);
+			xpe = xp.compile("./DimensionLinks/*");
+			NodeList dimensionLinkList = (NodeList) xpe.evaluate(measureGroupNode, XPathConstants.NODESET);
+			List<String> dimensionNameList = new ArrayList<>();
+			for (int j=0; j < dimensionLinkList.getLength(); j++) {
+				Element dimensionLinkElement = (Element) dimensionLinkList.item(j);
+				if (!dimensionLinkElement.getNodeName().equals("NoLink")) {
+					dimensionNameList.add(dimensionLinkElement.getAttribute("dimension"));
+				}
+			}
+			mgw.setDimensionReferences(dimensionNameList);
+		}
+		} catch (XPathException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -82,6 +124,14 @@ public class CubeWrapper {
 
 	void setDimensions(List<DimensionWrapper> dimensions) {
 		this.dimensions = dimensions;
+	}
+
+	public List<MeasureGroupWrapper> getMeasureGroups() {
+		return Collections.unmodifiableList(measureGroups);
+	}
+
+	void setMeasureGroups(List<MeasureGroupWrapper> measureGroups) {
+		this.measureGroups = measureGroups;
 	}
 
 }

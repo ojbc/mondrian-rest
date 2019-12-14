@@ -29,7 +29,7 @@ public class SchemaWrapperTest {
 	@Test
 	public void test() throws Exception {
 		Schema schema = TestSchemaFactory.getInstance().getSchema();
-		SchemaWrapper schemaWrapper = new SchemaWrapper(schema, "foo");
+		SchemaWrapper schemaWrapper = new SchemaWrapper(schema, "foo", null);
 		assertEquals(schema.getName(), schemaWrapper.getName());
 		assertEquals("foo", schemaWrapper.getConnectionName());
 		List<Cube> cubes = schema.getCubes();
