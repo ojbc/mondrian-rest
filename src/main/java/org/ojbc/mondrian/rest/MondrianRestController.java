@@ -54,6 +54,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import mondrian.server.MondrianServerRegistry;
+
 /**
  * REST API for interacting with Mondrian.
  *
@@ -73,6 +75,7 @@ public class MondrianRestController {
 	
 	@PostConstruct
 	public void init() throws IOException {
+		log.info("Initializing controller, Mondrian version is: " + MondrianServerRegistry.INSTANCE.getVersion().getVersionString());
 		connectionFactory = new MondrianConnectionFactory();
 		connectionFactory.init(removeDemoConnections);
 		Configuration cacheConfig = new XmlConfiguration(getClass().getResource("/ehcache-config.xml")); 
