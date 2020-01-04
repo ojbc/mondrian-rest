@@ -18,7 +18,9 @@ package org.ojbc.mondrian;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -62,33 +64,53 @@ public class CubeWrapper {
 		}
 		XPath xp = XPathFactory.newInstance().newXPath();
 		try {
-		XPathExpression xpe = xp.compile("//Cube[@name='" + this.name + "']//MeasureGroup");
-		NodeList measureGroupNodeList = (NodeList) xpe.evaluate(xmlSchema, XPathConstants.NODESET);
-		measureGroups = new ArrayList<>();
-		for (int i=0;i < measureGroupNodeList.getLength();i++) {
-			Element measureGroupNode = (Element) measureGroupNodeList.item(i);
-			MeasureGroupWrapper mgw = new MeasureGroupWrapper();
-			measureGroups.add(mgw);
-			mgw.setName(measureGroupNode.getAttribute("name"));
-			xpe = xp.compile("./Measures/*");
-			NodeList measureList = (NodeList) xpe.evaluate(measureGroupNode, XPathConstants.NODESET);
-			List<String> measureNameList = new ArrayList<>();
-			for (int j=0; j < measureList.getLength(); j++) {
-				Element measureElement = (Element) measureList.item(j);
-				measureNameList.add(measureElement.getAttribute("name"));
+			Map<String, List<String>> measureListMap = new HashMap<>();
+			XPathExpression xpe = xp.compile("//Cube[@name='" + this.name + "']//MeasureGroup");
+			NodeList measureGroupNodeList = (NodeList) xpe.evaluate(xmlSchema, XPathConstants.NODESET);
+			measureGroups = new ArrayList<>();
+			for (int i=0;i < measureGroupNodeList.getLength();i++) {
+				Element measureGroupNode = (Element) measureGroupNodeList.item(i);
+				MeasureGroupWrapper mgw = new MeasureGroupWrapper();
+				measureGroups.add(mgw);
+				String measureGroupName = measureGroupNode.getAttribute("name");
+				mgw.setName(measureGroupName);
+				xpe = xp.compile("./Measures/*");
+				NodeList measureList = (NodeList) xpe.evaluate(measureGroupNode, XPathConstants.NODESET);
+				List<String> measureNameList = new ArrayList<>();
+				for (int j=0; j < measureList.getLength(); j++) {
+					Element measureElement = (Element) measureList.item(j);
+					measureNameList.add(measureElement.getAttribute("name"));
+				}
+				mgw.setMeasureReferences(measureNameList);
+				measureListMap.put(measureGroupName, measureNameList);
+				xpe = xp.compile("./DimensionLinks/*");
+				NodeList dimensionLinkList = (NodeList) xpe.evaluate(measureGroupNode, XPathConstants.NODESET);
+				List<String> dimensionNameList = new ArrayList<>();
+				for (int j=0; j < dimensionLinkList.getLength(); j++) {
+					Element dimensionLinkElement = (Element) dimensionLinkList.item(j);
+					if (!dimensionLinkElement.getNodeName().equals("NoLink")) {
+						dimensionNameList.add(dimensionLinkElement.getAttribute("dimension"));
+					}
+				}
+				mgw.setDimensionReferences(dimensionNameList);
 			}
-			mgw.setMeasureReferences(measureNameList);
-			xpe = xp.compile("./DimensionLinks/*");
-			NodeList dimensionLinkList = (NodeList) xpe.evaluate(measureGroupNode, XPathConstants.NODESET);
-			List<String> dimensionNameList = new ArrayList<>();
-			for (int j=0; j < dimensionLinkList.getLength(); j++) {
-				Element dimensionLinkElement = (Element) dimensionLinkList.item(j);
-				if (!dimensionLinkElement.getNodeName().equals("NoLink")) {
-					dimensionNameList.add(dimensionLinkElement.getAttribute("dimension"));
+			xpe = xp.compile("//Cube[@name='" + this.name + "']//CalculatedMembers/CalculatedMember[@dimension='Measures' and Annotations/Annotation/MeasureGroupRef]");
+			NodeList calculatedMemberNodeList = (NodeList) xpe.evaluate(xmlSchema, XPathConstants.NODESET);
+			for (int i=0;i < calculatedMemberNodeList.getLength();i++) {
+				Element calculatedMemberNode = (Element) calculatedMemberNodeList.item(i);
+				String measureGroupName = calculatedMemberNode.getAttribute("name");
+				xpe = xp.compile("Annotations/Annotation/MeasureGroupRef");
+				NodeList refList = (NodeList) xpe.evaluate(calculatedMemberNode, XPathConstants.NODESET);
+				for (int j=0;j < refList.getLength();j++) {
+					String ref = ((Element) refList.item(j)).getAttribute("ref");
+					if (ref != null) {
+						List<String> measureGroupList = measureListMap.get(ref);
+						if (measureGroupList != null) {
+							measureGroupList.add(measureGroupName);
+						}
+					}
 				}
 			}
-			mgw.setDimensionReferences(dimensionNameList);
-		}
 		} catch (XPathException e) {
 			throw new RuntimeException(e);
 		}

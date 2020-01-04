@@ -163,7 +163,7 @@ public class MondrianRestControllerTest extends AbstractMondrianRestControllerTe
 		assertEquals("Test", schemaWrapper.getCubes().get(0).getName());
 		assertEquals("Test", schemaWrapper.getCubes().get(0).getCaption());
 		
-		assertEquals(5, schemaWrapper.getCubes().get(0).getMeasures().size());
+		assertEquals(6, schemaWrapper.getCubes().get(0).getMeasures().size());
 		assertEquals("F1_M1", schemaWrapper.getCubes().get(0).getMeasures().get(0).getName());
 		assertEquals("F1_M1", schemaWrapper.getCubes().get(0).getMeasures().get(0).getCaption());
 		assertTrue(schemaWrapper.getCubes().get(0).getMeasures().get(0).isVisible());
@@ -195,9 +195,11 @@ public class MondrianRestControllerTest extends AbstractMondrianRestControllerTe
 		assertEquals(1, measureGroupList.get(1).getDimensionReferences().size());
 		assertEquals("D2", measureGroupList.get(1).getDimensionReferences().get(0));
 		
-		assertEquals(2, measureGroupList.get(2).getMeasureReferences().size());
+		assertEquals(4, measureGroupList.get(2).getMeasureReferences().size());
 		assertEquals("F3_M1", measureGroupList.get(2).getMeasureReferences().get(0));
 		assertEquals("F3_M2", measureGroupList.get(2).getMeasureReferences().get(1));
+		assertEquals("F3_MH", measureGroupList.get(2).getMeasureReferences().get(2));
+		assertEquals("F3_M3", measureGroupList.get(2).getMeasureReferences().get(3));
 		assertEquals(2, measureGroupList.get(2).getDimensionReferences().size());
 		assertEquals("D1", measureGroupList.get(2).getDimensionReferences().get(0));
 		assertEquals("D2", measureGroupList.get(2).getDimensionReferences().get(1));
