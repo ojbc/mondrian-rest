@@ -16,55 +16,43 @@
  */
 package org.ojbc.mondrian.rest;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.MapType;
-import com.fasterxml.jackson.databind.type.TypeFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 /**
  * Abstract base class of rest controller tests
  *
  */
-public class AbstractMondrianRestControllerTest {
+public abstract class AbstractMondrianRestControllerTest {
+	
+	@Autowired
+    protected TestRestTemplate restTemplate;
 
-	protected StringEntity buildQueryRequestEntity(String connectionName, String queryString) {
-		return new StringEntity("{ \"connectionName\" : \"" + connectionName + "\", \"query\" : \"" + queryString + "\"}", ContentType.APPLICATION_JSON);
+	protected HttpEntity<String> buildQueryRequestEntity(String connectionName, String queryString) {
+		return buildQueryRequestEntity(connectionName, queryString, null);
 	}
 
-	protected StringEntity buildQueryRequestEntity(String connectionName, String queryString, boolean tidy) {
-		return new StringEntity("{ \"connectionName\" : \"" + connectionName + "\", \"query\" : \"" + queryString + "\", \"tidy\" : { \"enabled\": " +
-				tidy + "}}", ContentType.APPLICATION_JSON);
-	}
-
-	protected String getBodyContent(HttpResponse response) throws IOException {
-		
-		BufferedReader br = new BufferedReader(new InputStreamReader((response.getEntity().getContent())));
-		
-		StringBuffer contentBuffer = new StringBuffer();
-		String output = null;
-		
-		while ((output = br.readLine()) != null) {
-			contentBuffer.append(output);
+	protected HttpEntity<String> buildQueryRequestEntity(String connectionName, String queryString, Map<String, String> headerMap) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		if (headerMap != null) {
+			for(String key : headerMap.keySet()) {
+				headers.set(key, headerMap.get(key));
+			}
 		}
-		
-		return contentBuffer.toString();
-		
+		return new HttpEntity<String>("{ \"connectionName\" : \"" + connectionName + "\", \"query\" : \"" + queryString + "\"}", headers);
 	}
 
-	protected final Map<String, String> getContentAsMap(String jsonContent) throws Exception {
-		ObjectMapper mapper = new ObjectMapper();
-		TypeFactory factory = TypeFactory.defaultInstance();
-		MapType type = factory.constructMapType(HashMap.class, String.class, String.class);
-		return mapper.readValue(jsonContent, type);
+	protected HttpEntity<String> buildQueryRequestEntity(String connectionName, String queryString, boolean tidy) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		return new HttpEntity<String>("{ \"connectionName\" : \"" + connectionName + "\", \"query\" : \"" + queryString + "\", \"tidy\" : { \"enabled\": " +
+				tidy + "}}", headers);
 	}
 
 }

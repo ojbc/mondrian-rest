@@ -17,142 +17,110 @@
 package org.ojbc.mondrian.rest;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.net.URI;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.ojbc.mondrian.CellSetWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-@RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(properties = { "requestAuthorizerBeanName=requestAuthorizerTestAuthorizer" })
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class RequestAuthorizerTest extends AbstractMondrianRestControllerTest {
 	
 	private final Log log = LogFactory.getLog(RequestAuthorizerTest.class);
 	
-	@Autowired
-	private MondrianRestController controller;
-
 	@LocalServerPort
 	private String port;
 	
-	private HttpClient httpClient;
-
-	@Before
-    public void setUp() throws Exception {
-    	RequestConfig requestConfig = RequestConfig.custom().build();
-    	HttpClientBuilder clientBuilder = HttpClientBuilder.create();
-    	clientBuilder.setDefaultRequestConfig(requestConfig);
-    	httpClient = clientBuilder.build();
-    	assertNotNull(httpClient);
-    	assertNotNull(controller);
-    	log.info("Randomly-assigned port is " + port);
-    }
-	
 	@Test
 	public void testUnauthenticatedAccess() throws Exception {
-		HttpPost postRequest = new HttpPost("http://localhost:" + port + "/query");
-		StringEntity requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test");
-		postRequest.setEntity(requestEntity);
+		HttpEntity<String> requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test");
+		ResponseEntity<CellSetWrapper> response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
 		// note: no user header...
-		HttpResponse response = httpClient.execute(postRequest);
-		assertEquals(403, response.getStatusLine().getStatusCode());
+		assertEquals(403, response.getStatusCode().value());
 	}
 	
 	@Test
 	public void testUnlimitedAccess() throws Exception {
-		ObjectMapper mapper = new ObjectMapper();
-		HttpPost postRequest = new HttpPost("http://localhost:" + port + "/query");
-		StringEntity requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test");
-		postRequest.setEntity(requestEntity);
-		postRequest.setHeader(TestRequestAuthorizer.TEST_REQUEST_AUTHORIZER_USER_HEADER_NAME, TestRequestAuthorizer.UNLIMITED_USER_HEADER_VALUE);
-		HttpResponse response = httpClient.execute(postRequest);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		String content = getBodyContent(response);
-		CellSetWrapper csw = mapper.readValue(content, CellSetWrapper.class);
+		
+		Map<String, String> headerMap = new HashMap<>();
+		headerMap.put(TestRequestAuthorizer.TEST_REQUEST_AUTHORIZER_USER_HEADER_NAME, TestRequestAuthorizer.UNLIMITED_USER_HEADER_VALUE);
+		
+		HttpEntity<String> requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test", headerMap);
+		
+		ResponseEntity<CellSetWrapper> response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
+		assertEquals(200, response.getStatusCode().value());
+		CellSetWrapper csw = response.getBody();
 		assertEquals(1, csw.getCellWrappers().size());
-		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_Secure");
-		postRequest.setEntity(requestEntity);
-		postRequest.setHeader(TestRequestAuthorizer.TEST_REQUEST_AUTHORIZER_USER_HEADER_NAME, TestRequestAuthorizer.UNLIMITED_USER_HEADER_VALUE);
-		response = httpClient.execute(postRequest);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		content = getBodyContent(response);
-		csw = mapper.readValue(content, CellSetWrapper.class);
+		
+		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_Secure", headerMap);
+		response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
+		assertEquals(200, response.getStatusCode().value());
+		csw = response.getBody();
 		assertEquals(1, csw.getCellWrappers().size());
-		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test");
-		postRequest.setEntity(requestEntity);
-		postRequest.setHeader(TestRequestAuthorizer.TEST_REQUEST_AUTHORIZER_USER_HEADER_NAME, TestRequestAuthorizer.UNLIMITED_USER_HEADER_VALUE);
-		response = httpClient.execute(postRequest);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		content = getBodyContent(response);
-		csw = mapper.readValue(content, CellSetWrapper.class);
+		
+		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test", headerMap);
+		response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
+		assertEquals(200, response.getStatusCode().value());
+		csw = response.getBody();
 		assertEquals(1, csw.getCellWrappers().size());
-		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test_Secure");
-		postRequest.setEntity(requestEntity);
-		postRequest.setHeader(TestRequestAuthorizer.TEST_REQUEST_AUTHORIZER_USER_HEADER_NAME, TestRequestAuthorizer.UNLIMITED_USER_HEADER_VALUE);
-		response = httpClient.execute(postRequest);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		content = getBodyContent(response);
-		csw = mapper.readValue(content, CellSetWrapper.class);
+		
+		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test_Secure", headerMap);
+		response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
+		assertEquals(200, response.getStatusCode().value());
+		csw = response.getBody();
 		assertEquals(1, csw.getCellWrappers().size());
+		
 	}
 	
 	@Test
 	public void testRestrictedAccess() throws Exception {
-		ObjectMapper mapper = new ObjectMapper();
-		HttpPost postRequest = new HttpPost("http://localhost:" + port + "/query");
-		StringEntity requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test");
-		postRequest.setEntity(requestEntity);
-		postRequest.setHeader(TestRequestAuthorizer.TEST_REQUEST_AUTHORIZER_USER_HEADER_NAME, TestRequestAuthorizer.RESTRICTED_USER_HEADER_VALUE);
-		HttpResponse response = httpClient.execute(postRequest);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		String content = getBodyContent(response);
-		CellSetWrapper csw = mapper.readValue(content, CellSetWrapper.class);
+		
+		Map<String, String> headerMap = new HashMap<>();
+		headerMap.put(TestRequestAuthorizer.TEST_REQUEST_AUTHORIZER_USER_HEADER_NAME, TestRequestAuthorizer.RESTRICTED_USER_HEADER_VALUE);
+		
+		HttpEntity<String> requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test", headerMap);
+		
+		ResponseEntity<CellSetWrapper> response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
+		assertEquals(200, response.getStatusCode().value());
+		CellSetWrapper csw = response.getBody();
 		assertEquals(1, csw.getCellWrappers().size());
-		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test_Secure");
-		postRequest.setEntity(requestEntity);
-		postRequest.setHeader(TestRequestAuthorizer.TEST_REQUEST_AUTHORIZER_USER_HEADER_NAME, TestRequestAuthorizer.RESTRICTED_USER_HEADER_VALUE);
-		response = httpClient.execute(postRequest);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		content = getBodyContent(response);
-		csw = mapper.readValue(content, CellSetWrapper.class);
+		
+		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test_Secure", headerMap);
+		response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
+		assertEquals(200, response.getStatusCode().value());
+		csw = response.getBody();
 		assertEquals(1, csw.getCellWrappers().size());
-		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test");
-		postRequest.setEntity(requestEntity);
-		postRequest.setHeader(TestRequestAuthorizer.TEST_REQUEST_AUTHORIZER_USER_HEADER_NAME, TestRequestAuthorizer.RESTRICTED_USER_HEADER_VALUE);
-		response = httpClient.execute(postRequest);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		content = getBodyContent(response);
-		csw = mapper.readValue(content, CellSetWrapper.class);
+		
+		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test", headerMap);
+		response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
+		assertEquals(200, response.getStatusCode().value());
+		csw = response.getBody();
 		assertEquals(1, csw.getCellWrappers().size());
-		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_Secure");
-		postRequest.setEntity(requestEntity);
-		postRequest.setHeader(TestRequestAuthorizer.TEST_REQUEST_AUTHORIZER_USER_HEADER_NAME, TestRequestAuthorizer.RESTRICTED_USER_HEADER_VALUE);
-		response = httpClient.execute(postRequest);
-		assertEquals(500, response.getStatusLine().getStatusCode());
-		content = getBodyContent(response);
-		Map<String, String> errorResponse = getContentAsMap(content);
-		String rootCauseReason = errorResponse.get("rootCauseReason");
+		
+		ParameterizedTypeReference<Map<String, String>> responseType = new ParameterizedTypeReference<Map<String, String>>() {};
+		
+		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_Secure", headerMap);
+		ResponseEntity<Map<String, String>> errorResponse = restTemplate.exchange(new URI("http://localhost:" + port + "/query"), HttpMethod.POST, requestEntity, responseType);
+		assertEquals(500, errorResponse.getStatusCode().value());
+		
+		Map<String, String> errorMap = errorResponse.getBody();
+		
+		String rootCauseReason = errorMap.get("rootCauseReason");
 		assertTrue(rootCauseReason.matches(".+F2_M1.+not found in cube.+Test_Secure.+"));
+		
 	}
 	
 }

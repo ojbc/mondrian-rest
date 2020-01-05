@@ -17,69 +17,43 @@
 package org.ojbc.mondrian.rest;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
+import java.net.URI;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.ojbc.mondrian.MondrianConnectionFactory.MondrianConnection;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-@RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(properties = { "removeDemoConnections=true" })
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class DemoConnectionRemovalTest extends AbstractMondrianRestControllerTest {
+public class DemoConnectionRemovalTest {
 	
 private final Log log = LogFactory.getLog(DemoConnectionRemovalTest.class);
 	
-	@Autowired
-	private MondrianRestController controller;
-
 	@LocalServerPort
 	private String port;
 	
-	private HttpClient httpClient;
-
-	@Before
-    public void setUp() throws Exception {
-    	RequestConfig requestConfig = RequestConfig.custom().build();
-    	HttpClientBuilder clientBuilder = HttpClientBuilder.create();
-    	clientBuilder.setDefaultRequestConfig(requestConfig);
-    	httpClient = clientBuilder.build();
-    	assertNotNull(httpClient);
-    	assertNotNull(controller);
-    	log.info("Randomly-assigned port is " + port);
-    }
+	@Autowired
+    private TestRestTemplate restTemplate;
 	
 	@Test
 	public void testGetConnections() throws Exception {
 		
-		HttpGet getRequest = new HttpGet("http://localhost:" + port + "/getConnections");
-		getRequest.addHeader("accept", "application/json");
-		HttpResponse response = httpClient.execute(getRequest);
-		assertEquals(200, response.getStatusLine().getStatusCode());
+		ParameterizedTypeReference<Map<String, MondrianConnection>> responseType = new ParameterizedTypeReference<Map<String, MondrianConnection>>() {};
+		RequestEntity<Void> request = RequestEntity.get(new URI("http://localhost:" + port + "/getConnections")).build();
 		
-		String content = getBodyContent(response);
-		
-		ObjectMapper mapper = new ObjectMapper();
-		TypeReference<Map<String, MondrianConnection>> typeRef = new TypeReference<Map<String, MondrianConnection>>() {};
-		Map<String, MondrianConnection> connections = mapper.readValue(content, typeRef);
+		ResponseEntity<Map<String, MondrianConnection>> response = restTemplate.exchange(request, responseType);
+		Map<String, MondrianConnection> connections = response.getBody();
 		
 		assertEquals(0, connections.size());
 		

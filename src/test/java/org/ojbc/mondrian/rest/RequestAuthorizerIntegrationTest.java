@@ -17,100 +17,86 @@
 package org.ojbc.mondrian.rest;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.net.URI;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.embedded.LocalServerPort;
+import org.junit.jupiter.api.Test;
+import org.ojbc.mondrian.CellSetWrapper;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-@RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(properties = { "requestAuthorizerBeanName=bearerTokenRequestAuthorizer" })
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class RequestAuthorizerIntegrationTest extends AbstractMondrianRestControllerTest {
 	
 private final Log log = LogFactory.getLog(RequestAuthorizerIntegrationTest.class);
 	
-	@Autowired
-	private MondrianRestController controller;
-
 	@LocalServerPort
 	private String port;
-	
-	private HttpClient httpClient;
-
-	@Before
-    public void setUp() throws Exception {
-    	RequestConfig requestConfig = RequestConfig.custom().build();
-    	HttpClientBuilder clientBuilder = HttpClientBuilder.create();
-    	clientBuilder.setDefaultRequestConfig(requestConfig);
-    	httpClient = clientBuilder.build();
-    	assertNotNull(httpClient);
-    	assertNotNull(controller);
-    	log.info("Randomly-assigned port is " + port);
-    }
 	
 	@Test
 	public void testAccess() throws Exception {
 		
-		HttpPost postRequest = new HttpPost("http://localhost:" + port + "/query");
-		StringEntity requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test");
-		postRequest.setEntity(requestEntity);
-		postRequest.setHeader("Authorization", "Bearer TOKEN1");
-		HttpResponse response = httpClient.execute(postRequest);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		getBodyContent(response);
+		Map<String, String> headerMap = new HashMap<>();
+		headerMap.put("Authorization", "Bearer TOKEN1");
 		
-		postRequest = new HttpPost("http://localhost:" + port + "/query");
-		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test");
-		postRequest.setEntity(requestEntity);
-		postRequest.setHeader("Authorization", "Bearer TOKEN2");
-		response = httpClient.execute(postRequest);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		getBodyContent(response);
+		HttpEntity<String> requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test", headerMap);
+		
+		ResponseEntity<CellSetWrapper> response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
+		assertEquals(200, response.getStatusCode().value());
+
+		headerMap.put("Authorization", "Bearer TOKEN2");
+		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test", headerMap);
+		
+		response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
+		assertEquals(200, response.getStatusCode().value());
 		
 	}
 
 	@Test
 	public void testDeniedAccess() throws Exception {
 		
-		HttpPost postRequest = new HttpPost("http://localhost:" + port + "/query");
-		StringEntity requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_Secure");
-		postRequest.setEntity(requestEntity);
-		postRequest.setHeader("Authorization", "Bearer TOKEN2");
-		HttpResponse response = httpClient.execute(postRequest);
-		assertEquals(500, response.getStatusLine().getStatusCode());
-		String content = getBodyContent(response);
-		Map<String, String> errorResponse = getContentAsMap(content);
-		String rootCauseReason = errorResponse.get("rootCauseReason");
-		assertTrue(rootCauseReason.matches(".+F2_M1.+not found in cube.+Test_Secure.+"));
+		Map<String, String> headerMap = new HashMap<>();
+		headerMap.put("Authorization", "Bearer TOKEN2");
 		
+		HttpEntity<String> requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_Secure", headerMap);
+		
+		ParameterizedTypeReference<Map<String, String>> responseType = new ParameterizedTypeReference<Map<String, String>>() {};
+		
+		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_Secure", headerMap);
+		ResponseEntity<Map<String, String>> errorResponse = restTemplate.exchange(new URI("http://localhost:" + port + "/query"), HttpMethod.POST, requestEntity, responseType);
+		assertEquals(500, errorResponse.getStatusCode().value());
+		
+		Map<String, String> errorMap = errorResponse.getBody();
+		
+		String rootCauseReason = errorMap.get("rootCauseReason");
+		assertTrue(rootCauseReason.matches(".+F2_M1.+not found in cube.+Test_Secure.+"));
+
 	}
 
 	@Test
 	public void testForbidden() throws Exception {
 		
-		HttpPost postRequest = new HttpPost("http://localhost:" + port + "/query");
-		StringEntity requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_Secure");
-		postRequest.setEntity(requestEntity);
-		postRequest.setHeader("Authorization", "Bearer TOKENDOESNTEXIST");
-		HttpResponse response = httpClient.execute(postRequest);
-		assertEquals(403, response.getStatusLine().getStatusCode());
+		Map<String, String> headerMap = new HashMap<>();
+		headerMap.put("Authorization", "Bearer TOKENDOESNTEXIST");
+		
+		HttpEntity<String> requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_Secure", headerMap);
+		
+		ParameterizedTypeReference<Map<String, String>> responseType = new ParameterizedTypeReference<Map<String, String>>() {};
+		
+		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_Secure", headerMap);
+		ResponseEntity<Map<String, String>> errorResponse = restTemplate.exchange(new URI("http://localhost:" + port + "/query"), HttpMethod.POST, requestEntity, responseType);
+		assertEquals(403, errorResponse.getStatusCode().value());
 		
 	}
 

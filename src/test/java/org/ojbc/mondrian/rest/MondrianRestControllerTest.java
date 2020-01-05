@@ -16,10 +16,13 @@
  */
 package org.ojbc.mondrian.rest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-import java.io.IOException;
 import java.io.StringReader;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
@@ -31,36 +34,27 @@ import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.ojbc.mondrian.CellSetWrapper;
 import org.ojbc.mondrian.HierarchyWrapper;
 import org.ojbc.mondrian.MeasureGroupWrapper;
 import org.ojbc.mondrian.MondrianConnectionFactory.MondrianConnection;
 import org.ojbc.mondrian.SchemaWrapper;
 import org.ojbc.mondrian.TidyCellSetWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class MondrianRestControllerTest extends AbstractMondrianRestControllerTest {
 	
 	private final Log log = LogFactory.getLog(MondrianRestControllerTest.class);
@@ -68,36 +62,14 @@ public class MondrianRestControllerTest extends AbstractMondrianRestControllerTe
 	@LocalServerPort
 	private String port;
 	
-	@Autowired
-	private MondrianRestController controller;
-	
-	private HttpClient httpClient;
-	
-	@Before
-    public void setUp() throws Exception {
-		log.debug("setUp");
-    	RequestConfig requestConfig = RequestConfig.custom().build();
-    	HttpClientBuilder clientBuilder = HttpClientBuilder.create();
-    	clientBuilder.setDefaultRequestConfig(requestConfig);
-    	httpClient = clientBuilder.build();
-    	assertNotNull(httpClient);
-    	assertNotNull(controller);
-    	log.info("Randomly-assigned port is " + port);
-    }
-	
 	@Test
 	public void testGetConnections() throws Exception {
 		
-		HttpGet getRequest = new HttpGet("http://localhost:" + port + "/getConnections");
-		getRequest.addHeader("accept", "application/json");
-		HttpResponse response = httpClient.execute(getRequest);
-		assertEquals(200, response.getStatusLine().getStatusCode());
+		ParameterizedTypeReference<Map<String, MondrianConnection>> responseType = new ParameterizedTypeReference<Map<String, MondrianConnection>>() {};
+		RequestEntity<Void> request = RequestEntity.get(new URI("http://localhost:" + port + "/getConnections")).build();
 		
-		String content = getBodyContent(response);
-		
-		ObjectMapper mapper = new ObjectMapper();
-		TypeReference<Map<String, MondrianConnection>> typeRef = new TypeReference<Map<String, MondrianConnection>>() {};
-		Map<String, MondrianConnection> connections = mapper.readValue(content, typeRef);
+		ResponseEntity<Map<String, MondrianConnection>> response = restTemplate.exchange(request, responseType);
+		Map<String, MondrianConnection> connections = response.getBody();
 		
 		assertEquals(2, connections.size());
 		assertTrue(connections.keySet().contains("test"));
@@ -108,22 +80,16 @@ public class MondrianRestControllerTest extends AbstractMondrianRestControllerTe
 	@Test
 	public void testGetSchema() throws Exception {
 		
-		HttpGet getRequest = new HttpGet("http://localhost:" + port + "/getSchema");
-		getRequest.addHeader("accept", "application/xml");
-		HttpResponse response = httpClient.execute(getRequest);
-		assertEquals(404, response.getStatusLine().getStatusCode());
+		ResponseEntity<String> response = restTemplate.getForEntity(new URI("http://localhost:" + port + "/getSchema"), String.class);
+		assertEquals(404, response.getStatusCode().value());
 		
-		getRequest = new HttpGet("http://localhost:" + port + "/getSchema?connectionName=foobar");
-		getRequest.addHeader("accept", "application/xml");
-		response = httpClient.execute(getRequest);
-		assertEquals(404, response.getStatusLine().getStatusCode());
+		response = restTemplate.getForEntity(new URI("http://localhost:" + port + "/getSchema?connectionName=foobar"), String.class);
+		assertEquals(404, response.getStatusCode().value());
 		
-		getRequest = new HttpGet("http://localhost:" + port + "/getSchema?connectionName=test");
-		getRequest.addHeader("accept", "application/xml");
-		response = httpClient.execute(getRequest);
-		assertEquals(200, response.getStatusLine().getStatusCode());
+		response = restTemplate.getForEntity(new URI("http://localhost:" + port + "/getSchema?connectionName=test"), String.class);
+		assertEquals(200, response.getStatusCode().value());
 		
-		String content = getBodyContent(response);
+		String content = response.getBody();
 		DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 		Document schemaXml = db.parse(new InputSource(new StringReader(content)));
 		
@@ -136,28 +102,16 @@ public class MondrianRestControllerTest extends AbstractMondrianRestControllerTe
 	@Test
 	public void testGetMetadata() throws Exception {
 		
-		HttpGet getRequest = new HttpGet("http://localhost:" + port + "/getMetadata");
-		getRequest.addHeader("accept", "application/json");
-		HttpResponse response = httpClient.execute(getRequest);
-		assertEquals(404, response.getStatusLine().getStatusCode());
+		ResponseEntity<SchemaWrapper> response = restTemplate.getForEntity(new URI("http://localhost:" + port + "/getMetadata"), SchemaWrapper.class);
+		assertEquals(404, response.getStatusCode().value());
 		
-		getRequest = new HttpGet("http://localhost:" + port + "/getMetadata?connectionName=foobar");
-		getRequest.addHeader("accept", "application/json");
-		response = httpClient.execute(getRequest);
-		assertEquals(404, response.getStatusLine().getStatusCode());
-		
-		getRequest = new HttpGet("http://localhost:" + port + "/getMetadata?connectionName=test");
-		getRequest.addHeader("accept", "application/json");
-		response = httpClient.execute(getRequest);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		
-		ObjectMapper mapper = new ObjectMapper();
+		response = restTemplate.getForEntity(new URI("http://localhost:" + port + "/getMetadata?connectionName=foobar"), SchemaWrapper.class);
+		assertEquals(404, response.getStatusCode().value());
 
-		String content = getBodyContent(response);
-		//log.info(content);
-		TypeReference<SchemaWrapper> typeRef = new TypeReference<SchemaWrapper>() {};
+		response = restTemplate.getForEntity(new URI("http://localhost:" + port + "/getMetadata?connectionName=test"), SchemaWrapper.class);
+		assertEquals(200, response.getStatusCode().value());
 		
-		SchemaWrapper schemaWrapper = mapper.readValue(content, typeRef);
+		SchemaWrapper schemaWrapper = response.getBody();
 		assertEquals("Test", schemaWrapper.getName());
 		assertEquals(2, schemaWrapper.getCubes().size());
 		assertEquals("Test", schemaWrapper.getCubes().get(0).getName());
@@ -209,37 +163,29 @@ public class MondrianRestControllerTest extends AbstractMondrianRestControllerTe
 	@Test
 	public void testQuery() throws Exception {
 		
-		ObjectMapper mapper = new ObjectMapper();
-
-		HttpPost postRequest = new HttpPost("http://localhost:" + port + "/query");
-		StringEntity requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test");
-		postRequest.setEntity(requestEntity);
-		HttpResponse response = httpClient.execute(postRequest);
-		assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpEntity<String> requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test");
+		ResponseEntity<CellSetWrapper> response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
+		assertEquals(200, response.getStatusCode().value());
 		
-		String content = getBodyContent(response);
-		CellSetWrapper cellSet = mapper.readValue(content, CellSetWrapper.class);
+		CellSetWrapper cellSet = response.getBody();
 		assertEquals(1, cellSet.getCellWrappers().size());
 		assertEquals(3.0, cellSet.getCellWrappers().get(0).getValue());
 		
+		ParameterizedTypeReference<Map<String, String>> responseType = new ParameterizedTypeReference<Map<String, String>>() {};
 		requestEntity = buildQueryRequestEntity("test", "bad query");
-		postRequest.setEntity(requestEntity);
-		response = httpClient.execute(postRequest);
-		assertEquals(500, response.getStatusLine().getStatusCode());
-		content = getBodyContent(response);
 		
-		TypeReference<Map<String, String>> typeRef = new TypeReference<Map<String, String>>() {};
-		Map<String, String> errorMap = mapper.readValue(content, typeRef);
+		ResponseEntity<Map<String, String>> errorResponse = restTemplate.exchange(new URI("http://localhost:" + port + "/query"), HttpMethod.POST, requestEntity, responseType);
+		assertEquals(500, errorResponse.getStatusCode().value());
+				
+		Map<String, String> errorMap = errorResponse.getBody();
 		assertTrue(errorMap.get("reason").matches(".+while parsing.+"));
 		assertTrue(errorMap.get("rootCauseReason").matches(".+Syntax.+token.+bad.+"));
 		
 		requestEntity = buildQueryRequestEntity("test", "select {[DimNotExist].[F1_M1]} on columns from Test");
-		postRequest.setEntity(requestEntity);
-		response = httpClient.execute(postRequest);
-		assertEquals(500, response.getStatusLine().getStatusCode());
-		content = getBodyContent(response);
+		errorResponse = restTemplate.exchange(new URI("http://localhost:" + port + "/query"), HttpMethod.POST, requestEntity, responseType);
+		assertEquals(500, errorResponse.getStatusCode().value());
 		
-		errorMap = mapper.readValue(content, typeRef);
+		errorMap = errorResponse.getBody();
 		assertTrue(errorMap.get("reason").matches(".+while parsing.+"));
 		assertTrue(errorMap.get("rootCauseReason").matches(".+MDX.+DimNotExist.+not found in cube.+"));
 		
@@ -248,48 +194,35 @@ public class MondrianRestControllerTest extends AbstractMondrianRestControllerTe
 	@Test
 	public void testCachedQueries() throws Exception {
 		
-		HttpGet flushRequest = new HttpGet("http://localhost:" + port + "/flushCache");
-		HttpResponse response = httpClient.execute(flushRequest);
-		assertEquals(200, response.getStatusLine().getStatusCode());
+		HttpEntity<String> requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test");
+		ResponseEntity<CellSetWrapper> response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
+		assertEquals(200, response.getStatusCode().value());
+		List<String> responseHeaders = response.getHeaders().get("mondrian-rest-cached-result");
+		assertNull(responseHeaders);
 		
-		HttpPost queryRequest = new HttpPost("http://localhost:" + port + "/query");
-		StringEntity requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test", true);
-		queryRequest.setEntity(requestEntity);
-		response = httpClient.execute(queryRequest);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		assertNull(response.getFirstHeader("mondrian-rest-cached-result"));
-		getBodyContent(response);
+		response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
+		responseHeaders = response.getHeaders().get("mondrian-rest-cached-result");
+		assertEquals(1, responseHeaders.size());
+		assertEquals("true", responseHeaders.get(0));
 		
-		response = httpClient.execute(queryRequest);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		assertEquals("true", response.getFirstHeader("mondrian-rest-cached-result").getValue());
-		getBodyContent(response);
+		ResponseEntity<Void> flushResponse = restTemplate.getForEntity("http://localhost:" + port + "/flushCache", Void.class);
+		assertEquals(200, flushResponse.getStatusCode().value());
 		
-		flushRequest = new HttpGet("http://localhost:" + port + "/flushCache");
-		response = httpClient.execute(flushRequest);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		
-		response = httpClient.execute(queryRequest);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		assertNull(response.getFirstHeader("mondrian-rest-cached-result"));
+		response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
+		assertEquals(200, response.getStatusCode().value());
+		responseHeaders = response.getHeaders().get("mondrian-rest-cached-result");
+		assertNull(responseHeaders);
 		
 	}
 
 	@Test
-	public void testTidy() throws IOException, ClientProtocolException {
+	public void testTidy() throws Exception {
 		
-		ObjectMapper mapper = new ObjectMapper();
+		HttpEntity<String> requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test", true);
+		ResponseEntity<TidyCellSetWrapper> response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, TidyCellSetWrapper.class);
+		assertEquals(200, response.getStatusCode().value());
 		
-		HttpPost postRequest = new HttpPost("http://localhost:" + port + "/query");
-		StringEntity requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test", true);
-		postRequest.setEntity(requestEntity);
-		HttpResponse response = httpClient.execute(postRequest);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		
-		String content = getBodyContent(response);
-		
-		TypeReference<TidyCellSetWrapper> typeRef = new TypeReference<TidyCellSetWrapper>() {};
-		TidyCellSetWrapper tidyCellSet = mapper.readValue(content, typeRef);
+		TidyCellSetWrapper tidyCellSet = response.getBody();
 		List<Map<String, Object>> rows = tidyCellSet.getValues();
 		assertEquals(1, rows.size());
 		Map<String, Object> row1 = rows.get(0);
