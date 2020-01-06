@@ -74,8 +74,11 @@ public class MondrianRestController {
 	@Value("${removeDemoConnections}")
 	private boolean removeDemoConnections;
 	
+	@Value("${preCacheMetadata:false}")
+	private boolean preCacheMetadata;
+	
 	@PostConstruct
-	public void init() throws IOException {
+	public void init() throws Exception {
 		log.info("Initializing controller, Mondrian version is: " + MondrianServerRegistry.INSTANCE.getVersion().getVersionString());
 		connectionFactory = new MondrianConnectionFactory();
 		connectionFactory.init(removeDemoConnections);
@@ -85,6 +88,12 @@ public class MondrianRestController {
 		queryCache = cacheManager.getCache("query-cache", Integer.class, CellSetWrapperType.class);
 		metadataCache = cacheManager.getCache("metadata-cache", String.class, SchemaWrapper.class);
 		log.info("Successfully registered request authorizer class " + requestAuthorizer.getClass().getName());
+		if (preCacheMetadata) {
+			for (String connectionName : connectionFactory.getConnections().keySet()) {
+				log.info("Pre-caching metadata for connection " + connectionName);
+				getMetadata(connectionName);
+			}
+		}
 	}
 	
 	/**
