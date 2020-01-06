@@ -161,6 +161,22 @@ public class MondrianRestControllerTest extends AbstractMondrianRestControllerTe
 	}
 	
 	@Test
+	public void testCachedMetadata() throws Exception {
+		
+		ResponseEntity<SchemaWrapper> response = restTemplate.getForEntity(new URI("http://localhost:" + port + "/getMetadata?connectionName=test"), SchemaWrapper.class);
+		List<String> responseHeaders = response.getHeaders().get("mondrian-rest-cached-result");
+		assertNull(responseHeaders);
+
+		response = restTemplate.getForEntity(new URI("http://localhost:" + port + "/getMetadata?connectionName=test"), SchemaWrapper.class);
+		responseHeaders = response.getHeaders().get("mondrian-rest-cached-result");
+		assertNotNull(responseHeaders);
+		responseHeaders = response.getHeaders().get("mondrian-rest-cached-result");
+		assertEquals(1, responseHeaders.size());
+		assertEquals("true", responseHeaders.get(0));
+
+	}
+	
+	@Test
 	public void testQuery() throws Exception {
 		
 		HttpEntity<String> requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test");

@@ -66,6 +66,7 @@ public class MondrianRestController {
 	private final Log log = LogFactory.getLog(MondrianRestController.class);
 	private MondrianConnectionFactory connectionFactory;
 	private Cache<Integer, CellSetWrapperType> queryCache;
+	private Cache<String, SchemaWrapper> metadataCache;
 	
    	@Resource(name="${requestAuthorizerBeanName}")
 	private RequestAuthorizer requestAuthorizer;
@@ -82,8 +83,8 @@ public class MondrianRestController {
 		CacheManager cacheManager = CacheManagerBuilder.newCacheManager(cacheConfig);
 		cacheManager.init();
 		queryCache = cacheManager.getCache("query-cache", Integer.class, CellSetWrapperType.class);
-		log.info("Successfully registered request authorizer class "
-				+ requestAuthorizer.getClass().getName());
+		metadataCache = cacheManager.getCache("metadata-cache", String.class, SchemaWrapper.class);
+		log.info("Successfully registered request authorizer class " + requestAuthorizer.getClass().getName());
 	}
 	
 	/**
@@ -131,6 +132,8 @@ public class MondrianRestController {
 	public ResponseEntity<Void> flushCache() {
 		queryCache.clear();
 		log.info("Query cache flushed");
+		metadataCache.clear();
+		log.info("Metadata cache flushed");
 		return new ResponseEntity<Void>(HttpStatus.OK);
 	}
 	
@@ -139,7 +142,8 @@ public class MondrianRestController {
 		
 		String body = null;
 		HttpStatus status = HttpStatus.OK;
-		
+		HttpHeaders responseHeaders = new HttpHeaders();
+
 		MondrianConnectionFactory.MondrianConnection connection = connectionFactory.getConnections().get(connectionName);
 		
 		if (connection == null) {
@@ -148,10 +152,16 @@ public class MondrianRestController {
 		} else {
 			ObjectMapper mapper = new ObjectMapper();
 			try {
-				
-				OlapConnection olapConnection = connection.getOlap4jConnection().unwrap(OlapConnection.class);
-				Schema schema = olapConnection.getOlapSchema();
-				SchemaWrapper schemaWrapper = new SchemaWrapper(schema, connectionName, connection.getMondrianSchemaContentDocument());
+				SchemaWrapper schemaWrapper = null;
+				if (metadataCache.containsKey(connectionName)) {
+					schemaWrapper = metadataCache.get(connectionName);
+					responseHeaders.add("mondrian-rest-cached-result", "true");
+				} else {
+					OlapConnection olapConnection = connection.getOlap4jConnection().unwrap(OlapConnection.class);
+					Schema schema = olapConnection.getOlapSchema();
+					schemaWrapper = new SchemaWrapper(schema, connectionName, connection.getMondrianSchemaContentDocument());
+					metadataCache.put(connectionName, schemaWrapper);
+				}
 				body = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(schemaWrapper);
 			} catch (OlapException oe) {
 				log.warn("OlapException occurred retrieving metadata.  Stack trace follows (if debug logging).");
@@ -172,7 +182,7 @@ public class MondrianRestController {
 			}
 		}
 		
-		return new ResponseEntity<String>(body, status);
+		return new ResponseEntity<String>(body, responseHeaders, status);
 		
 	}
 	
