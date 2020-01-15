@@ -77,9 +77,13 @@ public class MondrianRestController {
 	@Value("${preCacheMetadata:false}")
 	private boolean preCacheMetadata;
 	
+	@Value("${queryTimeout:#{null}}")
+	private Integer queryTimeout;
+	
 	@PostConstruct
 	public void init() throws Exception {
 		log.info("Initializing controller, Mondrian version is: " + MondrianServerRegistry.INSTANCE.getVersion().getVersionString());
+		log.info(queryTimeout == null ? "No query timeout specified" : ("Queries will time out after " + queryTimeout + " seconds"));
 		connectionFactory = new MondrianConnectionFactory();
 		connectionFactory.init(removeDemoConnections);
 		Configuration cacheConfig = new XmlConfiguration(getClass().getResource("/ehcache-config.xml")); 
@@ -268,6 +272,9 @@ public class MondrianRestController {
 							olapConnection.setRoleName(mondrianRoleName);
 						}
 						OlapStatement statement = olapConnection.createStatement();
+						if (queryTimeout != null) {
+							statement.setQueryTimeout(queryTimeout);
+						}
 						try {
 							CellSet cellSet = statement.executeOlapQuery(query);
 							log.debug("Query succeeded");
