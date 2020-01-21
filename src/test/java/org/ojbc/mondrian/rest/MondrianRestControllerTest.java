@@ -17,6 +17,7 @@
 package org.ojbc.mondrian.rest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -36,8 +37,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.jupiter.api.Test;
 import org.ojbc.mondrian.CellSetWrapper;
+import org.ojbc.mondrian.CubeWrapper;
+import org.ojbc.mondrian.DimensionWrapper;
 import org.ojbc.mondrian.HierarchyWrapper;
-import org.ojbc.mondrian.MeasureGroupWrapper;
+import org.ojbc.mondrian.MeasureWrapper;
 import org.ojbc.mondrian.MondrianConnectionFactory.MondrianConnection;
 import org.ojbc.mondrian.SchemaWrapper;
 import org.ojbc.mondrian.TidyCellSetWrapper;
@@ -94,7 +97,7 @@ public class MondrianRestControllerTest extends AbstractMondrianRestControllerTe
 		Document schemaXml = db.parse(new InputSource(new StringReader(content)));
 		
 		XPath xPath = XPathFactory.newInstance().newXPath();
-		Element e = (Element) xPath.evaluate("/Schema[@name='Test']/PhysicalSchema/Table[@name='F1']", schemaXml.getDocumentElement(), XPathConstants.NODE);
+		Element e = (Element) xPath.evaluate("/Schema[@name='Test']/Cube[@name='Test_F1']", schemaXml.getDocumentElement(), XPathConstants.NODE);
 		assertNotNull(e);
 		
 	}
@@ -113,51 +116,59 @@ public class MondrianRestControllerTest extends AbstractMondrianRestControllerTe
 		
 		SchemaWrapper schemaWrapper = response.getBody();
 		assertEquals("Test", schemaWrapper.getName());
-		assertEquals(2, schemaWrapper.getCubes().size());
-		assertEquals("Test", schemaWrapper.getCubes().get(0).getName());
-		assertEquals("Test", schemaWrapper.getCubes().get(0).getCaption());
+		assertEquals(6, schemaWrapper.getCubes().size());
 		
-		assertEquals(6, schemaWrapper.getCubes().get(0).getMeasures().size());
-		assertEquals("F1_M1", schemaWrapper.getCubes().get(0).getMeasures().get(0).getName());
-		assertEquals("F1_M1", schemaWrapper.getCubes().get(0).getMeasures().get(0).getCaption());
-		assertTrue(schemaWrapper.getCubes().get(0).getMeasures().get(0).isVisible());
-		assertTrue(!schemaWrapper.getCubes().get(0).getMeasures().get(0).isCalculated());
-		assertEquals(3, schemaWrapper.getCubes().get(0).getDimensions().size());
+		CubeWrapper cubeWrapper = null;
 		
-		assertEquals("Measures", schemaWrapper.getCubes().get(0).getDimensions().get(0).getName());
-		assertEquals("D1", schemaWrapper.getCubes().get(0).getDimensions().get(1).getName());
-		assertEquals("D2", schemaWrapper.getCubes().get(0).getDimensions().get(2).getName());
+		for (CubeWrapper c : schemaWrapper.getCubes()) {
+			if (c.getName().equals("Test_F1")) {
+				cubeWrapper = c;
+			}
+		}
+		
+		assertNotNull(cubeWrapper);
+		assertEquals("Test_F1", cubeWrapper.getCaption());
+		
+		assertEquals(2, cubeWrapper.getMeasures().size());
+		
+		MeasureWrapper measureWrapper = null;
+		MeasureWrapper factCountMeasure = null;
+		
+		for (MeasureWrapper m : cubeWrapper.getMeasures()) {
+			if (m.getName().equals("F1_M1")) {
+				measureWrapper = m;
+			} else if (m.getName().equals("Fact Count")) {
+				factCountMeasure = m;
+			}
+		}
+		
+		assertNotNull(measureWrapper);
+		assertNotNull(factCountMeasure);
+		
+		assertEquals("F1_M1", measureWrapper.getName());
+		assertEquals("F1_M1", measureWrapper.getCaption());
+		assertTrue(measureWrapper.isVisible());
+		assertTrue(!measureWrapper.isCalculated());
+		
+		assertFalse(factCountMeasure.isVisible());
+		
+		for (DimensionWrapper dw : cubeWrapper.getDimensions()) {
+			log.info(dw.getName());
+		}
+		
+		assertEquals(2, cubeWrapper.getDimensions().size());
+		
+		assertEquals("Measures", cubeWrapper.getDimensions().get(0).getName());
+		assertEquals("D1", cubeWrapper.getDimensions().get(1).getName());
 
 		assertEquals(1, schemaWrapper.getCubes().get(0).getDimensions().get(1).getHierarchies().size());
 		HierarchyWrapper hw = schemaWrapper.getCubes().get(0).getDimensions().get(1).getHierarchies().get(0);
-		assertEquals("D1", hw.getName());
+		assertEquals("D1.D1", hw.getName());
 		assertEquals(2, hw.getLevels().size());
 		
 		assertEquals("D1_DESCRIPTION", hw.getLevels().get(1).getName());
 		assertEquals(5, hw.getLevels().get(1).getCardinality());
 		
-		List<MeasureGroupWrapper> measureGroupList = schemaWrapper.getCubes().get(0).getMeasureGroups();
-		assertEquals(3, measureGroupList.size());
-
-		assertEquals(1, measureGroupList.get(0).getMeasureReferences().size());
-		assertEquals("F1_M1", measureGroupList.get(0).getMeasureReferences().get(0));
-		assertEquals(1, measureGroupList.get(0).getDimensionReferences().size());
-		assertEquals("D1", measureGroupList.get(0).getDimensionReferences().get(0));
-		
-		assertEquals(1, measureGroupList.get(1).getMeasureReferences().size());
-		assertEquals("F2_M1", measureGroupList.get(1).getMeasureReferences().get(0));
-		assertEquals(1, measureGroupList.get(1).getDimensionReferences().size());
-		assertEquals("D2", measureGroupList.get(1).getDimensionReferences().get(0));
-		
-		assertEquals(4, measureGroupList.get(2).getMeasureReferences().size());
-		assertEquals("F3_M1", measureGroupList.get(2).getMeasureReferences().get(0));
-		assertEquals("F3_M2", measureGroupList.get(2).getMeasureReferences().get(1));
-		assertEquals("F3_MH", measureGroupList.get(2).getMeasureReferences().get(2));
-		assertEquals("F3_M3", measureGroupList.get(2).getMeasureReferences().get(3));
-		assertEquals(2, measureGroupList.get(2).getDimensionReferences().size());
-		assertEquals("D1", measureGroupList.get(2).getDimensionReferences().get(0));
-		assertEquals("D2", measureGroupList.get(2).getDimensionReferences().get(1));
-
 	}
 	
 	@Test
@@ -179,7 +190,7 @@ public class MondrianRestControllerTest extends AbstractMondrianRestControllerTe
 	@Test
 	public void testQuery() throws Exception {
 		
-		HttpEntity<String> requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test");
+		HttpEntity<String> requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test_F1");
 		ResponseEntity<CellSetWrapper> response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
 		assertEquals(200, response.getStatusCode().value());
 		
@@ -197,7 +208,7 @@ public class MondrianRestControllerTest extends AbstractMondrianRestControllerTe
 		assertTrue(errorMap.get("reason").matches(".+while parsing.+"));
 		assertTrue(errorMap.get("rootCauseReason").matches(".+Syntax.+token.+bad.+"));
 		
-		requestEntity = buildQueryRequestEntity("test", "select {[DimNotExist].[F1_M1]} on columns from Test");
+		requestEntity = buildQueryRequestEntity("test", "select {[DimNotExist].[F1_M1]} on columns from Test_F1");
 		errorResponse = restTemplate.exchange(new URI("http://localhost:" + port + "/query"), HttpMethod.POST, requestEntity, responseType);
 		assertEquals(500, errorResponse.getStatusCode().value());
 		
@@ -210,7 +221,7 @@ public class MondrianRestControllerTest extends AbstractMondrianRestControllerTe
 	@Test
 	public void testCachedQueries() throws Exception {
 		
-		HttpEntity<String> requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test");
+		HttpEntity<String> requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test_F1");
 		ResponseEntity<CellSetWrapper> response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
 		assertEquals(200, response.getStatusCode().value());
 		List<String> responseHeaders = response.getHeaders().get("mondrian-rest-cached-result");
@@ -234,7 +245,7 @@ public class MondrianRestControllerTest extends AbstractMondrianRestControllerTe
 	@Test
 	public void testTidy() throws Exception {
 		
-		HttpEntity<String> requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test", true);
+		HttpEntity<String> requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test_F1", true);
 		ResponseEntity<TidyCellSetWrapper> response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, TidyCellSetWrapper.class);
 		assertEquals(200, response.getStatusCode().value());
 		

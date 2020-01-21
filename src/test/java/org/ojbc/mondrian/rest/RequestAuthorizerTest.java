@@ -58,26 +58,26 @@ public class RequestAuthorizerTest extends AbstractMondrianRestControllerTest {
 		Map<String, String> headerMap = new HashMap<>();
 		headerMap.put(TestRequestAuthorizer.TEST_REQUEST_AUTHORIZER_USER_HEADER_NAME, TestRequestAuthorizer.UNLIMITED_USER_HEADER_VALUE);
 		
-		HttpEntity<String> requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test", headerMap);
+		HttpEntity<String> requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_F2", headerMap);
 		
 		ResponseEntity<CellSetWrapper> response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
 		assertEquals(200, response.getStatusCode().value());
 		CellSetWrapper csw = response.getBody();
 		assertEquals(1, csw.getCellWrappers().size());
 		
-		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_Secure", headerMap);
+		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_F2_Secure", headerMap);
 		response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
 		assertEquals(200, response.getStatusCode().value());
 		csw = response.getBody();
 		assertEquals(1, csw.getCellWrappers().size());
 		
-		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test", headerMap);
+		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test_F1", headerMap);
 		response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
 		assertEquals(200, response.getStatusCode().value());
 		csw = response.getBody();
 		assertEquals(1, csw.getCellWrappers().size());
 		
-		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test_Secure", headerMap);
+		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test_F1_Secure", headerMap);
 		response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
 		assertEquals(200, response.getStatusCode().value());
 		csw = response.getBody();
@@ -91,20 +91,20 @@ public class RequestAuthorizerTest extends AbstractMondrianRestControllerTest {
 		Map<String, String> headerMap = new HashMap<>();
 		headerMap.put(TestRequestAuthorizer.TEST_REQUEST_AUTHORIZER_USER_HEADER_NAME, TestRequestAuthorizer.RESTRICTED_USER_HEADER_VALUE);
 		
-		HttpEntity<String> requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test", headerMap);
+		HttpEntity<String> requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test_F1", headerMap);
 		
 		ResponseEntity<CellSetWrapper> response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
 		assertEquals(200, response.getStatusCode().value());
 		CellSetWrapper csw = response.getBody();
 		assertEquals(1, csw.getCellWrappers().size());
 		
-		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test_Secure", headerMap);
+		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F1_M1]} on columns from Test_F1_Secure", headerMap);
 		response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
 		assertEquals(200, response.getStatusCode().value());
 		csw = response.getBody();
 		assertEquals(1, csw.getCellWrappers().size());
 		
-		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test", headerMap);
+		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_F2", headerMap);
 		response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
 		assertEquals(200, response.getStatusCode().value());
 		csw = response.getBody();
@@ -112,14 +112,14 @@ public class RequestAuthorizerTest extends AbstractMondrianRestControllerTest {
 		
 		ParameterizedTypeReference<Map<String, String>> responseType = new ParameterizedTypeReference<Map<String, String>>() {};
 		
-		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_Secure", headerMap);
+		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_F1_Secure", headerMap);
 		ResponseEntity<Map<String, String>> errorResponse = restTemplate.exchange(new URI("http://localhost:" + port + "/query"), HttpMethod.POST, requestEntity, responseType);
 		assertEquals(500, errorResponse.getStatusCode().value());
 		
 		Map<String, String> errorMap = errorResponse.getBody();
 		
 		String rootCauseReason = errorMap.get("rootCauseReason");
-		assertTrue(rootCauseReason.matches(".+F2_M1.+not found in cube.+Test_Secure.+"));
+		assertTrue(rootCauseReason.matches(".+F2_M1.+not found in cube.+Test_F1_Secure.+"));
 		
 	}
 	

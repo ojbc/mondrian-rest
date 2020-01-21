@@ -64,7 +64,7 @@ public class BasicOlap4jQueryTest {
 		OlapStatement statement = olapConnection.createStatement();
 		CellSet cellSet = statement.executeOlapQuery("select {[Measures].[F1_M1]} on columns, " +
 				" {[D1].[D1_DESCRIPTION].members as foo} on rows" +
-				" from Test");
+				" from Test_F1");
 		List<CellSetAxis> axes = cellSet.getAxes();
 		CellSetAxis axis = axes.get(1);
 		for (Position p : axis.getPositions()) {
@@ -84,7 +84,7 @@ public class BasicOlap4jQueryTest {
 	public void test1Axis() throws Exception {
 		OlapConnection olapConnection = jdbcConnection.unwrap(OlapConnection.class);
 		OlapStatement statement = olapConnection.createStatement();
-		CellSet cellSet = statement.executeOlapQuery("select {[Measures].[F1_M1]} on columns from Test");
+		CellSet cellSet = statement.executeOlapQuery("select {[Measures].[F1_M1]} on columns from Test_F1");
 		List<CellSetAxis> axes = cellSet.getAxes();
 		assertEquals(1, axes.size());
 		CellSetAxis axis = axes.get(0);
@@ -107,7 +107,7 @@ public class BasicOlap4jQueryTest {
 		
 		CellSet cellSet = statement.executeOlapQuery("select CrossJoin({[D2].[D2_DESCRIPTION].members}, {[Measures].[F3_M1]}) on columns, " +
 				" {[D1].[D1_DESCRIPTION].members} on rows" +
-				" from Test");
+				" from Test_F3");
 		
 		List<CellSetAxis> axes = cellSet.getAxes();
 		assertEquals(2, axes.size());
@@ -160,7 +160,7 @@ public class BasicOlap4jQueryTest {
 		
 		CellSet cellSet = statement.executeOlapQuery("select {[Measures].[F1_M1]} on columns, " +
 				" {[D1].[D1_DESCRIPTION].members} on rows" +
-				" from Test");
+				" from Test_F1");
 		
 		List<CellSetAxis> axes = cellSet.getAxes();
 		assertEquals(2, axes.size());

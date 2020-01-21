@@ -55,7 +55,7 @@ public class BasicMondrianQueryTest {
 	@SuppressWarnings("deprecation")
 	@Test
 	public void test() throws Exception {
-		String query = "select {[Measures].[F1_M1]} on columns from Test";
+		String query = "select {[Measures].[F1_M1]} on columns from Test_F1";
 		Query q = mondrianOlapConnection.parseQuery(query);
 		Result result = mondrianOlapConnection.execute(q);
 		Axis[] axes = result.getAxes();

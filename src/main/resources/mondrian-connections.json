@@ -12,7 +12,7 @@
 		"Jdbc" : "jdbc:hsqldb:res:foodmart;set schema \"foodmart\"",
 		"JdbcUser" : "FOODMART",
 		"JdbcPassword" : "FOODMART",
-		"Catalog" : "https://raw.githubusercontent.com/pentaho/mondrian/lagunitas/demo/FoodMart.mondrian.xml",
+		"Catalog" : "https://raw.githubusercontent.com/pentaho/mondrian/master/demo/FoodMart.xml",
 		"Description" : "Pentaho/Hyde FoodMart Database",
 		"IsDemo" : true
 	}

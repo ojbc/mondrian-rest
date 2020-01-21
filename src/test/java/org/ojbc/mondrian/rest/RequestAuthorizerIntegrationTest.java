@@ -50,13 +50,13 @@ private final Log log = LogFactory.getLog(RequestAuthorizerIntegrationTest.class
 		Map<String, String> headerMap = new HashMap<>();
 		headerMap.put("Authorization", "Bearer TOKEN1");
 		
-		HttpEntity<String> requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test", headerMap);
+		HttpEntity<String> requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_F2", headerMap);
 		
 		ResponseEntity<CellSetWrapper> response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
 		assertEquals(200, response.getStatusCode().value());
 
 		headerMap.put("Authorization", "Bearer TOKEN2");
-		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test", headerMap);
+		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_F2", headerMap);
 		
 		response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
 		assertEquals(200, response.getStatusCode().value());
@@ -69,18 +69,18 @@ private final Log log = LogFactory.getLog(RequestAuthorizerIntegrationTest.class
 		Map<String, String> headerMap = new HashMap<>();
 		headerMap.put("Authorization", "Bearer TOKEN2");
 		
-		HttpEntity<String> requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_Secure", headerMap);
+		HttpEntity<String> requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_F2_Secure", headerMap);
 		
 		ParameterizedTypeReference<Map<String, String>> responseType = new ParameterizedTypeReference<Map<String, String>>() {};
 		
-		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_Secure", headerMap);
+		requestEntity = buildQueryRequestEntity("test", "select {[Measures].[F2_M1]} on columns from Test_F2_Secure", headerMap);
 		ResponseEntity<Map<String, String>> errorResponse = restTemplate.exchange(new URI("http://localhost:" + port + "/query"), HttpMethod.POST, requestEntity, responseType);
 		assertEquals(500, errorResponse.getStatusCode().value());
 		
 		Map<String, String> errorMap = errorResponse.getBody();
 		
 		String rootCauseReason = errorMap.get("rootCauseReason");
-		assertTrue(rootCauseReason.matches(".+F2_M1.+not found in cube.+Test_Secure.+"));
+		assertTrue(rootCauseReason.matches(".+cube 'Test_F2_Secure' not found"));
 
 	}
 
