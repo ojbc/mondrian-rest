@@ -18,18 +18,31 @@ package org.ojbc.mondrian;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathException;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.olap4j.OlapException;
 import org.olap4j.metadata.Cube;
 import org.olap4j.metadata.Schema;
 import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Element;
 
 /**
  * A wrapper around olap4j Schema objects, suitable for serialization via json.
  *
  */
 public class SchemaWrapper {
+	
+	private final Log log = LogFactory.getLog(SchemaWrapper.class);
 	
 	private String name;
 	private String connectionName;
@@ -44,6 +57,35 @@ public class SchemaWrapper {
 		cubes = new ArrayList<>();
 		for (Cube cube : schema.getCubes()) {
 			cubes.add(new CubeWrapper(cube, xmlSchema));
+		}
+		List<String> schemaCubeOrder = new ArrayList<>();
+		XPath xp = XPathFactory.newInstance().newXPath();
+		try {
+			XPathExpression xpe = xp.compile("//Cube");
+			NodeList cubeNodeList = (NodeList) xpe.evaluate(xmlSchema, XPathConstants.NODESET);
+			for (int i=0;i < cubeNodeList.getLength();i++) {
+				schemaCubeOrder.add(((Element) cubeNodeList.item(i)).getAttribute("name"));
+			}
+		} catch (XPathException e) {
+			throw new RuntimeException(e);
+		}
+		if (cubes.size() == schemaCubeOrder.size()) {
+			cubes.sort(new Comparator<CubeWrapper>() {
+				@Override
+				public int compare(CubeWrapper o1, CubeWrapper o2) {
+					int pos1 = schemaCubeOrder.indexOf(o1.getName());
+					int pos2 = schemaCubeOrder.indexOf(o2.getName());
+					int ret = 0;
+					if (pos1 > pos2) {
+						ret = 1;
+					} else {
+						ret = -1;
+					}
+					return ret;
+				}
+			});
+		} else {
+			log.warn("Cannot sort cubes as olap4j has different number of cubes than xml schema for connection " + connectionName);
 		}
 	}
 

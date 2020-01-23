@@ -172,6 +172,19 @@ public class MondrianRestControllerTest extends AbstractMondrianRestControllerTe
 	}
 	
 	@Test
+	public void testCubeSort() throws Exception {
+		
+		ResponseEntity<SchemaWrapper> response = restTemplate.getForEntity(new URI("http://localhost:" + port + "/getMetadata?connectionName=test"), SchemaWrapper.class);
+		SchemaWrapper schemaWrapper = response.getBody();
+		
+		assertEquals("Test_F1", schemaWrapper.getCubes().get(0).getName());
+		assertEquals("Test_F3", schemaWrapper.getCubes().get(2).getName());
+		assertEquals("Test_F1_Secure", schemaWrapper.getCubes().get(3).getName());
+		assertEquals("Test_F3_Secure", schemaWrapper.getCubes().get(5).getName());
+		
+	}
+	
+	@Test
 	public void testCachedMetadata() throws Exception {
 		
 		ResponseEntity<SchemaWrapper> response = restTemplate.getForEntity(new URI("http://localhost:" + port + "/getMetadata?connectionName=test"), SchemaWrapper.class);
