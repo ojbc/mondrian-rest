@@ -6,6 +6,7 @@ This repository contains a [Spring Boot](https://projects.spring.io/spring-boot/
 ### Table of Contents
 
 * [Motivation](#motivation)
+* [Mondrian versions](#mondrian-versions)
 * [General Usage](#general-usage)
 * [Docker](#via-docker)
 * [J2EE/Spring Boot](#via-j2ee-container-or-spring-boot)
@@ -22,12 +23,32 @@ The Mondrian library is a terrific way to submit [MDX](https://en.wikipedia.org/
 
 What has been missing is a simple, basic, and clean REST API wrapped around the Mondrian library.  Each of the tools just mentioned uses its own approach for programmatic access to Mondrian, and does not really make that approach available (in an easy way) outside of that tool.  Thus, we decided to implement the mondrian-rest API.
 
+### Mondrian versions
+
+Initial development of mondrian-rest supported version 4.x of the Mondrian library. However, Mondrian 4.x does not appear to be under active development by the core Mondrian maintainers, so we have abandoned it as a dependency. The last version of mondrian-rest
+that supports version 4.x schemas is [version 1.5.0](https://github.com/ojbc/mondrian-rest/tree/v1.5.0). PRs for the 1.x line of mondrian-rest will be considered, but active development of mondrian-rest by the core committers is focused on Mondrian 8.x (and, at some point, version
+9.x). There are significant schema differences between 4.x and 8.x+, however for the most part, the mondrian-rest API is consistent between mondrian-rest v2.x and v1.x.
+
 ### General Usage
 
 You can run the API in [Docker](https://www.docker.com/) or in an existing J2EE servlet container.  Instructions for each option appear below.
 
 The API web application includes the Mondrian FoodMart demonstration database and schema, and a small database and schema that we use for testing.  By default, these connections will be available when the API application is started. To turn them
 off, set an application property `removeDemoConnections` to `true`.  Instructions for accomplishing this appear in the Docker and J2EE container sections below.
+
+#### Configuration
+
+Configuration of the controller occurs via editing of the Spring [`application.properties`](https://github.com/ojbc/mondrian-rest/blob/master/src/main/resources/application.properties) file. The file contains documentation for each of the available
+properties. To configure an instance of the controller, edit the file and place it on Tomcat's classpath (typically this is accomplished by enabling Tomcat's shared loader to point to a directory, and then placing the edited properties file in that directory).
+If you run the application directly via the executable war file, you can set any of the available properties with Java system properties as well.
+
+Configuration allows you to control the following behavior of the controller:
+
+* User authentication and mapping of users to Mondrian roles (for enabling schema security)
+* Whether the included demo connections / data sources are enabled
+* Whether the simple query UI is enabled
+* Pre-caching of metadata (to trade off longer controller startup time for quicker response to the first `/query` or `/getMetadata` call)
+* Setting a timeout for queries
 
 #### Via Docker
 
@@ -73,46 +94,31 @@ $ java -jar target/mondrian-rest-executable.war
  \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
   '  |____| .__|_| |_|_| |_\__, | / / / /
  =========|_|==============|___/=/_/_/_/
- :: Spring Boot ::        (v1.5.6.RELEASE)
+ :: Spring Boot ::        (v2.2.2.RELEASE)
 
-[      main] org.ojbc.mondrian.rest.Application       INFO  Starting Application v1.1.0 on smc-mbp.local with PID 5150 (/Users/scott/git-repos/ojbc/mondrian-rest/target/mondrian-rest-executable.war started by scott in /Users/scott/git-repos/ojbc/mondrian-rest)
+[      main] org.ojbc.mondrian.rest.Application       INFO  Starting Application v2.0.1 on smc-mbp.local with PID 73198 (/Users/scott/git-repos/ojbc/mondrian-rest/target/mondrian-rest-executable.war started by scott in /Users/scott/git-repos/ojbc/mondrian-rest)
 [      main] org.ojbc.mondrian.rest.Application       INFO  No active profile set, falling back to default profiles: default
-[      main] ationConfigEmbeddedWebApplicationContext INFO  Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@28c97a5: startup date [Tue Feb 13 12:08:46 PST 2018]; root of context hierarchy
-[nd-preinit] ibernate.validator.internal.util.Version INFO  HV000001: Hibernate Validator 5.3.5.Final
-[      main] ed.tomcat.TomcatEmbeddedServletContainer INFO  Tomcat initialized with port(s): 8080 (http)
+[      main] boot.web.embedded.tomcat.TomcatWebServer INFO  Tomcat initialized with port(s): 8080 (http)
+[      main] g.apache.coyote.http11.Http11NioProtocol INFO  Initializing ProtocolHandler ["http-nio-8080"]
 [      main] org.apache.catalina.core.StandardService INFO  Starting service [Tomcat]
-[      main] org.apache.catalina.core.StandardEngine  INFO  Starting Servlet Engine: Apache Tomcat/8.5.16
-[tartStop-1] org.apache.jasper.servlet.TldScanner     INFO  At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
-[tartStop-1] e.ContainerBase.[Tomcat].[localhost].[/] INFO  Initializing Spring embedded WebApplicationContext
-[tartStop-1] pringframework.web.context.ContextLoader INFO  Root WebApplicationContext: initialization completed in 2601 ms
-[tartStop-1] boot.web.servlet.ServletRegistrationBean INFO  Mapping servlet: 'dispatcherServlet' to [/]
-[tartStop-1] .boot.web.servlet.FilterRegistrationBean INFO  Mapping filter: 'characterEncodingFilter' to: [/*]
-[tartStop-1] .boot.web.servlet.FilterRegistrationBean INFO  Mapping filter: 'hiddenHttpMethodFilter' to: [/*]
-[tartStop-1] .boot.web.servlet.FilterRegistrationBean INFO  Mapping filter: 'httpPutFormContentFilter' to: [/*]
-[tartStop-1] .boot.web.servlet.FilterRegistrationBean INFO  Mapping filter: 'requestContextFilter' to: [/*]
+[      main] org.apache.catalina.core.StandardEngine  INFO  Starting Servlet engine: [Apache Tomcat/9.0.29]
+[      main] e.ContainerBase.[Tomcat].[localhost].[/] INFO  Initializing Spring embedded WebApplicationContext
+[      main] pringframework.web.context.ContextLoader INFO  Root WebApplicationContext: initialization completed in 2443 ms
+[      main] mondrian.olap.MondrianProperties         INFO  Mondrian: properties loaded from 'jar:file:/Users/scott/git-repos/ojbc/mondrian-rest/target/mondrian-rest-executable.war!/WEB-INF/classes!/mondrian.properties'
+[      main] mondrian.olap.MondrianProperties         INFO  Mondrian: loaded 0 system properties
+[      main] jbc.mondrian.rest.MondrianRestController INFO  Initializing controller, Mondrian version is: 8.0
+[      main] jbc.mondrian.rest.MondrianRestController INFO  No query timeout specified
 [      main] .ojbc.mondrian.MondrianConnectionFactory INFO  Working around Spring Boot / Tomcat bug that occurs in standalone mode, to adjust file path found via PathMatchingResourcePatternResolver
 [      main] .ojbc.mondrian.MondrianConnectionFactory INFO  Processing connection definition json found at jar:file:/Users/scott/git-repos/ojbc/mondrian-rest/target/mondrian-rest-executable.war!/WEB-INF/classes/mondrian-connections.json
 [      main] .ojbc.mondrian.MondrianConnectionFactory INFO  Adding valid connection test: connection string=jdbc:hsqldb:res:test, Mondrian schema path=jar:file:/Users/scott/git-repos/ojbc/mondrian-rest/target/mondrian-rest-executable.war!/WEB-INF/classes!/test.xml
-[      main] .ojbc.mondrian.MondrianConnectionFactory INFO  Adding valid connection foodmart: connection string=jdbc:hsqldb:res:foodmart;set schema "foodmart", Mondrian schema path=https://raw.githubusercontent.com/pentaho/mondrian/lagunitas/demo/FoodMart.mondrian.xml
-[      main] org.ehcache.xml.XmlConfiguration         INFO  Loading Ehcache XML configuration from file:/Users/scott/git-repos/ojbc/mondrian-rest/target/mondrian-rest-executable.war!/WEB-INF/classes!/ehcache-config.xml.
+[      main] .ojbc.mondrian.MondrianConnectionFactory INFO  Adding valid connection foodmart: connection string=jdbc:hsqldb:res:foodmart;set schema "foodmart", Mondrian schema path=https://raw.githubusercontent.com/pentaho/mondrian/master/demo/FoodMart.xml
+[      main] org.ehcache.core.EhcacheManager          INFO  Cache 'metadata-cache' created in EhcacheManager.
 [      main] org.ehcache.core.EhcacheManager          INFO  Cache 'query-cache' created in EhcacheManager.
 [      main] jbc.mondrian.rest.MondrianRestController INFO  Successfully registered request authorizer class org.ojbc.mondrian.rest.DefaultRequestAuthorizer
-[      main] .annotation.RequestMappingHandlerAdapter INFO  Looking for @ControllerAdvice: org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@28c97a5: startup date [Tue Feb 13 12:08:46 PST 2018]; root of context hierarchy
-[      main] .annotation.RequestMappingHandlerMapping INFO  Mapped "{[/query],methods=[POST],consumes=[application/json],produces=[application/json]}" onto public org.springframework.http.ResponseEntity<java.lang.String> org.ojbc.mondrian.rest.MondrianRestController.query(org.ojbc.mondrian.rest.QueryRequest,javax.servlet.http.HttpServletRequest) throws java.lang.Exception
-[      main] .annotation.RequestMappingHandlerMapping INFO  Mapped "{[/getConnections],methods=[GET],produces=[application/json]}" onto public java.lang.String org.ojbc.mondrian.rest.MondrianRestController.getConnections() throws java.lang.Exception
-[      main] .annotation.RequestMappingHandlerMapping INFO  Mapped "{[/flushCache],methods=[GET]}" onto public org.springframework.http.ResponseEntity<java.lang.Void> org.ojbc.mondrian.rest.MondrianRestController.flushCache()
-[      main] .annotation.RequestMappingHandlerMapping INFO  Mapped "{[/getSchema],methods=[GET],produces=[application/xml]}" onto public org.springframework.http.ResponseEntity<java.lang.String> org.ojbc.mondrian.rest.MondrianRestController.getSchema(java.lang.String) throws java.lang.Exception
-[      main] .annotation.RequestMappingHandlerMapping INFO  Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
-[      main] .annotation.RequestMappingHandlerMapping INFO  Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
-[      main] .servlet.handler.SimpleUrlHandlerMapping INFO  Mapped URL path [/webjars/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
-[      main] .servlet.handler.SimpleUrlHandlerMapping INFO  Mapped URL path [/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
-[      main] .servlet.handler.SimpleUrlHandlerMapping INFO  Mapped URL path [/**/favicon.ico] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
-[      main] xport.annotation.AnnotationMBeanExporter INFO  Registering beans for JMX exposure on startup
-[      main] g.apache.coyote.http11.Http11NioProtocol INFO  Initializing ProtocolHandler ["http-nio-8080"]
+[      main] duling.concurrent.ThreadPoolTaskExecutor INFO  Initializing ExecutorService 'applicationTaskExecutor'
 [      main] g.apache.coyote.http11.Http11NioProtocol INFO  Starting ProtocolHandler ["http-nio-8080"]
-[      main] g.apache.tomcat.util.net.NioSelectorPool INFO  Using a shared selector for servlet write/read
-[      main] ed.tomcat.TomcatEmbeddedServletContainer INFO  Tomcat started on port(s): 8080 (http)
-[      main] org.ojbc.mondrian.rest.Application       INFO  Started Application in 6.122 seconds (JVM running for 6.796)
+[      main] boot.web.embedded.tomcat.TomcatWebServer INFO  Tomcat started on port(s): 8080 (http) with context path ''
+[      main] org.ojbc.mondrian.rest.Application       INFO  Started Application in 5.702 seconds (JVM running for 6.699)
 ```
 
 Then the API will be available at http://localhost:8080/... (e.g., http://localhost:8080/getConnections, http://localhost:8080/query, etc.)
@@ -161,36 +167,36 @@ Example:
 
 ```
 $: curl -s http://localhost:58080/mondrian-rest/getSchema?connectionName=foodmart | head -30
-<?xml version='1.0'?>
-<Schema name='FoodMart' metamodelVersion='4.0'>
-    <!--
-    == This software is subject to the terms of the Eclipse Public License v1.0
-    == Agreement, available at the following URL:
-    == http://www.eclipse.org/legal/epl-v10.html.
-    == You must accept the terms of that agreement to use this software.
-    ==
-    == Copyright (C) 2000-2005 Julian Hyde
-    == Copyright (C) 2005-2013 Pentaho and others
-    == All Rights Reserved.
-    -->
+<?xml version="1.0"?>
+<Schema name="FoodMart">
+<!--
+  == This software is subject to the terms of the Eclipse Public License v1.0
+  == Agreement, available at the following URL:
+  == http://www.eclipse.org/legal/epl-v10.html.
+  == You must accept the terms of that agreement to use this software.
+  ==
+  == Copyright (C) 2000-2005 Julian Hyde
+  == Copyright (C) 2005-2019 Hitachi Vantara and others
+  == All Rights Reserved.
+  -->
 
-    <PhysicalSchema>
-        <Table name='salary'/>
-        <Table name='salary' alias='salary2'/>
-        <Table name='department'>
-            <Key>
-                <Column name='department_id'/>
-            </Key>
-        </Table>
-        <Table name='employee'>
-            <Key>
-                <Column name='employee_id'/>
-            </Key>
-        </Table>
-        <Table name='employee_closure'>
-            <Key>
-                <Column name='employee_id'/>
-            </Key>
+<!-- Shared dimensions -->
+
+  <Dimension name="Store">
+    <Hierarchy hasAll="true" primaryKey="store_id">
+      <Table name="store"/>
+      <Level name="Store Country" column="store_country" uniqueMembers="true"/>
+      <Level name="Store State" column="store_state" uniqueMembers="true"/>
+      <Level name="Store City" column="store_city" uniqueMembers="false"/>
+      <Level name="Store Name" column="store_name" uniqueMembers="true">
+        <Property name="Store Type" column="store_type"/>
+        <Property name="Store Manager" column="store_manager"/>
+        <Property name="Store Sqft" column="store_sqft" type="Numeric"/>
+        <Property name="Grocery Sqft" column="grocery_sqft" type="Numeric"/>
+        <Property name="Frozen Sqft" column="frozen_sqft" type="Numeric"/>
+        <Property name="Meat Sqft" column="meat_sqft" type="Numeric"/>
+        <Property name="Has coffee bar" column="coffee_bar" type="Boolean"/>
+        <Property name="Street address" column="store_street_address" type="String"/>
 $:
 ```
 
@@ -206,54 +212,54 @@ Example:
 $ curl -s http://localhost:8080/getMetadata?connectionName=foodmart | head -50
 {
   "name" : "FoodMart",
+  "connectionName" : "foodmart",
   "cubes" : [ {
-    "name" : "Sales 2",
-    "caption" : "Sales 2",
+    "name" : "Warehouse",
+    "caption" : "Warehouse",
     "measures" : [ {
-      "name" : "Sales Count",
-      "caption" : "Sales Count",
+      "name" : "Store Invoice",
+      "caption" : "Store Invoice",
       "visible" : true,
       "calculated" : false
     }, {
-      "name" : "Unit Sales",
-      "caption" : "Unit Sales",
+      "name" : "Supply Time",
+      "caption" : "Supply Time",
       "visible" : true,
       "calculated" : false
     }, {
-      "name" : "Store Sales",
-      "caption" : "Store Sales",
+      "name" : "Warehouse Cost",
+      "caption" : "Warehouse Cost",
       "visible" : true,
       "calculated" : false
     }, {
-      "name" : "Store Cost",
-      "caption" : "Store Cost",
+      "name" : "Warehouse Sales",
+      "caption" : "Warehouse Sales",
       "visible" : true,
       "calculated" : false
     }, {
-      "name" : "Customer Count",
-      "caption" : "Customer Count",
+      "name" : "Units Shipped",
+      "caption" : "Units Shipped",
       "visible" : true,
       "calculated" : false
     }, {
-      "name" : "Profit",
-      "caption" : "Profit",
+      "name" : "Units Ordered",
+      "caption" : "Units Ordered",
       "visible" : true,
-      "calculated" : true
+      "calculated" : false
     }, {
-      "name" : "Profit last Period",
-      "caption" : "Profit last Period",
+      "name" : "Warehouse Profit",
+      "caption" : "Warehouse Profit",
+      "visible" : true,
+      "calculated" : false
+    }, {
+      "name" : "Fact Count",
+      "caption" : "Fact Count",
       "visible" : false,
-      "calculated" : true
-    } ],
-    "dimensions" : [ {
-      "name" : "Measures",
-      "caption" : "Measures",
-      "type" : "",
-      "hierarchies" : [ {
-        "name" : "Measures",
-        "caption" : "Measures",
-        "levels" : [ {
-          "name" : "MeasuresLevel",
+      "calculated" : false
+    }, {
+      "name" : "Average Warehouse Sale",
+      "caption" : "Average Warehouse Sale",
+      "visible" : true,
 $:
 ```
 
@@ -378,46 +384,32 @@ $ java -DrequestAuthorizerBeanName=bearerTokenRequestAuthorizer -jar target/mond
  \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
   '  |____| .__|_| |_|_| |_\__, | / / / /
  =========|_|==============|___/=/_/_/_/
- :: Spring Boot ::        (v1.5.6.RELEASE)
+ :: Spring Boot ::        (v2.2.2.RELEASE)
 
-[      main] org.ojbc.mondrian.rest.Application       INFO  Starting Application v1.1.0 on smc-mbp.local with PID 5263 (/Users/scott/git-repos/ojbc/mondrian-rest/target/mondrian-rest-executable.war started by scott in /Users/scott/git-repos/ojbc/mondrian-rest)
+[      main] org.ojbc.mondrian.rest.Application       INFO  Starting Application v2.0.1 on smc-mbp.local with PID 78583 (/Users/scott/git-repos/ojbc/mondrian-rest/target/mondrian-rest-executable.war started by scott in /Users/scott/git-repos/ojbc/mondrian-rest)
 [      main] org.ojbc.mondrian.rest.Application       INFO  No active profile set, falling back to default profiles: default
-[      main] ationConfigEmbeddedWebApplicationContext INFO  Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@28c97a5: startup date [Tue Feb 13 13:17:01 PST 2018]; root of context hierarchy
-[nd-preinit] ibernate.validator.internal.util.Version INFO  HV000001: Hibernate Validator 5.3.5.Final
-[      main] ed.tomcat.TomcatEmbeddedServletContainer INFO  Tomcat initialized with port(s): 8080 (http)
+[      main] boot.web.embedded.tomcat.TomcatWebServer INFO  Tomcat initialized with port(s): 8080 (http)
+[      main] g.apache.coyote.http11.Http11NioProtocol INFO  Initializing ProtocolHandler ["http-nio-8080"]
 [      main] org.apache.catalina.core.StandardService INFO  Starting service [Tomcat]
-[      main] org.apache.catalina.core.StandardEngine  INFO  Starting Servlet Engine: Apache Tomcat/8.5.16
-[tartStop-1] org.apache.jasper.servlet.TldScanner     INFO  At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
-[tartStop-1] e.ContainerBase.[Tomcat].[localhost].[/] INFO  Initializing Spring embedded WebApplicationContext
-[tartStop-1] pringframework.web.context.ContextLoader INFO  Root WebApplicationContext: initialization completed in 2212 ms
-[tartStop-1] boot.web.servlet.ServletRegistrationBean INFO  Mapping servlet: 'dispatcherServlet' to [/]
-[tartStop-1] .boot.web.servlet.FilterRegistrationBean INFO  Mapping filter: 'characterEncodingFilter' to: [/*]
-[tartStop-1] .boot.web.servlet.FilterRegistrationBean INFO  Mapping filter: 'hiddenHttpMethodFilter' to: [/*]
-[tartStop-1] .boot.web.servlet.FilterRegistrationBean INFO  Mapping filter: 'httpPutFormContentFilter' to: [/*]
-[tartStop-1] .boot.web.servlet.FilterRegistrationBean INFO  Mapping filter: 'requestContextFilter' to: [/*]
+[      main] org.apache.catalina.core.StandardEngine  INFO  Starting Servlet engine: [Apache Tomcat/9.0.29]
+[      main] e.ContainerBase.[Tomcat].[localhost].[/] INFO  Initializing Spring embedded WebApplicationContext
+[      main] pringframework.web.context.ContextLoader INFO  Root WebApplicationContext: initialization completed in 2076 ms
+[      main] mondrian.olap.MondrianProperties         INFO  Mondrian: properties loaded from 'jar:file:/Users/scott/git-repos/ojbc/mondrian-rest/target/mondrian-rest-executable.war!/WEB-INF/classes!/mondrian.properties'
+[      main] mondrian.olap.MondrianProperties         INFO  Mondrian: loaded 0 system properties
+[      main] jbc.mondrian.rest.MondrianRestController INFO  Initializing controller, Mondrian version is: 8.0
+[      main] jbc.mondrian.rest.MondrianRestController INFO  No query timeout specified
 [      main] .ojbc.mondrian.MondrianConnectionFactory INFO  Working around Spring Boot / Tomcat bug that occurs in standalone mode, to adjust file path found via PathMatchingResourcePatternResolver
 [      main] .ojbc.mondrian.MondrianConnectionFactory INFO  Processing connection definition json found at jar:file:/Users/scott/git-repos/ojbc/mondrian-rest/target/mondrian-rest-executable.war!/WEB-INF/classes/mondrian-connections.json
 [      main] .ojbc.mondrian.MondrianConnectionFactory INFO  Adding valid connection test: connection string=jdbc:hsqldb:res:test, Mondrian schema path=jar:file:/Users/scott/git-repos/ojbc/mondrian-rest/target/mondrian-rest-executable.war!/WEB-INF/classes!/test.xml
-[      main] .ojbc.mondrian.MondrianConnectionFactory INFO  Adding valid connection foodmart: connection string=jdbc:hsqldb:res:foodmart;set schema "foodmart", Mondrian schema path=https://raw.githubusercontent.com/pentaho/mondrian/lagunitas/demo/FoodMart.mondrian.xml
-[      main] org.ehcache.xml.XmlConfiguration         INFO  Loading Ehcache XML configuration from file:/Users/scott/git-repos/ojbc/mondrian-rest/target/mondrian-rest-executable.war!/WEB-INF/classes!/ehcache-config.xml.
+[      main] .ojbc.mondrian.MondrianConnectionFactory INFO  Adding valid connection foodmart: connection string=jdbc:hsqldb:res:foodmart;set schema "foodmart", Mondrian schema path=https://raw.githubusercontent.com/pentaho/mondrian/master/demo/FoodMart.xml
+[      main] org.ehcache.core.EhcacheManager          INFO  Cache 'metadata-cache' created in EhcacheManager.
 [      main] org.ehcache.core.EhcacheManager          INFO  Cache 'query-cache' created in EhcacheManager.
 [      main] jbc.mondrian.rest.MondrianRestController INFO  Successfully registered request authorizer class org.ojbc.mondrian.rest.BearerTokenRequestAuthorizer << ***
-[      main] .annotation.RequestMappingHandlerAdapter INFO  Looking for @ControllerAdvice: org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@28c97a5: startup date [Tue Feb 13 13:17:01 PST 2018]; root of context hierarchy
-[      main] .annotation.RequestMappingHandlerMapping INFO  Mapped "{[/query],methods=[POST],consumes=[application/json],produces=[application/json]}" onto public org.springframework.http.ResponseEntity<java.lang.String> org.ojbc.mondrian.rest.MondrianRestController.query(org.ojbc.mondrian.rest.QueryRequest,javax.servlet.http.HttpServletRequest) throws java.lang.Exception
-[      main] .annotation.RequestMappingHandlerMapping INFO  Mapped "{[/getSchema],methods=[GET],produces=[application/xml]}" onto public org.springframework.http.ResponseEntity<java.lang.String> org.ojbc.mondrian.rest.MondrianRestController.getSchema(java.lang.String) throws java.lang.Exception
-[      main] .annotation.RequestMappingHandlerMapping INFO  Mapped "{[/flushCache],methods=[GET]}" onto public org.springframework.http.ResponseEntity<java.lang.Void> org.ojbc.mondrian.rest.MondrianRestController.flushCache()
-[      main] .annotation.RequestMappingHandlerMapping INFO  Mapped "{[/getConnections],methods=[GET],produces=[application/json]}" onto public java.lang.String org.ojbc.mondrian.rest.MondrianRestController.getConnections() throws java.lang.Exception
-[      main] .annotation.RequestMappingHandlerMapping INFO  Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
-[      main] .annotation.RequestMappingHandlerMapping INFO  Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
-[      main] .servlet.handler.SimpleUrlHandlerMapping INFO  Mapped URL path [/webjars/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
-[      main] .servlet.handler.SimpleUrlHandlerMapping INFO  Mapped URL path [/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
-[      main] .servlet.handler.SimpleUrlHandlerMapping INFO  Mapped URL path [/**/favicon.ico] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
-[      main] xport.annotation.AnnotationMBeanExporter INFO  Registering beans for JMX exposure on startup
-[      main] g.apache.coyote.http11.Http11NioProtocol INFO  Initializing ProtocolHandler ["http-nio-8080"]
+[      main] duling.concurrent.ThreadPoolTaskExecutor INFO  Initializing ExecutorService 'applicationTaskExecutor'
 [      main] g.apache.coyote.http11.Http11NioProtocol INFO  Starting ProtocolHandler ["http-nio-8080"]
-[      main] g.apache.tomcat.util.net.NioSelectorPool INFO  Using a shared selector for servlet write/read
-[      main] ed.tomcat.TomcatEmbeddedServletContainer INFO  Tomcat started on port(s): 8080 (http)
-[      main] org.ojbc.mondrian.rest.Application       INFO  Started Application in 5.324 seconds (JVM running for 5.857)
+[      main] boot.web.embedded.tomcat.TomcatWebServer INFO  Tomcat started on port(s): 8080 (http) with context path ''
+[      main] org.ojbc.mondrian.rest.Application       INFO  Started Application in 4.703 seconds (JVM running for 5.287)
+
 ```
 
 Note the log message, indicated with `<< ***`, that tells us which request authorizer is being used.
