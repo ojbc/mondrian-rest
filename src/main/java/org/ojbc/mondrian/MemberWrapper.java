@@ -16,6 +16,7 @@
  */
 package org.ojbc.mondrian;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,7 +32,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * A wrapper around olap4j Member objects, suitable for serialization via json.
  *
  */
-public class MemberWrapper {
+public class MemberWrapper implements Serializable {
+	
+	private static final long serialVersionUID = -4507370793045423111L;
 	
 	private String name;
 	private String caption;

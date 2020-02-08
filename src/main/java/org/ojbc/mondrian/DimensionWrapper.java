@@ -16,6 +16,7 @@
  */
 package org.ojbc.mondrian;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,7 +29,9 @@ import org.olap4j.metadata.Hierarchy;
  * A wrapper around olap4j Dimension objects, suitable for serialization via json.
  *
  */
-public class DimensionWrapper {
+public class DimensionWrapper implements Serializable {
+	
+	private static final long serialVersionUID = 4499740199331630404L;
 	
 	private String name;
 	private String caption;

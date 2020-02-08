@@ -27,7 +27,7 @@ import org.springframework.stereotype.Component;
 public class DefaultRequestAuthorizer implements RequestAuthorizer {
 	
 	@Override
-	public RequestAuthorizationStatus authorizeRequest(HttpServletRequest request, QueryRequest queryRequest) throws Exception {
+	public RequestAuthorizationStatus authorizeRequest(HttpServletRequest request, String connectionName) throws Exception {
 		RequestAuthorizationStatus ret = new RequestAuthorizationStatus();
 		ret.authorized = true;
 		ret.token = "[None]";

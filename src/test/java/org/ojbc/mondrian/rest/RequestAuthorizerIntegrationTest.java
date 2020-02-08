@@ -21,16 +21,21 @@ import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.jupiter.api.Test;
 import org.ojbc.mondrian.CellSetWrapper;
+import org.ojbc.mondrian.CubeWrapper;
+import org.ojbc.mondrian.SchemaWrapper;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
@@ -60,6 +65,32 @@ private final Log log = LogFactory.getLog(RequestAuthorizerIntegrationTest.class
 		
 		response = restTemplate.postForEntity(new URI("http://localhost:" + port + "/query"), requestEntity, CellSetWrapper.class);
 		assertEquals(200, response.getStatusCode().value());
+		
+	}
+	
+	@Test
+	public void testMetadata() throws Exception {
+		
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("Authorization", "Bearer TOKEN2");
+		
+		HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+		ResponseEntity<SchemaWrapper> response = restTemplate.exchange("http://localhost:" + port + "/getMetadata?connectionName=test", HttpMethod.GET, entity, SchemaWrapper.class);
+		
+		assertEquals(200, response.getStatusCode().value());
+		
+		Set<String> cubeNames = new HashSet<>();
+		for (CubeWrapper cw : response.getBody().getCubes()) {
+			cubeNames.add(cw.getName());
+		}
+		
+		assertEquals(4, cubeNames.size());
+		cubeNames.remove("Test_F1");
+		cubeNames.remove("Test_F1_Secure");
+		cubeNames.remove("Test_F2");
+		cubeNames.remove("Test_F3");
+		assertEquals(0, cubeNames.size());
 		
 	}
 

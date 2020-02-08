@@ -1,5 +1,13 @@
 ## mondrian-rest news / release notes
 
+#### Version 2.0.2
+
+8 February 2020
+
+* Fix metadata cache to cache metadata objects by connection + role
+* Add a disk cache for metadata objects
+* Control cache parameters (for metadata and query caches) via spring properties
+
 #### Version 2.0.1
 
 23 January 2020

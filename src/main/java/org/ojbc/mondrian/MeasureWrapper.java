@@ -16,13 +16,17 @@
  */
 package org.ojbc.mondrian;
 
+import java.io.Serializable;
+
 import org.olap4j.metadata.Measure;
 
 /**
  * A wrapper around olap4j Measure objects, suitable for serialization via json.
  *
  */
-public class MeasureWrapper {
+public class MeasureWrapper implements Serializable {
+	
+	private static final long serialVersionUID = 8381804073662223438L;
 	
 	private String name;
 	private String caption;

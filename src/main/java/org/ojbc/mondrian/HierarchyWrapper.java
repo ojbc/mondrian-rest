@@ -16,6 +16,7 @@
  */
 package org.ojbc.mondrian;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,7 +31,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * A wrapper around olap4j Hierarchy objects, suitable for serialization via json.
  *
  */
-public class HierarchyWrapper {
+public class HierarchyWrapper implements Serializable {
+	
+	private static final long serialVersionUID = 6513035017849268043L;
 	
 	private String name;
 	private String caption;

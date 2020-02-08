@@ -46,10 +46,8 @@ public abstract class AbstractSamlAssertionRequestAuthorizer implements RequestA
 	private SamlTokenStrategy samlTokenStrategy;
 
 	@Override
-	public final RequestAuthorizationStatus authorizeRequest(HttpServletRequest request, QueryRequest queryRequest) throws Exception {
+	public final RequestAuthorizationStatus authorizeRequest(HttpServletRequest request, String connectionName) throws Exception {
 		
-		String connectionName = queryRequest.getConnectionName();
-	
 		RequestAuthorizationStatus ret = new RequestAuthorizationStatus();
 		ret.authorized = false;
 		

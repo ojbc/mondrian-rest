@@ -16,6 +16,7 @@
  */
 package org.ojbc.mondrian;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -40,8 +41,10 @@ import org.w3c.dom.Element;
  * A wrapper around olap4j Schema objects, suitable for serialization via json.
  *
  */
-public class SchemaWrapper {
+public class SchemaWrapper implements Serializable {
 	
+	private static final long serialVersionUID = 6324155925760637995L;
+
 	private final Log log = LogFactory.getLog(SchemaWrapper.class);
 	
 	private String name;

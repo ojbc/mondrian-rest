@@ -12,7 +12,7 @@ public class TestRequestAuthorizer implements RequestAuthorizer {
 	static final String UNLIMITED_USER_HEADER_VALUE = "unlimited";
 
 	@Override
-	public RequestAuthorizationStatus authorizeRequest(HttpServletRequest request, QueryRequest queryRequest) {
+	public RequestAuthorizationStatus authorizeRequest(HttpServletRequest request, String connectionName) {
 		
 		RequestAuthorizationStatus ret = new RequestAuthorizationStatus();
 		ret.authorized = false;

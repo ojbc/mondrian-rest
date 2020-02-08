@@ -16,31 +16,24 @@
  */
 package org.ojbc.mondrian;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathException;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathFactory;
 
 import org.olap4j.OlapException;
 import org.olap4j.metadata.Cube;
 import org.olap4j.metadata.Dimension;
 import org.olap4j.metadata.Measure;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 /**
  * A wrapper around olap4j Cube objects, suitable for serialization via json.
  *
  */
-public class CubeWrapper {
+public class CubeWrapper implements Serializable {
+	
+	private static final long serialVersionUID = 8561468085905307671L;
 	
 	private String name;
 	private String caption;

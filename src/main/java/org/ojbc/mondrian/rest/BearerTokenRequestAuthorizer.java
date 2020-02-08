@@ -57,7 +57,7 @@ public class BearerTokenRequestAuthorizer implements RequestAuthorizer {
 	}
 	
 	@Override
-	public RequestAuthorizationStatus authorizeRequest(HttpServletRequest request, QueryRequest queryRequest) {
+	public RequestAuthorizationStatus authorizeRequest(HttpServletRequest request, String connectionName) {
 		
 		RequestAuthorizationStatus ret = new RequestAuthorizationStatus();
 		ret.authorized = false;
@@ -68,7 +68,6 @@ public class BearerTokenRequestAuthorizer implements RequestAuthorizer {
 			ret.token = token;
 			Map<String, String> connectionMappings = tokenRoleMappings.get(token);
 			if (connectionMappings != null) {
-				String connectionName = queryRequest.getConnectionName();
 				if (connectionName != null) {
 					String role = connectionMappings.get(connectionName);
 					if (role != null) {

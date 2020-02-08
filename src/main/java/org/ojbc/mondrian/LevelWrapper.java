@@ -16,6 +16,7 @@
  */
 package org.ojbc.mondrian;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,8 +28,10 @@ import org.olap4j.metadata.Member;
  * A wrapper around olap4j Level objects, suitable for serialization via json.
  *
  */
-public class LevelWrapper {
+public class LevelWrapper implements Serializable {
 	
+	private static final long serialVersionUID = -5854141970363132112L;
+
 	static final int CARDINALITY_LIMIT = Integer.MAX_VALUE;
 	
 	private String name;

@@ -52,7 +52,7 @@ public class BearerTokenRequestAuthorizerTest {
 		QueryRequest queryRequest = Mockito.mock(QueryRequest.class);
 		Mockito.when(queryRequest.getConnectionName()).thenReturn("test");
 		
-		RequestAuthorizer.RequestAuthorizationStatus status = bearerTokenRequestAuthorizer.authorizeRequest(request, queryRequest);
+		RequestAuthorizer.RequestAuthorizationStatus status = bearerTokenRequestAuthorizer.authorizeRequest(request, queryRequest.getConnectionName());
 		assertTrue(status.authorized);
 		String role = status.mondrianRole;
 		assertNotNull(role);
