@@ -20,8 +20,10 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -81,8 +83,8 @@ public class MondrianRestController {
 	@Value("${removeDemoConnections}")
 	private boolean removeDemoConnections;
 	
-	@Value("${preCacheMetadata:#{false}}")
-	private boolean preCacheMetadata;
+	@Value("${preCacheMetadata:false}")
+	private String preCacheMetadata;
 	
 	@Value("${queryTimeout:#{null}}")
 	private Integer queryTimeout;
@@ -107,7 +109,29 @@ public class MondrianRestController {
 		connectionFactory.init(removeDemoConnections);
 		initCache();
 		log.info("Successfully registered request authorizer class " + requestAuthorizer.getClass().getName());
-		if (preCacheMetadata) {
+		boolean pcm = false;
+		Set<String> connectionNames = null;
+		preCacheMetadata = preCacheMetadata.trim();
+		if (!("false".equals(preCacheMetadata))) {
+			pcm = true;
+			if (!("true".equals(preCacheMetadata))) {
+				connectionNames = new HashSet<>();
+				for (String s : preCacheMetadata.split(",")) {
+					connectionNames.add(s);
+				}
+			}
+		}
+		if (pcm) {
+			if (connectionNames == null) {
+				connectionNames = connectionFactory.getConnections().keySet();
+			} else {
+				Set<String> allConnections = connectionFactory.getConnections().keySet();
+				allConnections.retainAll(connectionNames);
+				connectionNames = allConnections;
+				if (connectionNames.isEmpty()) {
+					log.warn("All connections were removed from the pre-cache list, so no pre-caching of metadata will be performed. To pre-cache all connections, set preCacheMetadata application property to true.");
+				}
+			}
 			for (String connectionName : connectionFactory.getConnections().keySet()) {
 				log.info("Pre-caching metadata for connection " + connectionName);
 				MondrianConnectionFactory.MondrianConnection connection = connectionFactory.getConnections().get(connectionName);
@@ -119,9 +143,7 @@ public class MondrianRestController {
 						try {
 							fetchMetadata(connectionName, null, connection);
 							for (String role : roles) {
-
 								fetchMetadata(connectionName, role, connection);
-
 							}
 						} catch(Exception e) {
 							throw new RuntimeException(e);
@@ -244,6 +266,7 @@ public class MondrianRestController {
 
 	private SchemaWrapper fetchMetadata(String connectionName, String mondrianRole, MondrianConnectionFactory.MondrianConnection connection) throws SQLException, OlapException, SAXException, IOException, ParserConfigurationException {
 
+		long startTime = System.currentTimeMillis();
 		log.info("Fetching metadata for connection " + connectionName + " and role " + mondrianRole);
 
 		OlapConnection olapConnection = connection.getOlap4jConnection().unwrap(OlapConnection.class);
@@ -258,6 +281,9 @@ public class MondrianRestController {
 		int key = getMetadataCacheKey(connectionName, mondrianRole);
 
 		metadataCache.put(key, schemaWrapper);
+		
+		log.info("Metadata fetch for connection " + connectionName + " and role " + mondrianRole + " finished in " + ((System.currentTimeMillis() - startTime)/1000.0) + " seconds.");
+		
 		return schemaWrapper;
 
 	}

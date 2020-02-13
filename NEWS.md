@@ -1,5 +1,12 @@
 ## mondrian-rest news / release notes
 
+#### Version 2.0.3
+
+13 February 2020
+
+* Improved and more consistent logging
+* Allow pre-caching of metadata per connection
+
 #### Version 2.0.2
 
 8 February 2020

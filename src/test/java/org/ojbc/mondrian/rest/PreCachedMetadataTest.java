@@ -35,5 +35,5 @@ public class PreCachedMetadataTest extends AbstractMondrianRestControllerTest {
 		assertEquals(1, responseHeaders.size());
 		assertEquals("true", responseHeaders.get(0));
 	}
-
+	
 }

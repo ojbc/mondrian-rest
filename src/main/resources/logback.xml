@@ -20,8 +20,8 @@
 
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <!-- <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>  -->
-      <pattern>[%10.10t] %-40.40c %-5p %m%n</pattern>
+      <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} [MR] [%10.10t] %-5level [%36.36logger]: %msg%n</pattern>
+      <!-- <pattern>[%10.10t] %-40.40c %-5p %m%n</pattern> -->
     </encoder>
   </appender>
 
