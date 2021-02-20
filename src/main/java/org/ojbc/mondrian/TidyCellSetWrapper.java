@@ -22,6 +22,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.olap4j.Cell;
 import org.olap4j.CellSet;
@@ -82,8 +83,7 @@ public class TidyCellSetWrapper implements CellSetWrapperType {
 	}
 
 	private String getLevelNameForUniqueName(CellSet cellSet, String levelUniqueName) {
-		List<CellSetAxis> axes = cellSet.getAxes();
-		for (CellSetAxis axis : axes) {
+		for (CellSetAxis axis : cellSet.getAxes()) {
 			for (Position position : axis.getPositions()) {
 				for (Member member : position.getMembers()) {
 					Member m = member;
@@ -110,8 +110,7 @@ public class TidyCellSetWrapper implements CellSetWrapperType {
 		
 		Map<Object, Map<String, Object>> reducedMap = new HashMap<>();
 		
-		for (int i=0;i < positionIntersectionList.size();i++) {
-			Map<String, Object> map = positionIntersectionList.get(i);
+		positionIntersectionList.forEach(map -> {
 			Object hashKey = map.get(HASH_KEY);
 			if (reducedMap.containsKey(hashKey)) {
 				String measureName = (String) map.get(MEASURES_LEVEL_UNIQUE_NAME);
@@ -120,10 +119,9 @@ public class TidyCellSetWrapper implements CellSetWrapperType {
 				map.remove(MEASURES_LEVEL_UNIQUE_NAME);
 				reducedMap.put(hashKey, map);
 			}
-		}
+		});
 		
-		List<Map<String, Object>> ret = new ArrayList<>();
-		ret.addAll(reducedMap.values());
+		List<Map<String, Object>> ret = reducedMap.values().stream().collect(Collectors.toList());
 		ret.sort(new Comparator<Map<String, Object>>() {
 			@SuppressWarnings("unchecked")
 			@Override
@@ -132,10 +130,10 @@ public class TidyCellSetWrapper implements CellSetWrapperType {
 			}
 		});
 		
-		for (Map<String, Object> row : ret) {
+		ret.forEach(row -> {
 			row.remove(HASH_KEY);
 			row.remove(ORDER_KEY);
-		}
+		});
 		
 		return ret;
 		
@@ -145,12 +143,7 @@ public class TidyCellSetWrapper implements CellSetWrapperType {
 		
 		List<Map<String, Object>> ret = new ArrayList<>();
 		
-		List<CellSetAxis> axes = cellSet.getAxes();
-		List<List<Position>> positionLists = new ArrayList<>();
-		for (CellSetAxis axis : axes) {
-			positionLists.add(axis.getPositions());
-		}
-		
+		List<List<Position>> positionLists = cellSet.getAxes().stream().map(axis -> axis.getPositions()).collect(Collectors.toList());
 		positionLists = MondrianUtils.permuteLists(positionLists);
 		
 		int valueIndex = 0;

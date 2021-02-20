@@ -52,11 +52,9 @@ public class CellSetWrapper implements CellSetWrapperType {
 		cellWrappers = new ArrayList<>();
 		axisWrappers = new ArrayList<>();
 		
-		List<CellSetAxis> axes = cellSet.getAxes();
-		
 		int totalCellCount = 1;
 		
-		for (CellSetAxis axis : axes) {
+		for (CellSetAxis axis : cellSet.getAxes()) {
 			axisWrappers.add(new AxisWrapper(axis));
 			List<Position> positions = axis.getPositions();
 			totalCellCount *= positions.size();

@@ -277,36 +277,32 @@ public final class MondrianConnectionFactory {
 			log.info("Processing connection definition json found at " + resourceSourcePath);
 			Map<String, MondrianConnection> connections = mapper.readValue(resource.getInputStream(), typeRef);
 			Set<String> invalidConnections = new HashSet<>();
-			for (String nm : connections.keySet()) {
-				MondrianConnection c = connections.get(nm);
+			String finalResourceSourcePath = resourceSourcePath;
+			connections.forEach((nm, c) -> {
 				if (!c.validate()) {
 					log.warn("Ignoring connection " + nm + " due to invalid/missing properties (see prior messages for details)");
 					invalidConnections.add(nm);
 				} else {
 					log.info("Adding valid connection " + nm + ": connection string=" + c.getJdbcConnectionString() + ", Mondrian schema path=" + c.getResolvedMondrianSchemaURL());
-					c.sourceResourcePath = resourceSourcePath;
+					c.sourceResourcePath = finalResourceSourcePath;
 				}
-			}
-			for (String nm : invalidConnections) {
-				connections.remove(nm);
-			}
+			});
+			invalidConnections.forEach(nm -> connections.remove(nm));
 			MondrianConnectionCollection collection = new MondrianConnectionCollection();
 			collection.connections = connections;
-			collection.sourceFilePath = resourceSourcePath;
+			collection.sourceFilePath = finalResourceSourcePath;
 			connectionCollections.add(collection);
 		}
 		
 		Collections.reverse(connectionCollections);
 		
-		for (MondrianConnectionCollection mcc : connectionCollections) {
-			Map<String, MondrianConnection> c = mcc.getConnections();
-			for (String name : c.keySet()) {
+		connectionCollections.forEach(mcc -> {
+			mcc.getConnections().forEach((name, mc) -> {
 				if (connections.containsKey(name)) {
 					MondrianConnection conn = connections.get(name);
 					log.warn("Overriding connection " + name + " defined at " + conn.getSourceResourcePath() +
-							" with connection defined \"higher\" on the classpath, at " + c.get(name).getSourceResourcePath());
+							" with connection defined \"higher\" on the classpath, at " + mc.getSourceResourcePath());
 				}
-				MondrianConnection mc = c.get(name);
 				if (mc != null && (!removeDemoConnections || !mc.getIsDemo())) {
 					connections.put(name, mc);
 				} else if (mc != null) {
@@ -315,8 +311,8 @@ public final class MondrianConnectionFactory {
 					// this should never happen, but just in case...
 					log.warn("Connection defined with name " + name + " but no available definition on classpath");
 				}
-			}
-		}
+			});
+		});
 		
 	}
 	

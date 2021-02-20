@@ -20,11 +20,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olap4j.OlapException;
 import org.olap4j.metadata.Cube;
 import org.olap4j.metadata.Dimension;
-import org.olap4j.metadata.Measure;
 import org.w3c.dom.Document;
 
 import lombok.EqualsAndHashCode;
@@ -50,16 +50,16 @@ public class CubeWrapper implements Serializable {
 	CubeWrapper() { }
 
 	public CubeWrapper(Cube cube, Document xmlSchema) throws OlapException {
+		
 		this.name = cube.getName();
 		this.caption = cube.getCaption();
-		measures = new ArrayList<>();
-		for (Measure measure : cube.getMeasures()) {
-			measures.add(new MeasureWrapper(measure));
-		}
+		measures = cube.getMeasures().stream().map(measure -> new MeasureWrapper(measure)).collect(Collectors.toList());
+		
 		dimensions = new ArrayList<>();
 		for (Dimension d : cube.getDimensions()) {
 			dimensions.add(new DimensionWrapper(d));
 		}
+		
 	}
 
 	public List<MeasureWrapper> getMeasures() {

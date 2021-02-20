@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olap4j.Position;
-import org.olap4j.metadata.Member;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -48,11 +47,11 @@ public class PositionWrapper {
 		memberDimensionCaptions = new ArrayList<>();
 		positionMembers = new ArrayList<>();
 		
-		for (Member member : position.getMembers()) {
+		position.getMembers().forEach(member -> {
 			memberDimensionNames.add(member.getDimension().getName());
 			memberDimensionCaptions.add(member.getDimension().getCaption());
 			positionMembers.add(new PositionMemberWrapper(member));
-		}
+		});
 		
 	}
 	

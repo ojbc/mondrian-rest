@@ -22,13 +22,10 @@ import java.util.List;
 import org.olap4j.Position;
 import org.olap4j.metadata.Member;
 
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * Class of assorted utility methods for dealing with the Mondrian object model.
  *
  */
-@Slf4j
 public class MondrianUtils {
 	
 	/**
@@ -37,13 +34,12 @@ public class MondrianUtils {
 	 * @return a string containing the members of the position
 	 */
 	public static final String getMembersString(Position position) {
-		log.debug("getMembersString");
 		List<Member> members = position.getMembers();
 		StringBuffer sb = new StringBuffer();
 		sb.append("*");
-		for (Member m : members) {
+		members.forEach(m -> {
 			sb.append(m.getDimension().getName()).append("=").append(m.getName()).append("|");
-		}
+		});
 		String sbs = sb.toString().substring(0, sb.length()-1);
 		StringBuffer ret = new StringBuffer(sbs).append("*");
 		return ret.toString();
@@ -57,9 +53,7 @@ public class MondrianUtils {
 	
 	private static final <T> void permuteLists(List<List<T>> accum, List<T> current, List<List<T>> lists) {
 
-		List<T> currentInputList = lists.get(current.size());
-
-		for (T element : currentInputList) {
+		lists.get(current.size()).forEach(element -> {
 			List<T> copy = new ArrayList<>();
 			copy.addAll(current);
 			copy.add(element);
@@ -68,7 +62,7 @@ public class MondrianUtils {
 			} else {
 				accum.add(copy);
 			}
-		}
+		});
 
 	}
 

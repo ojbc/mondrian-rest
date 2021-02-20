@@ -19,9 +19,9 @@ package org.ojbc.mondrian;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olap4j.CellSetAxis;
-import org.olap4j.Position;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -46,14 +46,9 @@ public class AxisWrapper {
 	AxisWrapper() {}
 	
 	public AxisWrapper(CellSetAxis axis) {
-		
-		for (Position position : axis.getPositions()) {
-			positionWrappers.add(new PositionWrapper(position));
-		}
-		
+		positionWrappers = axis.getPositions().stream().map(position -> new PositionWrapper(position)).collect(Collectors.toList());
 		ordinal = axis.getAxisOrdinal().axisOrdinal();
 		name = axis.getAxisOrdinal().name();
-		
 	}
 	
 	@JsonProperty("positions")
