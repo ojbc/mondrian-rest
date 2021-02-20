@@ -1,14 +1,14 @@
+CREATE USER SA PASSWORD ""
+GRANT DBA TO SA
 CREATE SCHEMA "test" AUTHORIZATION DBA
+ALTER USER SA SET INITIAL SCHEMA "test"
+SET WRITE_DELAY 10
+SET SCHEMA "test"
 create table F1 (F1_id INT NOT NULL, D1_id INT NOT NULL)
 create table D1(D1_id INT NOT NULL,D1_description VARCHAR(10) NOT NULL)
 create table F2( F2_id INT NOT NULL, D2_id INT NOT NULL)
 create table D2( D2_id INT NOT NULL, D2_description VARCHAR(10) NOT NULL, D2_rollup VARCHAR(10) NOT NULL)
 create table F3( F3_id INT NOT NULL, D1_id INT NOT NULL, D2_id INT NOT NULL, F3_value NUMERIC)
-CREATE USER SA PASSWORD ""
-GRANT DBA TO SA
-ALTER USER SA SET INITIAL SCHEMA "test"
-SET WRITE_DELAY 10
-SET SCHEMA "test"
 insert into F1 values (1,1)
 insert into F1 values (2,1)
 insert into F1 values (3,2)
