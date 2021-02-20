@@ -20,8 +20,6 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
@@ -32,8 +30,6 @@ import org.w3c.dom.Document;
  */
 @Component
 public class SamlAssertionRequestAuthorizer extends AbstractSamlAssertionRequestAuthorizer {
-	
-	private final Log log = LogFactory.getLog(SamlAssertionRequestAuthorizer.class);
 	
 	private Map<String, Map<String, String>> tokenRoleMappings;
 	

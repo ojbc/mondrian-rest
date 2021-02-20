@@ -23,8 +23,6 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.junit.jupiter.api.Test;
 import org.ojbc.mondrian.CellSetWrapper;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -38,8 +36,6 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource(properties = { "requestAuthorizerBeanName=requestAuthorizerTestAuthorizer" })
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class RequestAuthorizerTest extends AbstractMondrianRestControllerTest {
-	
-	private final Log log = LogFactory.getLog(RequestAuthorizerTest.class);
 	
 	@LocalServerPort
 	private String port;

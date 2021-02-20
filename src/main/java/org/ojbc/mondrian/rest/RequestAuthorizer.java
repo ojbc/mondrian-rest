@@ -20,14 +20,14 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Interface for objects that can authorize query requests incoming to the API.
@@ -44,9 +44,8 @@ public interface RequestAuthorizer {
 		public String token;
 	}
 	
+	@Slf4j
 	static final class AuthorizerUtil {
-		
-		private static final Log log = LogFactory.getLog(AuthorizerUtil.class);
 		
 		public static final Map<String, Map<String, String>> convertRoleConnectionJsonToMaps(String jsonFileName) throws Exception {
 			

@@ -24,8 +24,6 @@ import java.sql.Connection;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -40,9 +38,10 @@ import org.olap4j.Position;
 import org.olap4j.metadata.Level;
 import org.olap4j.metadata.Member;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class BasicOlap4jQueryTest {
-	
-	private final Log log = LogFactory.getLog(BasicOlap4jQueryTest.class);
 	
 	private Connection jdbcConnection;
 	

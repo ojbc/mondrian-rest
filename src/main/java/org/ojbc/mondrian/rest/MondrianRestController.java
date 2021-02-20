@@ -31,8 +31,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.ehcache.Cache;
 import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
@@ -63,6 +61,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.extern.slf4j.Slf4j;
 import mondrian.server.MondrianServerRegistry;
 
 /**
@@ -70,9 +69,9 @@ import mondrian.server.MondrianServerRegistry;
  *
  */
 @RestController
+@Slf4j
 public class MondrianRestController {
 	
-	private final Log log = LogFactory.getLog(MondrianRestController.class);
 	private MondrianConnectionFactory connectionFactory;
 	private Cache<Integer, CellSetWrapperType> queryCache;
 	private Cache<Integer, SchemaWrapper> metadataCache;

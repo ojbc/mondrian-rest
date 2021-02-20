@@ -28,8 +28,6 @@ import javax.xml.xpath.XPathException;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.olap4j.OlapException;
 import org.olap4j.metadata.Cube;
 import org.olap4j.metadata.Schema;
@@ -40,6 +38,7 @@ import org.w3c.dom.NodeList;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * A wrapper around olap4j Schema objects, suitable for serialization via json.
@@ -48,12 +47,11 @@ import lombok.ToString;
 @Getter
 @EqualsAndHashCode
 @ToString
+@Slf4j
 public class SchemaWrapper implements Serializable {
 	
 	private static final long serialVersionUID = 6324155925760637995L;
 
-	private static final Log log = LogFactory.getLog(SchemaWrapper.class);
-	
 	private String name;
 	private String connectionName;
 	private List<CubeWrapper> cubes;

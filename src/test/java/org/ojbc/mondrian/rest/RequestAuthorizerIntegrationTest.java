@@ -25,8 +25,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.junit.jupiter.api.Test;
 import org.ojbc.mondrian.CellSetWrapper;
 import org.ojbc.mondrian.CubeWrapper;
@@ -43,8 +41,6 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource(properties = { "requestAuthorizerBeanName=bearerTokenRequestAuthorizer" })
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class RequestAuthorizerIntegrationTest extends AbstractMondrianRestControllerTest {
-	
-private final Log log = LogFactory.getLog(RequestAuthorizerIntegrationTest.class);
 	
 	@LocalServerPort
 	private String port;

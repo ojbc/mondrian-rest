@@ -36,8 +36,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -53,14 +51,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * A factory object that creates olap4j connection objects from json specifications that it finds on the classpath.  Connections are instantiated lazily...that is, no
  * actual connection is made to the underlying relational database until getOlap4jConnection() is called.
  *
  */
+@Slf4j
 public final class MondrianConnectionFactory {
-	
-	private final Log log = LogFactory.getLog(MondrianConnectionFactory.class);
 	
 	static final class MondrianConnectionCollection {
 		private String sourceFilePath;
@@ -76,8 +75,6 @@ public final class MondrianConnectionFactory {
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonInclude(Include.NON_NULL)
 	public static final class MondrianConnection {
-		
-		private final Log log = LogFactory.getLog(MondrianConnection.class);
 		
 		@JsonProperty("JdbcDriver")
 		private String jdbcDriver;

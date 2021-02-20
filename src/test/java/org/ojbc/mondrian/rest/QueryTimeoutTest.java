@@ -6,8 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.net.URI;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,9 +19,6 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource(properties = { "queryTimeout=1" })
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class QueryTimeoutTest extends AbstractMondrianRestControllerTest {
-	
-	private final Log log = LogFactory.getLog(QueryTimeoutTest.class);
-
 	
 	@LocalServerPort
 	private String port;

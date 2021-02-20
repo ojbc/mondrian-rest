@@ -19,18 +19,17 @@ package org.ojbc.mondrian;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.olap4j.Position;
 import org.olap4j.metadata.Member;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Class of assorted utility methods for dealing with the Mondrian object model.
  *
  */
+@Slf4j
 public class MondrianUtils {
-	
-	private static final Log log = LogFactory.getLog(MondrianUtils.class);
 	
 	/**
 	 * Get a string representation of the members within a position, suitable for debug trace etc.

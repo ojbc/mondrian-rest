@@ -7,15 +7,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.olap4j.CellSet;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class TestTidyCellSet {
-	
-	private final Log log = LogFactory.getLog(TestTidyCellSet.class);
 	
 	private TidyCellSetWrapper tidyCellSet;
 	

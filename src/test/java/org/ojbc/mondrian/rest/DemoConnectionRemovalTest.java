@@ -21,8 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.net.URI;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.junit.jupiter.api.Test;
 import org.ojbc.mondrian.MondrianConnectionFactory.MondrianConnection;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +35,6 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource(properties = { "removeDemoConnections=true" })
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class DemoConnectionRemovalTest {
-	
-private final Log log = LogFactory.getLog(DemoConnectionRemovalTest.class);
 	
 	@LocalServerPort
 	private String port;

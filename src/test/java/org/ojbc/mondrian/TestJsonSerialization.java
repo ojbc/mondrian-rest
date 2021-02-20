@@ -18,17 +18,16 @@ package org.ojbc.mondrian;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.olap4j.CellSet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class TestJsonSerialization {
-	
-	private final Log log = LogFactory.getLog(TestJsonSerialization.class);
 	
 	@BeforeEach
 	public void setUp() throws Exception {

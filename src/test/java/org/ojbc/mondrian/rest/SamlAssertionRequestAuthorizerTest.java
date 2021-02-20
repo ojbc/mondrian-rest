@@ -16,8 +16,8 @@
  */
 package org.ojbc.mondrian.rest;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
 
@@ -26,8 +26,6 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.ojbc.mondrian.rest.RequestAuthorizer.RequestAuthorizationStatus;
@@ -41,8 +39,6 @@ import org.w3c.dom.Element;
 @SpringBootTest
 @TestPropertySource(properties = { "samlAssertionTokenAttributeName=gfipm:2.0:user:FederationId", "samlTokenStrategyBeanName=attributeSamlTokenStrategy" })
 public class SamlAssertionRequestAuthorizerTest {
-	
-	private final Log log = LogFactory.getLog(SamlAssertionRequestAuthorizerTest.class);
 	
 	@Autowired
 	private AbstractSamlAssertionRequestAuthorizer samlAssertionRequestAuthorizer;

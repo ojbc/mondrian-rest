@@ -21,12 +21,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import lombok.extern.slf4j.Slf4j;
 import mondrian.olap.Axis;
 import mondrian.olap.Cell;
 import mondrian.olap.Connection;
@@ -35,9 +34,8 @@ import mondrian.olap.Position;
 import mondrian.olap.Query;
 import mondrian.olap.Result;
 
+@Slf4j
 public class BasicMondrianQueryTest {
-	
-	private final Log log = LogFactory.getLog(BasicMondrianQueryTest.class);
 	
 	private Connection mondrianOlapConnection;
 	

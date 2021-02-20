@@ -32,8 +32,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class BearerTokenRequestAuthorizer implements RequestAuthorizer {
 	
-	private final Log log = LogFactory.getLog(BearerTokenRequestAuthorizer.class);
-	
 	private Map<String, Map<String, String>> tokenRoleMappings;
 	
 	@Value("${bearerTokenRequestAuthorizerConfigFileName:bearer-token-request-authorizer.json}")

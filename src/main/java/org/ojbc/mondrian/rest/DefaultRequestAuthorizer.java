@@ -19,18 +19,17 @@ package org.ojbc.mondrian.rest;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * RequestAuthorizer that authorizes all requests and assigns all requests a pre-defined role, or a null role if none is configured.
  */
 @Component
+@Slf4j
 public class DefaultRequestAuthorizer implements RequestAuthorizer {
-	
-	private final Log log = LogFactory.getLog(DefaultRequestAuthorizer.class);
 	
 	@Value("${defaultRequestAuthorizerRole:#{null}}")
 	private String defaultRequestAuthorizerRole;

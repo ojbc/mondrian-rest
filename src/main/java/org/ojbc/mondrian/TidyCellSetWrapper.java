@@ -23,8 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.olap4j.Cell;
 import org.olap4j.CellSet;
 import org.olap4j.CellSetAxis;
@@ -33,17 +31,18 @@ import org.olap4j.metadata.Level;
 import org.olap4j.metadata.Member;
 import org.olap4j.metadata.Member.Type;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Wrapper object for tidied cell sets.
  *
  */
+@Slf4j
 public class TidyCellSetWrapper implements CellSetWrapperType {
 	
 	private static final String MEASURES_LEVEL_UNIQUE_NAME = "[Measures].[MeasuresLevel]";
 	private static final String HASH_KEY = ".H";
 	private static final String ORDER_KEY = ".O";
-	
-	private final Log log = LogFactory.getLog(TidyCellSetWrapper.class);
 	
 	private List<Map<String, Object>> values = new ArrayList<>();
 	
