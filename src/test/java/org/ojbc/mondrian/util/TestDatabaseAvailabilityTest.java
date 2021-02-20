@@ -16,8 +16,8 @@
  */
 package org.ojbc.mondrian.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -28,10 +28,10 @@ import java.sql.Statement;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class TestDatabaseAvailabilityTest {
 	
@@ -39,13 +39,13 @@ public class TestDatabaseAvailabilityTest {
 	
 	private Connection connection;
 	
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		connection = DatabaseUtils.getInstance().getTestDatabaseConnection(true);
 		//dumpTableList();
 	}
 	
-	@After
+	@AfterEach
 	public void tearDown() throws Exception {
 		connection.close();
 	}
@@ -74,7 +74,7 @@ public class TestDatabaseAvailabilityTest {
 	}
 
 	@Test
-	@Ignore // because it takes awhile for the database to load up
+	@Disabled // because it takes awhile for the database to load up
 	public void testFoodmartAvailable() throws Exception {
 		
 		// verify that we can load up the hsqldb with foodmart in it

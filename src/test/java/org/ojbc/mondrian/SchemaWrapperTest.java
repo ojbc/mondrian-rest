@@ -16,11 +16,11 @@
  */
 package org.ojbc.mondrian;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.olap4j.metadata.Cube;
 import org.olap4j.metadata.Schema;
 

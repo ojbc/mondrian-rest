@@ -1,8 +1,8 @@
 package org.ojbc.mondrian;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -11,9 +11,9 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.ojbc.mondrian.MondrianConnectionFactory.MondrianConnection;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -27,7 +27,7 @@ public class MondrianConnectionFactoryTest {
 	
 	private MondrianConnectionFactory factory;
 	
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		log.debug("setUp");
 		factory = new MondrianConnectionFactory();
@@ -75,7 +75,7 @@ public class MondrianConnectionFactoryTest {
 	}
 	
 	@Test
-	@Ignore
+	@Disabled
 	public void testJsonSerialization() throws Exception {
 		// This test isn't really a test, just a convenient way to dump out some json when needed
 		Map<String, MondrianConnectionFactory.MondrianConnection> connections = factory.getConnections();

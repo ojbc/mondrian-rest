@@ -16,16 +16,16 @@
  */
 package org.ojbc.mondrian.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import mondrian.olap.Axis;
 import mondrian.olap.Cell;
@@ -41,13 +41,13 @@ public class BasicMondrianQueryTest {
 	
 	private Connection mondrianOlapConnection;
 	
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		log.debug("setUp");
 		mondrianOlapConnection = DatabaseUtils.getInstance().getMondrianConnection();
 	}
 	
-	@After
+	@AfterEach
 	public void tearDown() throws Exception {
 		mondrianOlapConnection.close();
 	}

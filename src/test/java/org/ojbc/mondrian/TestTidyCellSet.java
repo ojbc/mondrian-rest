@@ -1,7 +1,7 @@
 package org.ojbc.mondrian;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.HashMap;
 import java.util.List;
@@ -9,8 +9,8 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.olap4j.CellSet;
 
 public class TestTidyCellSet {
@@ -19,7 +19,7 @@ public class TestTidyCellSet {
 	
 	private TidyCellSetWrapper tidyCellSet;
 	
-	@Before
+	@BeforeEach
 	public void setUp() {
 		log.debug("setUp");
 		tidyCellSet = new TidyCellSetWrapper();

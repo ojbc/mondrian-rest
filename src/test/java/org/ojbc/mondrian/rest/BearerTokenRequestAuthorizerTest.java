@@ -16,17 +16,17 @@
  */
 package org.ojbc.mondrian.rest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 public class BearerTokenRequestAuthorizerTest {
@@ -34,7 +34,7 @@ public class BearerTokenRequestAuthorizerTest {
 	private BearerTokenRequestAuthorizer bearerTokenRequestAuthorizer;
 	Map<String, Map<String, String>> tokenRoleMappings = new HashMap<>();
 	
-	@Before
+	@BeforeEach
 	public void setUp() {
 		Map<String, String> innerMap = new HashMap<>();
 		innerMap.put("test", "ROLE1");

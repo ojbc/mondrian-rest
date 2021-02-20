@@ -16,9 +16,9 @@
  */
 package org.ojbc.mondrian.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.Connection;
 import java.util.Arrays;
@@ -26,10 +26,10 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.olap4j.Axis;
 import org.olap4j.Cell;
 import org.olap4j.CellSet;
@@ -46,18 +46,18 @@ public class BasicOlap4jQueryTest {
 	
 	private Connection jdbcConnection;
 	
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		jdbcConnection = DatabaseUtils.getInstance().getOlap4jConnection();
 	}
 	
-	@After
+	@AfterEach
 	public void tearDown() throws Exception {
 		jdbcConnection.close();
 	}
 	
 	@Test
-	@Ignore
+	@Disabled
 	public void testExpt() throws Exception {
 		// convenience test, ignored when doing builds, as a place to play around with MDX queries, do experiments, etc.
 		OlapConnection olapConnection = jdbcConnection.unwrap(OlapConnection.class);
