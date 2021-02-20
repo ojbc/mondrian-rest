@@ -26,12 +26,17 @@ import java.util.Map;
 import org.olap4j.OlapException;
 import org.olap4j.metadata.Member;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
 /**
  * A wrapper around olap4j Member objects, suitable for serialization via json.
  *
  */
+@Getter
+@EqualsAndHashCode
+@ToString
 public class MemberWrapper implements Serializable {
 	
 	private static final long serialVersionUID = -4507370793045423111L;
@@ -43,8 +48,7 @@ public class MemberWrapper implements Serializable {
 	private List<MemberWrapper> childMembers;
 	private boolean childMembersPopulated;
 	
-	MemberWrapper() {
-	}
+	MemberWrapper() { }
 
 	public MemberWrapper(Member member) throws OlapException {
 		this.name = member.getName();
@@ -64,53 +68,8 @@ public class MemberWrapper implements Serializable {
 		this.childMemberCount = childMembers.size();
 	}
 
-	public String getName() {
-		return name;
-	}
-
-	public String getCaption() {
-		return caption;
-	}
-
-	@JsonProperty("isAll")
-	public boolean isAll() {
-		return isAll;
-	}
-
-	public int getChildMemberCount() {
-		return childMemberCount;
-	}
-
 	public List<MemberWrapper> getChildMembers() {
 		return Collections.unmodifiableList(childMembers);
-	}
-
-	public boolean isChildMembersPopulated() {
-		return childMembersPopulated;
-	}
-
-	void setName(String name) {
-		this.name = name;
-	}
-
-	void setCaption(String caption) {
-		this.caption = caption;
-	}
-
-	void setAll(boolean isAll) {
-		this.isAll = isAll;
-	}
-
-	void setChildMemberCount(int childMemberCount) {
-		this.childMemberCount = childMemberCount;
-	}
-
-	void setChildMembers(List<MemberWrapper> childMembers) {
-		this.childMembers = childMembers;
-	}
-
-	void setChildMembersPopulated(boolean childMembersPopulated) {
-		this.childMembersPopulated = childMembersPopulated;
 	}
 
 }

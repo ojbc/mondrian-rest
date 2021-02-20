@@ -20,6 +20,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+
+@Getter
+@EqualsAndHashCode
+@ToString
 public class MeasureGroupWrapper {
 
 	private String name;
@@ -31,28 +38,12 @@ public class MeasureGroupWrapper {
 		dimensionReferences = new ArrayList<String>();
 	}
 
-	public String getName() {
-		return name;
-	}
-
-	void setName(String name) {
-		this.name = name;
-	}
-
 	public List<String> getMeasureReferences() {
 		return Collections.unmodifiableList(measureReferences);
 	}
 
-	void setMeasureReferences(List<String> measureReferences) {
-		this.measureReferences = measureReferences;
-	}
-
 	public List<String> getDimensionReferences() {
 		return Collections.unmodifiableList(dimensionReferences);
-	}
-
-	void setDimensionReferences(List<String> dimensionReferences) {
-		this.dimensionReferences = dimensionReferences;
 	}
 
 }

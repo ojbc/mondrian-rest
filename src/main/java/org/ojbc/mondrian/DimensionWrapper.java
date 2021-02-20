@@ -25,10 +25,17 @@ import org.olap4j.OlapException;
 import org.olap4j.metadata.Dimension;
 import org.olap4j.metadata.Hierarchy;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+
 /**
  * A wrapper around olap4j Dimension objects, suitable for serialization via json.
  *
  */
+@Getter
+@EqualsAndHashCode
+@ToString
 public class DimensionWrapper implements Serializable {
 	
 	private static final long serialVersionUID = 4499740199331630404L;
@@ -51,36 +58,8 @@ public class DimensionWrapper implements Serializable {
 		}
 	}
 
-	public String getName() {
-		return name;
-	}
-
-	public String getCaption() {
-		return caption;
-	}
-
 	public List<HierarchyWrapper> getHierarchies() {
 		return Collections.unmodifiableList(hierarchies);
-	}
-
-	public String getType() {
-		return type;
-	}
-
-	void setType(String type) {
-		this.type = type;
-	}
-
-	void setName(String name) {
-		this.name = name;
-	}
-
-	void setCaption(String caption) {
-		this.caption = caption;
-	}
-
-	void setHierarchies(List<HierarchyWrapper> hierarchies) {
-		this.hierarchies = hierarchies;
 	}
 
 }

@@ -22,10 +22,17 @@ import java.util.List;
 import org.olap4j.Cell;
 import org.olap4j.OlapException;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+
 /**
  * A wrapper around Mondrian Cell objects, suitable for serialization via json.
  *
  */
+@Getter
+@EqualsAndHashCode
+@ToString
 public class CellWrapper {
 	
 	private String formattedValue;
@@ -34,9 +41,7 @@ public class CellWrapper {
 	public List<Integer> coordinates;
 	public OlapException error;
 	
-	CellWrapper() {
-		
-	}
+	CellWrapper() { }
 	
 	public CellWrapper(Cell cell) {
 		formattedValue = cell.getFormattedValue();
@@ -52,61 +57,8 @@ public class CellWrapper {
 		coordinates = cell.getCoordinateList();
 	}
 
-	public OlapException getError() {
-		return error;
-	}
-
-	public String getFormattedValue() {
-		return formattedValue;
-	}
-
-	public Number getValue() {
-		return value;
-	}
-	
-	public int getOrdinal() {
-		return ordinal;
-	}
-	
 	public List<Integer> getCoordinates() {
 		return Collections.unmodifiableList(coordinates);
-	}
-
-	void setFormattedValue(String formattedValue) {
-		this.formattedValue = formattedValue;
-	}
-
-	void setValue(Number value) {
-		this.value = value;
-	}
-
-	void setOrdinal(int ordinal) {
-		this.ordinal = ordinal;
-	}
-
-	void setCoordinates(List<Integer> coordinates) {
-		this.coordinates = coordinates;
-	}
-
-	void setError(OlapException error) {
-		this.error = error;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((coordinates == null) ? 0 : coordinates.hashCode());
-		result = prime * result + ((error == null) ? 0 : error.hashCode());
-		result = prime * result + ((formattedValue == null) ? 0 : formattedValue.hashCode());
-		result = prime * result + ordinal;
-		result = prime * result + ((value == null) ? 0 : value.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		return obj != null && obj instanceof CellWrapper && obj.hashCode()==hashCode();
 	}
 
 }

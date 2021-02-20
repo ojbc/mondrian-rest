@@ -20,10 +20,17 @@ import java.io.Serializable;
 
 import org.olap4j.metadata.Measure;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+
 /**
  * A wrapper around olap4j Measure objects, suitable for serialization via json.
  *
  */
+@Getter
+@EqualsAndHashCode
+@ToString
 public class MeasureWrapper implements Serializable {
 	
 	private static final long serialVersionUID = 8381804073662223438L;
@@ -33,46 +40,13 @@ public class MeasureWrapper implements Serializable {
 	private boolean visible;
 	private boolean calculated;
 	
-	MeasureWrapper() {
-	}
+	MeasureWrapper() { }
 	
 	public MeasureWrapper(Measure measure) {
 		this.name = measure.getName();
 		this.caption = measure.getCaption();
 		this.visible = measure.isVisible();
 		this.calculated = measure.isCalculated();
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public String getCaption() {
-		return caption;
-	}
-
-	public boolean isVisible() {
-		return visible;
-	}
-
-	public boolean isCalculated() {
-		return calculated;
-	}
-
-	void setName(String name) {
-		this.name = name;
-	}
-
-	void setCaption(String caption) {
-		this.caption = caption;
-	}
-
-	void setVisible(boolean visible) {
-		this.visible = visible;
-	}
-
-	void setCalculated(boolean calculated) {
-		this.calculated = calculated;
 	}
 
 }

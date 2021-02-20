@@ -25,23 +25,27 @@ import org.olap4j.Position;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+
 /**
  * A wrapper around Mondrian Axis objects, suitable for serialization via json.
  *
  */
+@Getter
+@EqualsAndHashCode
+@ToString
 public class AxisWrapper {
 	
-	private List<PositionWrapper> positionWrappers;
+	private List<PositionWrapper> positionWrappers = new ArrayList<>();
 	
 	private int ordinal;
 	private String name;
 	
-	AxisWrapper() {
-	}
+	AxisWrapper() {}
 	
 	public AxisWrapper(CellSetAxis axis) {
-		
-		positionWrappers = new ArrayList<>();
 		
 		for (Position position : axis.getPositions()) {
 			positionWrappers.add(new PositionWrapper(position));
@@ -55,41 +59,6 @@ public class AxisWrapper {
 	@JsonProperty("positions")
 	public List<PositionWrapper> getPositionWrappers() {
 		return Collections.unmodifiableList(positionWrappers);
-	}
-
-	public int getOrdinal() {
-		return ordinal;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	void setPositionWrappers(List<PositionWrapper> positionWrappers) {
-		this.positionWrappers = positionWrappers;
-	}
-
-	void setOrdinal(int ordinal) {
-		this.ordinal = ordinal;
-	}
-
-	void setName(String name) {
-		this.name = name;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + ordinal;
-		result = prime * result + ((positionWrappers == null) ? 0 : positionWrappers.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		return obj != null && obj instanceof AxisWrapper && obj.hashCode()==hashCode();
 	}
 
 }

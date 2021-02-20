@@ -27,10 +27,17 @@ import org.olap4j.metadata.Dimension;
 import org.olap4j.metadata.Measure;
 import org.w3c.dom.Document;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+
 /**
  * A wrapper around olap4j Cube objects, suitable for serialization via json.
  *
  */
+@Getter
+@EqualsAndHashCode
+@ToString
 public class CubeWrapper implements Serializable {
 	
 	private static final long serialVersionUID = 8561468085905307671L;
@@ -40,8 +47,7 @@ public class CubeWrapper implements Serializable {
 	private List<MeasureWrapper> measures;
 	private List<DimensionWrapper> dimensions;
 	
-	CubeWrapper() {
-	}
+	CubeWrapper() { }
 
 	public CubeWrapper(Cube cube, Document xmlSchema) throws OlapException {
 		this.name = cube.getName();
@@ -62,30 +68,6 @@ public class CubeWrapper implements Serializable {
 
 	public List<DimensionWrapper> getDimensions() {
 		return Collections.unmodifiableList(dimensions);
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public String getCaption() {
-		return caption;
-	}
-
-	void setName(String name) {
-		this.name = name;
-	}
-
-	void setCaption(String caption) {
-		this.caption = caption;
-	}
-
-	void setMeasures(List<MeasureWrapper> measures) {
-		this.measures = measures;
-	}
-
-	void setDimensions(List<DimensionWrapper> dimensions) {
-		this.dimensions = dimensions;
 	}
 
 }

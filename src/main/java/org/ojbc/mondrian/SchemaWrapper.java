@@ -34,25 +34,31 @@ import org.olap4j.OlapException;
 import org.olap4j.metadata.Cube;
 import org.olap4j.metadata.Schema;
 import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
 /**
  * A wrapper around olap4j Schema objects, suitable for serialization via json.
  *
  */
+@Getter
+@EqualsAndHashCode
+@ToString
 public class SchemaWrapper implements Serializable {
 	
 	private static final long serialVersionUID = 6324155925760637995L;
 
-	private final Log log = LogFactory.getLog(SchemaWrapper.class);
+	private static final Log log = LogFactory.getLog(SchemaWrapper.class);
 	
 	private String name;
 	private String connectionName;
 	private List<CubeWrapper> cubes;
 	
-	SchemaWrapper() {
-	}
+	SchemaWrapper() { }
 	
 	public SchemaWrapper(Schema schema, String connectionName, Document xmlSchema) throws OlapException {
 		this.name = schema.getName();
@@ -92,28 +98,8 @@ public class SchemaWrapper implements Serializable {
 		}
 	}
 
-	public String getName() {
-		return name;
-	}
-
 	public List<CubeWrapper> getCubes() {
 		return Collections.unmodifiableList(cubes);
-	}
-
-	void setName(String name) {
-		this.name = name;
-	}
-
-	void setCubes(List<CubeWrapper> cubes) {
-		this.cubes = cubes;
-	}
-
-	public String getConnectionName() {
-		return connectionName;
-	}
-
-	public void setConnectionName(String connectionName) {
-		this.connectionName = connectionName;
 	}
 
 }

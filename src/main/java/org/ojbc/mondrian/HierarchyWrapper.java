@@ -27,21 +27,27 @@ import org.olap4j.metadata.Level;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+
 /**
  * A wrapper around olap4j Hierarchy objects, suitable for serialization via json.
  *
  */
+@Getter
+@EqualsAndHashCode
+@ToString
 public class HierarchyWrapper implements Serializable {
 	
 	private static final long serialVersionUID = 6513035017849268043L;
 	
 	private String name;
 	private String caption;
-	private boolean hasAll;
+	@JsonProperty("hasAll") private boolean hasAll;
 	private List<LevelWrapper> levels;
 	
-	HierarchyWrapper() {
-	}
+	HierarchyWrapper() { }
 
 	public HierarchyWrapper(Hierarchy h) throws OlapException {
 		this.name = h.getName();
@@ -53,37 +59,8 @@ public class HierarchyWrapper implements Serializable {
 		}
 	}
 	
-	public String getName() {
-		return name;
-	}
-
-	public String getCaption() {
-		return caption;
-	}
-	
-	@JsonProperty("hasAll")
-	public boolean getHasAll() {
-		return hasAll;
-	}
-
 	public List<LevelWrapper> getLevels() {
 		return Collections.unmodifiableList(levels);
-	}
-
-	void setName(String name) {
-		this.name = name;
-	}
-
-	void setCaption(String caption) {
-		this.caption = caption;
-	}
-	
-	void setHasAll(boolean hasAll) {
-		this.hasAll = hasAll;
-	}
-	
-	void setLevels(List<LevelWrapper> levels) {
-		this.levels = levels;
 	}
 
 }

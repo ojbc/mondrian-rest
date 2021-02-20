@@ -23,36 +23,41 @@ import java.util.List;
 import org.olap4j.Position;
 import org.olap4j.metadata.Member;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+
 /**
  * A wrapper around Mondrian Position objects, suitable for serialization via json.
  *
  */
+@Getter
+@EqualsAndHashCode
+@ToString
 public class PositionWrapper {
 	
 	private List<String> memberDimensionNames;
 	private List<String> memberDimensionCaptions;
-	private List<PositionMemberWrapper> memberWrappers;
+	private List<PositionMemberWrapper> positionMembers;
 	
-	PositionWrapper() {
-		
-	}
+	PositionWrapper() { }
 	
 	public PositionWrapper(Position position) {
 		
 		memberDimensionNames = new ArrayList<>();
 		memberDimensionCaptions = new ArrayList<>();
-		memberWrappers = new ArrayList<>();
+		positionMembers = new ArrayList<>();
 		
 		for (Member member : position.getMembers()) {
 			memberDimensionNames.add(member.getDimension().getName());
 			memberDimensionCaptions.add(member.getDimension().getCaption());
-			memberWrappers.add(new PositionMemberWrapper(member));
+			positionMembers.add(new PositionMemberWrapper(member));
 		}
 		
 	}
 	
 	public List<PositionMemberWrapper> getPositionMembers() {
-		return Collections.unmodifiableList(memberWrappers);
+		return Collections.unmodifiableList(positionMembers);
 	}
 
 	public List<String> getMemberDimensionNames() {
@@ -61,33 +66,6 @@ public class PositionWrapper {
 
 	public List<String> getMemberDimensionCaptions() {
 		return Collections.unmodifiableList(memberDimensionCaptions);
-	}
-
-	void setMemberDimensionNames(List<String> memberDimensionNames) {
-		this.memberDimensionNames = memberDimensionNames;
-	}
-
-	void setMemberDimensionCaptions(List<String> memberDimensionCaptions) {
-		this.memberDimensionCaptions = memberDimensionCaptions;
-	}
-
-	void setPositionMembers(List<PositionMemberWrapper> memberWrappers) {
-		this.memberWrappers = memberWrappers;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((memberDimensionCaptions == null) ? 0 : memberDimensionCaptions.hashCode());
-		result = prime * result + ((memberDimensionNames == null) ? 0 : memberDimensionNames.hashCode());
-		result = prime * result + ((memberWrappers == null) ? 0 : memberWrappers.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		return obj != null && obj instanceof PositionWrapper && obj.hashCode()==hashCode();
 	}
 
 }

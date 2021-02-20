@@ -26,10 +26,17 @@ import org.olap4j.Position;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+
 /**
  * A wrapper around Mondrian CellSet objects, suitable for serialization via json.
  *
  */
+@Getter
+@EqualsAndHashCode
+@ToString
 public class CellSetWrapper implements CellSetWrapperType {
 	
 	@JsonProperty("cells")
@@ -38,9 +45,7 @@ public class CellSetWrapper implements CellSetWrapperType {
 	@JsonProperty("axes")
 	private List<AxisWrapper> axisWrappers;
 	
-	CellSetWrapper() {
-		
-	}
+	CellSetWrapper() {}
 	
 	public CellSetWrapper(CellSet cellSet) {
 		
@@ -69,28 +74,6 @@ public class CellSetWrapper implements CellSetWrapperType {
 
 	public List<AxisWrapper> getAxisWrappers() {
 		return Collections.unmodifiableList(axisWrappers);
-	}
-
-	void setCellWrappers(List<CellWrapper> cellWrappers) {
-		this.cellWrappers = cellWrappers;
-	}
-
-	void setAxisWrappers(List<AxisWrapper> axisWrappers) {
-		this.axisWrappers = axisWrappers;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((axisWrappers == null) ? 0 : axisWrappers.hashCode());
-		result = prime * result + ((cellWrappers == null) ? 0 : cellWrappers.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		return obj != null && obj instanceof CellSetWrapper && obj.hashCode()==hashCode();
 	}
 
 }

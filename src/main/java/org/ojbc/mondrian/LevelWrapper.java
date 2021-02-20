@@ -18,16 +18,24 @@ package org.ojbc.mondrian;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.olap4j.OlapException;
 import org.olap4j.metadata.Level;
 import org.olap4j.metadata.Member;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+
 /**
  * A wrapper around olap4j Level objects, suitable for serialization via json.
  *
  */
+@Getter
+@EqualsAndHashCode
+@ToString
 public class LevelWrapper implements Serializable {
 	
 	private static final long serialVersionUID = -5854141970363132112L;
@@ -41,8 +49,7 @@ public class LevelWrapper implements Serializable {
 	private boolean populated;
 	private List<MemberWrapper> members;
 	
-	LevelWrapper() {
-	}
+	LevelWrapper() { }
 
 	public LevelWrapper(Level level) throws OlapException {
 		this.name = level.getName();
@@ -60,54 +67,8 @@ public class LevelWrapper implements Serializable {
 		}
 	}
 
-	public String getName() {
-		return name;
-	}
-
-	public String getCaption() {
-		return caption;
-	}
-
-	public int getDepth() {
-		return depth;
-	}
-
-	public int getCardinality() {
-		return cardinality;
-	}
-
-	public boolean isPopulated() {
-		return populated;
-	}
-
 	public List<MemberWrapper> getMembers() {
-		return members;
+		return Collections.unmodifiableList(members);
 	}
-
-	void setName(String name) {
-		this.name = name;
-	}
-
-	void setCaption(String caption) {
-		this.caption = caption;
-	}
-
-	void setDepth(int depth) {
-		this.depth = depth;
-	}
-
-	void setCardinality(int cardinality) {
-		this.cardinality = cardinality;
-	}
-
-	void setPopulated(boolean populated) {
-		this.populated = populated;
-	}
-
-	void setMembers(List<MemberWrapper> members) {
-		this.members = members;
-	}
-	
-	
 
 }
