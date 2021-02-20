@@ -125,12 +125,4 @@ public abstract class AbstractSamlAssertionRequestAuthorizer implements RequestA
 		return documentBuilderFactory.newDocumentBuilder().parse(is);
 	}
 
-	public SamlTokenStrategy getSamlTokenStrategy() {
-		return samlTokenStrategy;
-	}
-
-	public void setSamlTokenStrategy(SamlTokenStrategy samlTokenStrategy) {
-		this.samlTokenStrategy = samlTokenStrategy;
-	}
-
 }

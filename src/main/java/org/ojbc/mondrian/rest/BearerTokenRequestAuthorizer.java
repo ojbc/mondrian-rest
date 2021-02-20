@@ -21,10 +21,12 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * RequestAuthorizer that uses bearer token authentication on each request and determines that user's role for the connection in the query request.
@@ -32,26 +34,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class BearerTokenRequestAuthorizer implements RequestAuthorizer {
 	
+	@Getter
+	@Setter(AccessLevel.PACKAGE)
 	private Map<String, Map<String, String>> tokenRoleMappings;
 	
 	@Value("${bearerTokenRequestAuthorizerConfigFileName:bearer-token-request-authorizer.json}")
+	@Setter
 	private String bearerTokenRequestAuthorizerConfigFileName;
 	
 	@PostConstruct
 	public void init() throws Exception {
 		tokenRoleMappings = RequestAuthorizer.AuthorizerUtil.convertRoleConnectionJsonToMaps(bearerTokenRequestAuthorizerConfigFileName);
-	}
-	
-	public void setBearerTokenRequestAuthorizerConfigFileName(String bearerTokenRequestAuthorizerConfigFileName) {
-		this.bearerTokenRequestAuthorizerConfigFileName = bearerTokenRequestAuthorizerConfigFileName;
-	}
-
-	public Map<String, Map<String, String>> getTokenRoleMappings() {
-		return tokenRoleMappings;
-	}
-	
-	void setTokenRoleMappings(Map<String, Map<String, String>> tokenRoleMappings) {
-		this.tokenRoleMappings = tokenRoleMappings;
 	}
 	
 	@Override

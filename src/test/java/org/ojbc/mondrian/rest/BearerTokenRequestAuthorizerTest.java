@@ -49,6 +49,7 @@ public class BearerTokenRequestAuthorizerTest {
 		
 		HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
 		Mockito.when(request.getHeader("Authorization")).thenReturn("Bearer TOKEN1");
+		
 		QueryRequest queryRequest = Mockito.mock(QueryRequest.class);
 		Mockito.when(queryRequest.getConnectionName()).thenReturn("test");
 		

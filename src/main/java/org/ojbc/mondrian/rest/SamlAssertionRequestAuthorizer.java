@@ -24,6 +24,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 
+import lombok.Setter;
+
 /**
  * RequestAuthorizer that uses information in a SAML assertion to authorize each request and determine that user's role for the connection in the query request.  It determines the role
  * by looking up the token in a map in the config file.
@@ -34,6 +36,7 @@ public class SamlAssertionRequestAuthorizer extends AbstractSamlAssertionRequest
 	private Map<String, Map<String, String>> tokenRoleMappings;
 	
 	@Value("${samlAssertionRequestAuthorizerConfigFileName:saml-assertion-request-authorizer.json}")
+	@Setter
 	private String samlAssertionRequestAuthorizerConfigFileName;
 	
 	@PostConstruct
@@ -41,10 +44,6 @@ public class SamlAssertionRequestAuthorizer extends AbstractSamlAssertionRequest
 		tokenRoleMappings = RequestAuthorizer.AuthorizerUtil.convertRoleConnectionJsonToMaps(samlAssertionRequestAuthorizerConfigFileName);
 	}
 	
-	public void setSamlAssertionRequestAuthorizerConfigFileName(String samlAssertionRequestAuthorizerConfigFileName) {
-		this.samlAssertionRequestAuthorizerConfigFileName = samlAssertionRequestAuthorizerConfigFileName;
-	}
-
 	@Override
 	protected RequestAuthorizationStatus authorizeAssertion(String connectionName, Document assertion) {
 		Map<String, String> connectionMappings = getConnectionMappingsForAssertion(assertion);

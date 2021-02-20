@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
@@ -27,15 +28,8 @@ import lombok.extern.slf4j.Slf4j;
 public class SamlAssertionRequestRoleAuthorizer extends AbstractSamlAssertionRequestAuthorizer {
 	
 	@Value("${samlAssertionRoleAttributeName:null}")
+	@Getter
 	private String roleAttributeName;
-
-	public String getRoleAttributeName() {
-		return roleAttributeName;
-	}
-
-	public void setRoleAttributeName(String roleAttributeName) {
-		this.roleAttributeName = roleAttributeName;
-	}
 
 	@Override
 	protected RequestAuthorizationStatus authorizeAssertion(String connectionName, Document assertion) {
