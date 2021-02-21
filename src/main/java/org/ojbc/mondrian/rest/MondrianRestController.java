@@ -19,11 +19,13 @@ package org.ojbc.mondrian.rest;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -39,6 +41,10 @@ import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.ehcache.config.units.MemoryUnit;
 import org.ojbc.mondrian.CellSetWrapper;
 import org.ojbc.mondrian.CellSetWrapperType;
+import org.ojbc.mondrian.CubeWrapper;
+import org.ojbc.mondrian.DimensionWrapper;
+import org.ojbc.mondrian.LevelWrapper;
+import org.ojbc.mondrian.MemberWrapper;
 import org.ojbc.mondrian.MondrianConnectionFactory;
 import org.ojbc.mondrian.SchemaWrapper;
 import org.ojbc.mondrian.TidyCellSetWrapper;
@@ -59,6 +65,7 @@ import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
@@ -153,6 +160,10 @@ public class MondrianRestController {
 		}
 	}
 
+	public void setRemoveDemoConnections(boolean removeDemoConnections) {
+		this.removeDemoConnections = removeDemoConnections;
+	}
+
 	/**
 	 * Get all the connections available to this instance of the API
 	 * @return json string with connection information
@@ -205,94 +216,24 @@ public class MondrianRestController {
 	
 	@RequestMapping(value="/getMetadata", method=RequestMethod.GET, produces="application/json")
 	public ResponseEntity<String> getMetadata(String connectionName, HttpServletRequest request) throws Exception {
-		
-		RequestAuthorizer.RequestAuthorizationStatus authorizationStatus = requestAuthorizer.authorizeRequest(request, connectionName);
-		
-		if (authorizationStatus.authorized) {
-			
-			String mondrianRole = authorizationStatus.mondrianRole;
-
-			String body = null;
-			HttpStatus status = HttpStatus.OK;
-			HttpHeaders responseHeaders = new HttpHeaders();
-
-			MondrianConnectionFactory.MondrianConnection connection = connectionFactory.getConnections().get(connectionName);
-			
-			if (connection == null) {
-				log.warn("Attempt to retrieve metadata for connection that does not exist: " + connectionName);
-				status = HttpStatus.NOT_FOUND;
-			} else {
-				ObjectMapper mapper = new ObjectMapper();
-				try {
-					SchemaWrapper schemaWrapper = null;
-					int metadataCacheKey = getMetadataCacheKey(connectionName, mondrianRole);
-					if (metadataCache.containsKey(metadataCacheKey)) {
-						schemaWrapper = metadataCache.get(metadataCacheKey);
-						responseHeaders.add("mondrian-rest-cached-result", "true");
-					} else {
-						schemaWrapper = fetchMetadata(connectionName, mondrianRole, connection);
-					}
-					body = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(schemaWrapper);
-				} catch (OlapException oe) {
-					log.warn("OlapException occurred retrieving metadata.  Stack trace follows (if debug logging).");
-					log.debug("Stack trace: ", oe);
-					Map<String, String> errorBodyMap = new HashMap<>();
-					errorBodyMap.put("reason", oe.getMessage());
-					Throwable rootCause = oe;
-					Throwable nextCause = oe.getCause();
-					while (nextCause != null) {
-						rootCause = nextCause;
-						nextCause = rootCause.getCause();
-					}
-					errorBodyMap.put("rootCauseReason", rootCause.getMessage());
-					errorBodyMap.put("SQLState", oe.getSQLState());
-					log.warn("Exception root cause: " + rootCause.getMessage());
-					body = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(errorBodyMap);
-					status = HttpStatus.valueOf(500);
-				}
+		SchemaWrapperBodyTransformer schemaWrapperBodyTransformer = schemaWrapper -> new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(schemaWrapper);
+		return handleMetadataRequest(connectionName, request, schemaWrapperBodyTransformer);
+	}
+	
+	@RequestMapping(value="/getDimensions", method=RequestMethod.GET, produces="application/json")
+	public ResponseEntity<String> getDimensions(String connectionName, String cube, boolean includeMembers, HttpServletRequest request) throws Exception {
+		SchemaWrapperBodyTransformer schemaWrapperBodyTransformer = schemaWrapper -> {
+			List<CubeWrapper> matchingCubes = schemaWrapper.getCubes().stream().filter(cubeWrapper -> cubeWrapper.getName().equals(cube)).collect(Collectors.toList());
+			if (matchingCubes.isEmpty()) {
+				throw new IllegalStateException("Cube " + cube + " not found");
 			}
-
-			return new ResponseEntity<String>(body, responseHeaders, status);
-			
-		} else {
-			
-			log.warn(authorizationStatus.message);
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-			
-		}
-		
-	}
-
-	private SchemaWrapper fetchMetadata(String connectionName, String mondrianRole, MondrianConnectionFactory.MondrianConnection connection) throws SQLException, OlapException, SAXException, IOException, ParserConfigurationException {
-
-		long startTime = System.currentTimeMillis();
-		log.info("Fetching metadata for connection " + connectionName + " and role " + mondrianRole);
-
-		OlapConnection olapConnection = connection.getOlap4jConnection().unwrap(OlapConnection.class);
-
-		if (mondrianRole != null) {
-			olapConnection.setRoleName(mondrianRole);
-		}
-
-		Schema schema = olapConnection.getOlapSchema();
-		SchemaWrapper schemaWrapper = new SchemaWrapper(schema, connectionName, connection.getMondrianSchemaContentDocument());
-
-		int key = getMetadataCacheKey(connectionName, mondrianRole);
-
-		metadataCache.put(key, schemaWrapper);
-		
-		log.info("Metadata fetch for connection " + connectionName + " and role " + mondrianRole + " finished in " + ((System.currentTimeMillis() - startTime)/1000.0) + " seconds.");
-		
-		return schemaWrapper;
-
-	}
-
-	private int getMetadataCacheKey(String connectionName, String mondrianRole) {
-		int prime = 31;
-		int key = 1;
-		key = prime * key + ((mondrianRole == null) ? 0 : mondrianRole.hashCode());
-		key = prime * key + ((connectionName == null) ? 0 : connectionName.hashCode());
-		return key;
+			ObjectMapper objectMapper = new ObjectMapper();
+			if (!includeMembers) {
+				objectMapper.addMixIn(LevelWrapper.class, MemberHidingMixin.class);
+			}
+			return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(matchingCubes.get(0).getDimensions());
+		};
+		return handleMetadataRequest(connectionName, request, schemaWrapperBodyTransformer);
 	}
 	
 	/**
@@ -384,20 +325,7 @@ public class MondrianRestController {
 							queryCache.put(cacheKey, outputObject);
 							querySucceeded = true;
 						} catch (OlapException oe) {
-							log.warn("OlapException occurred processing query.  Stack trace follows (if debug logging).");
-							log.debug("Stack trace: ", oe);
-							Map<String, String> errorBodyMap = new HashMap<>();
-							errorBodyMap.put("reason", oe.getMessage());
-							Throwable rootCause = oe;
-							Throwable nextCause = oe.getCause();
-							while (nextCause != null) {
-								rootCause = nextCause;
-								nextCause = rootCause.getCause();
-							}
-							errorBodyMap.put("rootCauseReason", rootCause.getMessage());
-							errorBodyMap.put("SQLState", oe.getSQLState());
-							log.warn("Exception root cause: " + rootCause.getMessage());
-							body = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(errorBodyMap);
+							body = createOlapExceptionBody(oe, "processing query");
 							status = HttpStatus.valueOf(500);
 						} finally {
 							statement.close();
@@ -424,19 +352,112 @@ public class MondrianRestController {
 		}
 		
 	}
-	
-	static final class SchemaContentHidingMixIn {
-		@JsonIgnore
-		@JsonProperty("MondrianSchemaContent")
-		public String getMondrianSchemaContent() {
-			return null;
+
+	private ResponseEntity<String> handleMetadataRequest(String connectionName, HttpServletRequest request, SchemaWrapperBodyTransformer schemaWrapperBodyTransformer) throws Exception, JsonProcessingException {
+		
+		RequestAuthorizer.RequestAuthorizationStatus authorizationStatus = requestAuthorizer.authorizeRequest(request, connectionName);
+		
+		if (authorizationStatus.authorized) {
+			
+			String mondrianRole = authorizationStatus.mondrianRole;
+
+			String body = null;
+			HttpStatus status = HttpStatus.OK;
+			HttpHeaders responseHeaders = new HttpHeaders();
+
+			MondrianConnectionFactory.MondrianConnection connection = connectionFactory.getConnections().get(connectionName);
+			
+			if (connection == null) {
+				log.warn("Attempt to retrieve metadata for connection that does not exist: " + connectionName);
+				status = HttpStatus.NOT_FOUND;
+			} else {
+				try {
+					SchemaWrapper schemaWrapper = getCachedMetadata(connectionName, mondrianRole, responseHeaders, connection);
+					body = schemaWrapperBodyTransformer.transformSchemaWrapper(schemaWrapper);
+				} catch (OlapException oe) {
+					body = createOlapExceptionBody(oe, "retrieving metadata");
+					status = HttpStatus.valueOf(500);
+				} catch (Exception e) {
+					Map<String, String> bodyMap = new HashMap<>();
+					bodyMap.put("message", e.getMessage());
+					body = new ObjectMapper().writeValueAsString(bodyMap);
+					status = HttpStatus.valueOf(500);
+				}
+			}
+
+			return new ResponseEntity<String>(body, responseHeaders, status);
+			
+		} else {
+			
+			log.warn(authorizationStatus.message);
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+			
 		}
+		
+	}
+	
+	private SchemaWrapper getCachedMetadata(String connectionName, String mondrianRole, HttpHeaders responseHeaders, MondrianConnectionFactory.MondrianConnection connection) throws Exception {
+		SchemaWrapper schemaWrapper = null;
+		int metadataCacheKey = getMetadataCacheKey(connectionName, mondrianRole);
+		if (metadataCache.containsKey(metadataCacheKey)) {
+			schemaWrapper = metadataCache.get(metadataCacheKey);
+			responseHeaders.add("mondrian-rest-cached-result", "true");
+		} else {
+			schemaWrapper = fetchMetadata(connectionName, mondrianRole, connection);
+		}
+		return schemaWrapper;
 	}
 
-	public void setRemoveDemoConnections(boolean removeDemoConnections) {
-		this.removeDemoConnections = removeDemoConnections;
+	private SchemaWrapper fetchMetadata(String connectionName, String mondrianRole, MondrianConnectionFactory.MondrianConnection connection) throws SQLException, OlapException, SAXException, IOException, ParserConfigurationException {
+
+		long startTime = System.currentTimeMillis();
+		log.info("Fetching metadata for connection " + connectionName + " and role " + mondrianRole);
+
+		OlapConnection olapConnection = connection.getOlap4jConnection().unwrap(OlapConnection.class);
+
+		if (mondrianRole != null) {
+			olapConnection.setRoleName(mondrianRole);
+		}
+
+		Schema schema = olapConnection.getOlapSchema();
+		SchemaWrapper schemaWrapper = new SchemaWrapper(schema, connectionName, connection.getMondrianSchemaContentDocument());
+
+		int key = getMetadataCacheKey(connectionName, mondrianRole);
+
+		metadataCache.put(key, schemaWrapper);
+		
+		log.info("Metadata fetch for connection " + connectionName + " and role " + mondrianRole + " finished in " + ((System.currentTimeMillis() - startTime)/1000.0) + " seconds.");
+		
+		return schemaWrapper;
+
 	}
 
+	private int getMetadataCacheKey(String connectionName, String mondrianRole) {
+		int prime = 31;
+		int key = 1;
+		key = prime * key + ((mondrianRole == null) ? 0 : mondrianRole.hashCode());
+		key = prime * key + ((connectionName == null) ? 0 : connectionName.hashCode());
+		return key;
+	}
+	
+	private String createOlapExceptionBody(OlapException oe, String exceptionContext) throws JsonProcessingException {
+		ObjectMapper exceptionObjectMapper = new ObjectMapper();
+		log.warn("OlapException occurred " + exceptionContext + ".  Stack trace follows (if debug logging).");
+		log.debug("Stack trace: ", oe);
+		Map<String, String> errorBodyMap = new HashMap<>();
+		errorBodyMap.put("reason", oe.getMessage());
+		Throwable rootCause = oe;
+		Throwable nextCause = oe.getCause();
+		while (nextCause != null) {
+			rootCause = nextCause;
+			nextCause = rootCause.getCause();
+		}
+		errorBodyMap.put("rootCauseReason", rootCause.getMessage());
+		errorBodyMap.put("SQLState", oe.getSQLState());
+		log.warn("Exception root cause: " + rootCause.getMessage());
+		return exceptionObjectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(errorBodyMap);
+	}
+	
 	private void initCache() throws IOException {
 		File cacheDir = new File(cacheDiskLocation, "mondrian-rest-object-cache");
 		if (cacheDir.exists()) {
@@ -455,4 +476,24 @@ public class MondrianRestController {
 		metadataCache = cacheManager.getCache("metadata-cache", Integer.class, SchemaWrapper.class);
 	}
 	
+	private static interface SchemaWrapperBodyTransformer {
+		public String transformSchemaWrapper(SchemaWrapper schemaWrapper) throws Exception;
+	}
+
+	private static final class MemberHidingMixin {
+		@JsonIgnore
+		@JsonProperty("members")
+		public List<MemberWrapper> getMembers() {
+			return null;
+		}
+	}
+
+	private static final class SchemaContentHidingMixIn {
+		@JsonIgnore
+		@JsonProperty("MondrianSchemaContent")
+		public String getMondrianSchemaContent() {
+			return null;
+		}
+	}
+
 }

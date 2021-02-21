@@ -24,8 +24,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.StringReader;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -54,11 +56,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 
-import lombok.extern.slf4j.Slf4j;
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@Slf4j
 public class MondrianRestControllerTest extends AbstractMondrianRestControllerTest {
 	
 	@LocalServerPort
@@ -117,15 +116,8 @@ public class MondrianRestControllerTest extends AbstractMondrianRestControllerTe
 		assertEquals("Test", schemaWrapper.getName());
 		assertEquals(6, schemaWrapper.getCubes().size());
 		
-		CubeWrapper cubeWrapper = null;
+		CubeWrapper cubeWrapper = schemaWrapper.getCubes().stream().filter(c -> c.getName().equals("Test_F1")).collect(Collectors.toList()).get(0);
 		
-		for (CubeWrapper c : schemaWrapper.getCubes()) {
-			if (c.getName().equals("Test_F1")) {
-				cubeWrapper = c;
-			}
-		}
-		
-		assertNotNull(cubeWrapper);
 		assertEquals("Test_F1", cubeWrapper.getCaption());
 		
 		assertEquals(2, cubeWrapper.getMeasures().size());
@@ -151,10 +143,6 @@ public class MondrianRestControllerTest extends AbstractMondrianRestControllerTe
 		
 		assertFalse(factCountMeasure.isVisible());
 		
-		for (DimensionWrapper dw : cubeWrapper.getDimensions()) {
-			log.info(dw.getName());
-		}
-		
 		assertEquals(2, cubeWrapper.getDimensions().size());
 		
 		assertEquals("Measures", cubeWrapper.getDimensions().get(0).getName());
@@ -167,6 +155,37 @@ public class MondrianRestControllerTest extends AbstractMondrianRestControllerTe
 		
 		assertEquals("D1_DESCRIPTION", hw.getLevels().get(1).getName());
 		assertEquals(5, hw.getLevels().get(1).getCardinality());
+		
+	}
+	
+	@Test
+	public void testGetDimensions() throws Exception {
+		
+		ResponseEntity<DimensionWrapper[]> response = restTemplate.getForEntity(new URI("http://localhost:" + port + "/getDimensions?connectionName=test&includeMembers=false&cube=Test_F3"), DimensionWrapper[].class);
+		assertEquals(200, response.getStatusCode().value());
+		
+		DimensionWrapper[] dimensions = response.getBody();
+		
+		assertEquals(3, dimensions.length);
+		
+		Arrays.stream(dimensions).forEach(dimension -> {
+			dimension.getHierarchies().forEach(hierarchy -> {
+				hierarchy.getLevels().forEach(level -> assertTrue(level.getMembers().isEmpty()));
+			});
+		});
+		
+		response = restTemplate.getForEntity(new URI("http://localhost:" + port + "/getDimensions?connectionName=test&includeMembers=true&cube=Test_F3"), DimensionWrapper[].class);
+		assertEquals(200, response.getStatusCode().value());
+		
+		dimensions = response.getBody();
+		
+		assertEquals(3, dimensions.length);
+		
+		Arrays.stream(dimensions).forEach(dimension -> {
+			dimension.getHierarchies().forEach(hierarchy -> {
+				hierarchy.getLevels().forEach(level -> assertFalse(level.getMembers().isEmpty()));
+			});
+		});
 		
 	}
 	

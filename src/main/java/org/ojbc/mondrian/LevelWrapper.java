@@ -47,7 +47,7 @@ public class LevelWrapper implements Serializable {
 	private int depth;
 	private int cardinality;
 	private boolean populated;
-	private List<MemberWrapper> members;
+	private List<MemberWrapper> members = new ArrayList<>();
 	
 	LevelWrapper() { }
 
@@ -56,7 +56,6 @@ public class LevelWrapper implements Serializable {
 		this.caption = level.getCaption();
 		this.depth = level.getDepth();
 		this.cardinality = level.getCardinality();
-		members = new ArrayList<>();
 		if (cardinality <= CARDINALITY_LIMIT) {
 			populated = true;
 			for(Member member : level.getMembers()) {
