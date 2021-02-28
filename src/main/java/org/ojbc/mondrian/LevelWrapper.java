@@ -43,6 +43,7 @@ public class LevelWrapper implements Serializable {
 	static final int CARDINALITY_LIMIT = Integer.MAX_VALUE;
 	
 	private String name;
+	private String uniqueName;
 	private String caption;
 	private int depth;
 	private int cardinality;
@@ -53,6 +54,7 @@ public class LevelWrapper implements Serializable {
 
 	public LevelWrapper(Level level) throws OlapException {
 		this.name = level.getName();
+		this.uniqueName = level.getUniqueName();
 		this.caption = level.getCaption();
 		this.depth = level.getDepth();
 		this.cardinality = level.getCardinality();
