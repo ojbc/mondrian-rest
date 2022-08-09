@@ -33,7 +33,6 @@
   </parent>
 
   <properties>
-    <mondrian-version>8.3.0.21-1159</mondrian-version>
     <foodmart-hsqldb-version>1.0.0</foodmart-hsqldb-version>
     <mockito-version>1.10.19</mockito-version>
     <slf4j.version>1.7.30</slf4j.version>
@@ -55,7 +54,7 @@
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>mondrian</artifactId>
-      <version>${mondrian-version}</version>
+      <version>8.3.0.24-1375</version>
       <exclusions>
         <exclusion>
           <groupId>javax.servlet</groupId>
@@ -189,7 +188,7 @@
       </releases>
       <id>pentaho3p</id>
       <name>Pentaho Third Party Releases</name>
-      <url>https://nexus.pentaho.org/repository/proxy-public-3rd-party-release/</url>
+      <url>https://nexus.pentaho.org/repository/omni/</url>
     </repository>
   </repositories>
 
